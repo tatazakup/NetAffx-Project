@@ -1,1 +1,4 @@
 **/.venv/
+**/.vscode/
+**/.pytest_cache/
+**/Project/__pycache__/
