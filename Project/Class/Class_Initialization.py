@@ -6,7 +6,7 @@ class GetDataFromFile():
     sourceNcbiWebsite = r'https://www.ncbi.nlm.nih.gov/gene'
     
     pathToDataSet = os.getcwd() + "/Project/Dataset"
-    pathToMetaData = os.getcwd() + "/GetDataOnWe/MetaData"
+    pathToMetaData = os.getcwd() + "/Project/MetaData"
     
     ncbiHeader = pd.DataFrame( data=[], columns=['GeneID', 'GeneSymbol', 'AlsoKnowAs', 'CreateAt', 'UpdatedAt'] )
     
@@ -29,4 +29,4 @@ class GetDataFromFile():
         return self.pathToMetaData
     
     def GetSourceNcbiWebsite(self):
-        return self.sourceNcbiWebsite
+        return self.sourceNcbiWebsit

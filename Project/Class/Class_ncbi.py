@@ -5,6 +5,8 @@ from threading import Thread
 from datetime import datetime
 from bs4 import BeautifulSoup as soup
 from Class_Initialization import GetDataFromFile
+import time
+import requests
 
 """
 Class Createncbi uses to fetch data from ncbi website by that will send each a geneID to website or suffix back.
@@ -78,11 +80,11 @@ class Createncbi(Thread, GetDataFromFile):
             
             data = {
                 '' : '',
-                'GeneID': self.geneID,
-                'GeneSymbol': self.officialSymbol,
-                'AlsoKnowAs': [self.alsoKnownAs],
-                'FoundStatus': 1,
-                'UpdatedAt': self.ConvertDatetimeToTimeStamp(resUpdateOn)
+                'geneID': self.geneID,
+                'geneSymbol': self.officialSymbol,
+                'alsoKnowAs': [self.alsoKnownAs],
+                'foundStatus': 1,
+                'updatedAt': self.ConvertDatetimeToTimeStamp(resUpdateOn)
             }
             
             self.dataNcbi = pd.DataFrame(data)
@@ -97,16 +99,18 @@ If the date of the website does not match the old date of the data, it will fetc
 """
 class UpdateNcbi(Thread, GetDataFromFile):
     listDataUnCheck = []
+    startIndex = 0
     geneID = None
     officialSymbol = ''
     alsoKnownAs = []
     timeStampUpdateOn = None
     listDataUpdate = []
     
-    def __init__(self, _ListDataUnCheck):
+    def __init__(self, _ListDataUnCheck, _StartIndex):
         Thread.__init__(self)
         GetDataFromFile.__init__(self)
         self.listDataUnCheck = _ListDataUnCheck
+        self.startIndex = _StartIndex
         
     # 11-Jun-2021 => 1623344400.0
     def ConvertDatetimeToTimeStamp(self, datetimeInput):
@@ -129,13 +133,13 @@ class UpdateNcbi(Thread, GetDataFromFile):
         for _Index in range(len(self.listDataUnCheck)):
             self.ClearTemporaryVariable()
             
-            self.geneID = self.listDataUnCheck['GeneID'][_Index]
-            updatedAt = self.listDataUnCheck['UpdatedAt'][_Index]
+            self.geneID = self.listDataUnCheck['geneID'][_Index + self.startIndex]
+            updatedAt = self.listDataUnCheck['updatedAt'][_Index + self.startIndex]
             
             # Try send request to Ncbi website
             isCompleted = False
             while ( isCompleted == False):
-                try :
+                try :                   
                     res = soup(urllib.request.urlopen(self.sourceNcbiWebsite + '/' + str(self.geneID) ), 'html.parser')
                     isCompleted = True
                 except:
@@ -148,7 +152,7 @@ class UpdateNcbi(Thread, GetDataFromFile):
             
             print( self.timeStampUpdateOn, '<==>', updatedAt)
             if ( self.timeStampUpdateOn == updatedAt):
-                print('Not update yet')
+                print('Not update yet\n')
                 continue
             else:
                 print('Let\'s update')
@@ -165,16 +169,16 @@ class UpdateNcbi(Thread, GetDataFromFile):
                     self.alsoKnownAs = resDDArray[indexOldSymbol + 1].contents
                 
                 data = {
-                    'GeneID': self.geneID,
-                    'GeneSymbol': self.officialSymbol,
-                    'AlsoKnowAs': [self.alsoKnownAs],
-                    'FoundStatus': 1,
-                    'UpdatedAt': self.timeStampUpdateOn
+                    'geneID': self.geneID,
+                    'geneSymbol': self.officialSymbol,
+                    'alsoKnowAs': [self.alsoKnownAs],
+                    'foundStatus': 1,
+                    'updatedAt': self.timeStampUpdateOn
                 }
                 print( data )
                 
                 df = self.ReadNcbiData()
-                df.loc[_Index] = data
+                df.loc[_Index + self.startIndex] = data
                 df.to_csv( self.GetPathToGeneWithMap(), index=False)
         
         return
@@ -200,20 +204,23 @@ class NcbiInfo(GetDataFromFile):
         
         lengthUncheckData = len( listUncheckData )
         lengthEachRound = lengthUncheckData // self.numberOfThread
-        
+        startIndex = 0
         threadArray = []
         for count in range( self.numberOfThread ):
             
             if ( count != ( self.numberOfThread - 1) ):
                 updateNcbi = UpdateNcbi(
-                    _ListDataUnCheck = listUncheckData[lengthEachRound * count : ( lengthEachRound * count ) + lengthEachRound]
+                    _ListDataUnCheck = listUncheckData[lengthEachRound * count : ( lengthEachRound * count ) + lengthEachRound],
+                    _StartIndex = startIndex
                 )
             else:
                 updateNcbi = UpdateNcbi(
-                    _ListDataUnCheck = listUncheckData[lengthEachRound * count : lengthUncheckData]
+                    _ListDataUnCheck = listUncheckData[lengthEachRound * count : lengthUncheckData],
+                    _StartIndex = startIndex
                 )
                 
             threadArray.append(updateNcbi)
+            startIndex = startIndex + lengthEachRound
                 
         for eachThread in threadArray:
             eachThread.start()
@@ -260,9 +267,9 @@ class NcbiInfo(GetDataFromFile):
 
 if __name__ == "__main__":
     ncbiInfo = NcbiInfo(
-        _NumberOfThread = 5
+        _NumberOfThread = 1
     )
     
-    ncbiInfo.CreateNuciInformation()
+    ncbiInfo.UpdateNcbiInformation()
     
     print('run main')
