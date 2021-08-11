@@ -4,9 +4,10 @@ import os
 from threading import Thread
 from datetime import datetime
 from bs4 import BeautifulSoup as soup
-from Class_Initialization import GetDataFromFile
+from Class_Initialization import GetDataFromFile, MetaData
 import time
 import requests
+import json
 
 """
 Class Createncbi uses to fetch data from ncbi website by that will send each a geneID to website or suffix back.
@@ -27,6 +28,8 @@ class Createncbi(Thread, GetDataFromFile):
     alsoKnownAs = []
     timeStampUpdateOn = None
     
+    pathGeneWithMap = ''
+    
     def __init__(self, _GeneID, _IndexStart, _IndexStop):
         Thread.__init__(self)
         GetDataFromFile.__init__(self)
@@ -34,6 +37,7 @@ class Createncbi(Thread, GetDataFromFile):
         self.genesID = _GeneID
         self.indexStart = _IndexStart
         self.indexStop = _IndexStop
+        self.pathGeneWithMap = self.GetPathToGeneData() + '/gene' + str(_IndexStart) + "_" + str(_IndexStop) + ".csv"
         
     def ClearTemporaryVariable(self):
         self.officialSymbol = ''
@@ -48,18 +52,21 @@ class Createncbi(Thread, GetDataFromFile):
         return timeOutput
         
     def run(self):
-        pathDefault = self.GetPathToGeneData() + '/gene' + str(self.indexStart) + "_" + str(self.indexStop) + ".csv"
-        self.ncbiHeader.to_csv( pathDefault )
-        self.dataNcbi = pd.read_csv( pathDefault )
+        ncbiPandas = pd.DataFrame( data=[], columns=[self.ncbiHeader] )
+        ncbiPandas.to_csv( self.pathGeneWithMap, index = False )
+        self.dataNcbi = pd.read_csv( self.pathGeneWithMap )
         
-        for _Index in range(self.indexStart, self.indexStop + 1):
+        # for _Index in range(self.indexStart, self.indexStop + 1):
+        for _Index in range(0, 5):
             self.geneID = self.genesID['GeneID'][_Index]
             
             # Try send request to Ncbi website
             isCompleted = False
             while ( isCompleted == False):
                 try :
-                    res = soup(urllib.request.urlopen(self.sourceNcbiWebsite + '/' + str(self.geneID) ), 'html.parser')
+                    urlNcbi = self.sourceWebsite['ncbi'] + '/' + str(self.geneID)
+                    print( urlNcbi )
+                    res = soup(urllib.request.urlopen( urlNcbi ), 'html.parser')
                     isCompleted = True
                 except:
                     pass
@@ -70,7 +77,7 @@ class Createncbi(Thread, GetDataFromFile):
             self.officialSymbol = resDDArray[0].contents[0]
             
             resHeader = res.find('span', {"class": "geneid"})
-            resUpdateOn = ( ( ( str( resHeader.renderContents ) ).split() )[-1].split('<') )[0]
+            self.timeStampUpdateOn = ( ( ( str( resHeader.renderContents ) ).split() )[-1].split('<') )[0]
             
             if ( len( resSummaryDl.find_all(text = 'Also known as') ) >= 1 ):
                 
@@ -79,16 +86,17 @@ class Createncbi(Thread, GetDataFromFile):
                 self.alsoKnownAs = resDDArray[indexOldSymbol + 1].contents
             
             data = {
-                '' : '',
                 'geneID': self.geneID,
                 'geneSymbol': self.officialSymbol,
-                'alsoKnowAs': [self.alsoKnownAs],
+                'alsoKnowAs': self.alsoKnownAs,
                 'foundStatus': 1,
-                'updatedAt': self.ConvertDatetimeToTimeStamp(resUpdateOn)
+                'updatedAt': self.ConvertDatetimeToTimeStamp(self.timeStampUpdateOn)
             }
             
             self.dataNcbi = pd.DataFrame(data)
-            self.dataNcbi.to_csv( pathDefault , mode='a', index = False, header=False)
+            self.dataNcbi.to_csv( self.pathGeneWithMap , mode='a', index = False, header=False)
+            
+            self.ClearTemporaryVariable()
         
         return
     
@@ -140,10 +148,11 @@ class UpdateNcbi(Thread, GetDataFromFile):
             isCompleted = False
             while ( isCompleted == False):
                 try :                   
-                    res = soup(urllib.request.urlopen(self.sourceNcbiWebsite + '/' + str(self.geneID) ), 'html.parser')
+                    res = soup(urllib.request.urlopen(self.sourceWebsite['ncbi'] + '/' + str(self.geneID) ), 'html.parser')
                     isCompleted = True
                 except:
                     pass
+            
                 
             # check UpdatedAt
             resHeader = res.find('span', {"class": "geneid"})
@@ -187,17 +196,18 @@ class NcbiInfo(GetDataFromFile):
     numberOfRow = None
     numberOfThread = 1
     
-    # ---------------------------- #
+    # ------ Default function ------ #
     
     def __init__(self, _NumberOfThread):
         GetDataFromFile.__init__(self)
+        MetaData.__init__(self)
         self.numberOfThread = _NumberOfThread
     
     def ChangeNumberOfThread(self, _NumberOfThread):
         self.numberOfThread = _NumberOfThread
         return
     
-    # ---------------------------- #
+    # ------ Ncbi function ------ #
     
     def UpdateNcbiInformation(self):
         listUncheckData = self.ReadNcbiData()
@@ -227,7 +237,24 @@ class NcbiInfo(GetDataFromFile):
             
         for eachThread in threadArray:
             eachThread.join()
+
+        return
+    
+    def CombineDataNcbi(self):
+        dfs = []
+        for filename in os.listdir(self.GetPathToGeneData()):
+            if ( filename == ".DS_Store"):
+                continue
+            else:
+                dfs.append(pd.read_csv(self.GetPathToGeneData() + '/' + filename))
+                os.remove(self.GetPathToGeneData() + '/' + filename)
+                
             
+        big_frame = pd.concat(dfs, ignore_index=True)
+        
+        ncbiDataFrame = pd.DataFrame( data=big_frame )
+        ncbiDataFrame.to_csv( self.GetPathToGeneWithMap() , mode='w', index = False, header=True)
+        
         return
     
     def CreateNuciInformation(self):
@@ -239,14 +266,12 @@ class NcbiInfo(GetDataFromFile):
         threadArray = []
         for count in range(self.numberOfThread): # Number of Thread CPU
             if ( count != ( self.numberOfThread - 1) ):
-                print(lengthEachRound * count, ( lengthEachRound * count ) + lengthEachRound)
                 eachThread = Createncbi(
                     _GeneID = listUniqueGeneID,
                     _IndexStart = lengthEachRound * count,
                     _IndexStop = ( lengthEachRound * count ) + lengthEachRound
                 )
             else:
-                print(lengthEachRound * count, lengthUniqueGeneID)
                 eachThread = Createncbi(
                     _GeneID = listUniqueGeneID,
                     _IndexStart = lengthEachRound * count,
@@ -260,6 +285,9 @@ class NcbiInfo(GetDataFromFile):
             
         for eachThread in threadArray:
             eachThread.join()
+        
+        # Wait all mutithread has successfully process before start combine all data
+        self.CombineDataNcbi()
             
         return
 
@@ -270,6 +298,6 @@ if __name__ == "__main__":
         _NumberOfThread = 1
     )
     
-    ncbiInfo.UpdateNcbiInformation()
+    ncbiInfo.CreateNuciInformation()
     
     print('run main')

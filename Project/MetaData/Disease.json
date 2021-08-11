@@ -1,0 +1,25 @@
+{
+    "technical": {
+        "type": "table",
+        "system": "",
+        "tableType": "",
+        "createionTime": 0,
+        "lastMedoficationTime": 0,
+        "ExpirationTime": "",
+        "location": "",
+        "resource": ["https://www.kegg.jp/entry", "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Diabetes%20Mellitus,%20Type%202&cuiID={cuiID}&typeSubmit=GO&check=y&which=2&pubOrderType=pubD"],
+        "labels": "",
+        "description": "This data uses for know gene in disease",
+        "tags": {
+            "geneSymbol": "string",
+            "geneID": "string"
+        },
+        "diseases": [
+            {
+                "diseaseName" : "Type 1 diabetes mellitus",
+                "cuiID" : "C0011854"
+            }
+        ],
+        "records": 1
+    }
+}

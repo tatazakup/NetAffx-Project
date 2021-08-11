@@ -1,0 +1,17 @@
+{
+    "technical" : {
+        "type" : "TABLE",
+        "system" : "",
+        "tableType" : "",
+        "createionTime" : "",
+        "lastMedoficationTime" : "",
+        "ExpirationTime" : "",
+        "location" : "",
+        "resource" : "",
+        "labels" : "",
+        "description" : "",
+        "tags" : {
+            
+        }
+    }
+}
