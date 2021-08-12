@@ -34,6 +34,21 @@ class GetDataFromFile():
     def ReadListDisease(self):
         return pd.read_csv( self.pathToDataSet + "/ListDisease.csv" )
     
+    def ReadDiseaseType2(self):
+        return pd.read_csv( self.pathToDataSet + "/Type 2 diabetes mellitus.csv" )
+        
+    def ReadListSNP_Nsp(self):
+        return pd.read_csv( self.pathToDataSet + "/Mapping250K_Nsp.na32.annot.csv" )
+    
+    def ReadListSNP_Sty(self):
+        return pd.read_csv( self.pathToDataSet + "/Mapping250K_Sty.na32.annot.csv" )
+    
+    def ReadMain_Nsp(self):
+        return pd.read_csv( self.pathToDataSet + "/MainCSV/MainData_Nsp.csv" )
+    
+    def ReadMain_Sty(self):
+        return pd.read_csv( self.pathToDataSet + "/MainCSV/MainData_Sty.csv" )
+    
     def GetPathToGeneWithMap(self):
         return self.pathToDataSet + "/GeneWithMap.csv"
     
@@ -42,6 +57,9 @@ class GetDataFromFile():
     
     def GetPathToGeneData(self):
         return self.pathToDataSet + "/GeneData"
+    
+    def GetPathToMainCSV(self):
+        return self.pathToDataSet + "/MainCSV"
     
 """
 Class detail
