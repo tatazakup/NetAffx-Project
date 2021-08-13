@@ -3,6 +3,9 @@ import urllib.request
 from Class_Initialization import GetDataFromFile
 import pandas as pd
 
+"""
+Class detail
+"""
 class HugeInfo(GetDataFromFile):
     
     def __init__(self):
@@ -11,7 +14,7 @@ class HugeInfo(GetDataFromFile):
     
     def HugeDataset(self):
         
-        pathDisease = self.sourceWebsite['huge']['first'] + r'C0011854' + self.sourceWebsite['huge']['second']
+        pathDisease = self.sourceWebsite['huge']['first'] + r'C0011860' + self.sourceWebsite['huge']['second'] # Set default path for get data from website
         
         res = soup(urllib.request.urlopen( pathDisease ), 'html.parser')
         
@@ -25,6 +28,9 @@ class HugeInfo(GetDataFromFile):
 
         return listGene
 
+"""
+Class detail
+"""
 class KeggInfo(GetDataFromFile):
     
     def __init__(self):
@@ -45,7 +51,7 @@ class KeggInfo(GetDataFromFile):
     
     def KeggDataset(self):
         
-        pathDisease = self.sourceWebsite['kegg'] + '/ds:H00408'
+        pathDisease = self.sourceWebsite['kegg'] + '/H00409' # Set default path for get data from website
         
         res = soup(urllib.request.urlopen(pathDisease), 'html.parser')
         
@@ -62,7 +68,10 @@ class KeggInfo(GetDataFromFile):
             listGene.append( ganeSymbol )
         
         return diseaseName, listGene
-    
+
+"""
+Class detail
+"""
 class Disease(GetDataFromFile):
     listNcbiData = []
     pathDisease = ''
@@ -90,7 +99,7 @@ class Disease(GetDataFromFile):
                 
                 geneDetail = {
                     'geneSymbol' : geneSymbol,
-                    'ganeID' : ''
+                    'geneID' : ''
                 }
                 
                 listGene =  self.listNcbiData[self.listNcbiData['geneSymbol'] == str(geneSymbol)]
@@ -105,12 +114,12 @@ class Disease(GetDataFromFile):
                         
                         result = [v for v in row['alsoKnowAs'][2:-2].split('; ') if geneSymbol == v]
                         if ( result != [] ):
-                            geneDetail['ganeID'] = row['geneID']
+                            geneDetail['geneID'] = row['geneID']
                             break
                         else:
                             index += 1
                 else:
-                    geneDetail['ganeID'] = (listGene['geneID'].values)[0]
+                    geneDetail['geneID'] = (listGene['geneID'].values)[0]
                 
                 print( geneDetail )
                 unique_list_done.append(geneSymbol)

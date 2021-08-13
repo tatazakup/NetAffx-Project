@@ -6,8 +6,6 @@ from datetime import datetime
 from bs4 import BeautifulSoup as soup
 from Class_Initialization import GetDataFromFile, MetaData
 import time
-import requests
-import json
 
 """
 Class Createncbi uses to fetch data from ncbi website by that will send each a geneID to website or suffix back.
@@ -57,7 +55,7 @@ class Createncbi(Thread, GetDataFromFile):
         self.dataNcbi = pd.read_csv( self.pathGeneWithMap )
         
         # for _Index in range(self.indexStart, self.indexStop + 1):
-        for _Index in range(0, 5):
+        for _Index in range(0, 2):
             self.geneID = self.genesID['GeneID'][_Index]
             
             # Try send request to Ncbi website
@@ -200,7 +198,6 @@ class NcbiInfo(GetDataFromFile):
     
     def __init__(self, _NumberOfThread):
         GetDataFromFile.__init__(self)
-        MetaData.__init__(self)
         self.numberOfThread = _NumberOfThread
     
     def ChangeNumberOfThread(self, _NumberOfThread):
@@ -210,6 +207,7 @@ class NcbiInfo(GetDataFromFile):
     # ------ Ncbi function ------ #
     
     def UpdateNcbiInformation(self):
+        metaData = MetaData()
         listUncheckData = self.ReadNcbiData()
         
         lengthUncheckData = len( listUncheckData )
@@ -237,6 +235,10 @@ class NcbiInfo(GetDataFromFile):
             
         for eachThread in threadArray:
             eachThread.join()
+            
+        metaData.ReadMetadata('MapSnpWithNcbi')
+        metaData.UpdateMetadata('lastMedoficationTime', time.time())
+        metaData.SaveUpdateMetadata()
 
         return
     
@@ -258,6 +260,7 @@ class NcbiInfo(GetDataFromFile):
         return
     
     def CreateNuciInformation(self):
+        metaData = MetaData()
         listUniqueGeneID = self.ReadAllUniqueGeneID()
         
         lengthUniqueGeneID = len( listUniqueGeneID )
@@ -288,6 +291,11 @@ class NcbiInfo(GetDataFromFile):
         
         # Wait all mutithread has successfully process before start combine all data
         self.CombineDataNcbi()
+        
+        metaData.ReadMetadata('MapSnpWithNcbi')
+        metaData.UpdateMetadata('createionTime', time.time())
+        metaData.UpdateMetadata('lastMedoficationTime', time.time())
+        metaData.SaveUpdateMetadata()
             
         return
 

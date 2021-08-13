@@ -26,11 +26,11 @@ class mapAlsoKnowAs(GetDataFromFile):
         GetDataFromFile.__init__(self)
     
     def GetAlsoKnowAs(self, dataframe, geneid):
-        alsoknowas = dataframe.loc[dataframe['GeneID'] == int(geneid)]['AlsoKnowAs'].iloc[0][2:-2]
+        alsoknowas = dataframe.loc[dataframe['geneID'] == int(geneid)]['alsoKnowAs'].iloc[0][2:-2]
         return alsoknowas
 
     def GetTimeStamp(self, dataframe, geneid):
-        timestamp = dataframe.loc[dataframe['GeneID'] == int(geneid)]['UpdatedAt'].iloc[0]
+        timestamp = dataframe.loc[dataframe['geneID'] == int(geneid)]['updatedAt'].iloc[0]
         return timestamp
 
     def convert_listofObject_ToCsv(self, list, path):

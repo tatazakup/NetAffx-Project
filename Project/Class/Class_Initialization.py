@@ -35,7 +35,7 @@ class GetDataFromFile():
         return pd.read_csv( self.pathToDataSet + "/ListDisease.csv" )
     
     def ReadDiseaseType2(self):
-        return pd.read_csv( self.pathToDataSet + "/Type 2 diabetes mellitus.csv" )
+        return pd.read_csv( self.pathToDataSet + "/Disease/Type 2 diabetes mellitus.csv" )
         
     def ReadListSNP_Nsp(self):
         return pd.read_csv( self.pathToDataSet + "/Mapping250K_Nsp.na32.annot.csv" )
@@ -79,8 +79,8 @@ class MetaData():
         self.dataOnMetadata = json.load( self.jsonData )
         return
     
-    def UpdateMetadata(self, columnName):
-        self.dataOnMetadata['technical']['columnName']
+    def UpdateMetadata(self, columnName, inputData):
+        self.dataOnMetadata['technical'][columnName] = inputData
         return
     
     def SaveUpdateMetadata(self):
