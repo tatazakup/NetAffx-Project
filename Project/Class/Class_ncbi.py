@@ -8,93 +8,114 @@ from Class_Initialization import GetDataFromFile, MetaData
 import time
 
 """
+Model of GeneWithMap
+"""
+class GeneWithMap():
+    def __init__(self, _GeneID, _GeneSymbol, _AlsoKnowAs, _UpdatedAt):
+        self.GeneID = _GeneID
+        self.GeneSymbol = _GeneSymbol
+        self.AlsoKnowAs = _AlsoKnowAs
+        self.UpdatedAt = _UpdatedAt
+        
+    def UpdateAlsoKnowAs(self, _AlsoKnowAs, _UpdatedAt):
+        self.AlsoKnowAs = _AlsoKnowAs
+        self.UpdatedAt = _UpdatedAt
+
+"""
 Class Createncbi uses to fetch data from ncbi website by that will send each a geneID to website or suffix back.
 After send request to website, this class will use urllib to get some data in HTML such as AlsoKnowAs.
 
-** Any data must store at ** sourceForStore **
+** Any data must store at ** pathToDataSet **
 """
 class Createncbi(Thread, GetDataFromFile):
     
     # initialize value
-    genesID = []
+    listGenesID = []
     indexStart = 0
     indexStop = 0
-    
-    dataNcbi = None
-    geneID = None
-    officialSymbol = ''
-    alsoKnownAs = []
-    timeStampUpdateOn = None
-    
     pathGeneWithMap = ''
     
-    def __init__(self, _GeneID, _IndexStart, _IndexStop):
+    def __init__(self, _ListGenesID, _IndexStart, _IndexStop):
         Thread.__init__(self)
         GetDataFromFile.__init__(self)
         
-        self.genesID = _GeneID
+        self.listGenesID = _ListGenesID
         self.indexStart = _IndexStart
         self.indexStop = _IndexStop
         self.pathGeneWithMap = self.GetPathToGeneData() + '/gene' + str(_IndexStart) + "_" + str(_IndexStop) + ".csv"
-        
-    def ClearTemporaryVariable(self):
-        self.officialSymbol = ''
-        self.alsoKnownAs = []
-        self.timeStampUpdateOn = None
-        self.geneID = None
         
     # 11-Jun-2021 => 1623344400.0
     def ConvertDatetimeToTimeStamp(self, timeInput):
         timeOutput = datetime.strptime(timeInput, "%d-%b-%Y")
         timeOutput = datetime.timestamp(timeOutput)
         return timeOutput
+    
+    def CreateFile(self):
+        ncbiPandas = pd.DataFrame( data=[], columns=[self.ncbiHeader] ) # set Initialize of csv file
+        ncbiPandas.to_csv( self.pathGeneWithMap, index = False ) # create csv file for each multi thread
+    
+    def SendRequestToNcbi(self, geneID):
+        isCompleted = False
+        while ( isCompleted == False):
+            try :
+                urlNcbi = self.sourceWebsite['ncbi'] + '/' + str(geneID)
+                print( urlNcbi )
+                res = soup(urllib.request.urlopen( urlNcbi ), 'html.parser')
+                isCompleted = True
+            except:
+                pass
+                
+        return res
+    
+    def FetchGeneID(self, index):
+        geneID = self.listGenesID['GeneID'][index]
+        return geneID
+    
+    def FetchOfficialSymbol(self, response):
+        resDDArray = response.find_all('dd')
+        officialSymbol = resDDArray[0].contents[0]
+        return officialSymbol
+    
+    def FetchUpdateOn(self, response):
+        resHeader = response.find('span', {"class": "geneid"})
+        timeStampUpdateOn = ( ( ( str( resHeader.renderContents ) ).split() )[-1].split('<') )[0]
+        return timeStampUpdateOn
+    
+    def FetchAlsoKnowAs(self, response):
+        resDDArray = response.find_all()
+        indexAlsoKnowAs = resDDArray.index( response.find('dt', text = 'Also known as') )
+        alsoKnownAs = resDDArray[indexAlsoKnowAs + 1].contents
+        return alsoKnownAs
         
     def run(self):
-        ncbiPandas = pd.DataFrame( data=[], columns=[self.ncbiHeader] )
-        ncbiPandas.to_csv( self.pathGeneWithMap, index = False )
-        self.dataNcbi = pd.read_csv( self.pathGeneWithMap )
+        self.CreateFile() # set initialization
         
         # for _Index in range(self.indexStart, self.indexStop + 1):
-        for _Index in range(0, 2):
-            self.geneID = self.genesID['GeneID'][_Index]
+        for _Index in range(self.indexStart, self.indexStart + 5):
+            geneID = self.FetchGeneID(_Index)
             
-            # Try send request to Ncbi website
-            isCompleted = False
-            while ( isCompleted == False):
-                try :
-                    urlNcbi = self.sourceWebsite['ncbi'] + '/' + str(self.geneID)
-                    print( urlNcbi )
-                    res = soup(urllib.request.urlopen( urlNcbi ), 'html.parser')
-                    isCompleted = True
-                except:
-                    pass
+            response = self.SendRequestToNcbi(geneID)
             
-            resSummaryDl = res.find('dl', {"id": "summaryDl"})
-            resDDArray = resSummaryDl.find_all('dd')
+            resSummaryDl = response.find('dl', {"id": "summaryDl"}) # fetch all detail of website
             
-            self.officialSymbol = resDDArray[0].contents[0]
+            officialSymbol = self.FetchOfficialSymbol(resSummaryDl)
             
-            resHeader = res.find('span', {"class": "geneid"})
-            self.timeStampUpdateOn = ( ( ( str( resHeader.renderContents ) ).split() )[-1].split('<') )[0]
+            UpdateOn = self.ConvertDatetimeToTimeStamp(self.FetchUpdateOn(response))
             
-            if ( len( resSummaryDl.find_all(text = 'Also known as') ) >= 1 ):
+            if ( len( resSummaryDl.find_all(text = 'Also known as') ) >= 1 ): # Does the website contain "Also known as" ?
+                alsoKnownAs = self.FetchAlsoKnowAs(resSummaryDl)
+            else:
+                alsoKnownAs = ['']
                 
-                resDDArray = resSummaryDl.find_all()
-                indexOldSymbol = resDDArray.index( resSummaryDl.find('dt', text = 'Also known as') )
-                self.alsoKnownAs = resDDArray[indexOldSymbol + 1].contents
+            data = GeneWithMap(
+                _GeneID = geneID,
+                _GeneSymbol = officialSymbol,
+                _AlsoKnowAs = alsoKnownAs,
+                _UpdatedAt = UpdateOn
+            )
             
-            data = {
-                'geneID': self.geneID,
-                'geneSymbol': self.officialSymbol,
-                'alsoKnowAs': self.alsoKnownAs,
-                'foundStatus': 1,
-                'updatedAt': self.ConvertDatetimeToTimeStamp(self.timeStampUpdateOn)
-            }
-            
-            self.dataNcbi = pd.DataFrame(data)
-            self.dataNcbi.to_csv( self.pathGeneWithMap , mode='a', index = False, header=False)
-            
-            self.ClearTemporaryVariable()
+            dataFromWeb = pd.DataFrame(data.__dict__)
+            dataFromWeb.to_csv( self.pathGeneWithMap , mode='a', index = False, header=False)
         
         return
     
@@ -106,11 +127,6 @@ If the date of the website does not match the old date of the data, it will fetc
 class UpdateNcbi(Thread, GetDataFromFile):
     listDataUnCheck = []
     startIndex = 0
-    geneID = None
-    officialSymbol = ''
-    alsoKnownAs = []
-    timeStampUpdateOn = None
-    listDataUpdate = []
     
     def __init__(self, _ListDataUnCheck, _StartIndex):
         Thread.__init__(self)
@@ -128,65 +144,70 @@ class UpdateNcbi(Thread, GetDataFromFile):
     def ConvertTimeStampToDatetime(self, TimeStampInput):
         timeOutput = datetime.fromtimestamp(TimeStampInput).strftime('%d-%b-%Y')
         return timeOutput
+        
+    def SendRequestToNcbi(self, geneID):
+        # Try send request to Ncbi website
+        isCompleted = False
+        while ( isCompleted == False):
+            try :                   
+                res = soup(urllib.request.urlopen(self.sourceWebsite['ncbi'] + '/' + str(geneID) ), 'html.parser')
+                isCompleted = True
+            except:
+                pass
+                
+        return res
     
-    def ClearTemporaryVariable(self):
-        self.officialSymbol = ''
-        self.alsoKnownAs = []
-        self.timeStampUpdateOn = None
-        self.geneID = None
+    def FetchUpdateOn(self, response):
+        resHeader = response.find('span', {"class": "geneid"})
+        resUpdateOn = ( ( ( str( resHeader.renderContents ) ).split() )[-1].split('<') )[0]
+        timeStampUpdateOn = self.ConvertDatetimeToTimeStamp(resUpdateOn)
+        return timeStampUpdateOn
+    
+    def FetchOfficialSymbol(self, response):
+        resDDArray = response.find_all('dd')
+        officialSymbol = resDDArray[0].contents[0]
+        return officialSymbol
+    
+    def FetchAlsoKnowAs(self, response):
+        resDDArray = response.find_all()
+        indexAlsoKnowAs = resDDArray.index( response.find('dt', text = 'Also known as') )
+        alsoKnownAs = resDDArray[indexAlsoKnowAs + 1].contents
+        return alsoKnownAs
         
     def run(self):
         for _Index in range(len(self.listDataUnCheck)):
-            self.ClearTemporaryVariable()
             
-            self.geneID = self.listDataUnCheck['geneID'][_Index + self.startIndex]
-            updatedAt = self.listDataUnCheck['updatedAt'][_Index + self.startIndex]
+            geneID = self.listDataUnCheck['geneID'][_Index + self.startIndex]
+            updatedOn_CSV = self.listDataUnCheck['updatedAt'][_Index + self.startIndex]
             
-            # Try send request to Ncbi website
-            isCompleted = False
-            while ( isCompleted == False):
-                try :                   
-                    res = soup(urllib.request.urlopen(self.sourceWebsite['ncbi'] + '/' + str(self.geneID) ), 'html.parser')
-                    isCompleted = True
-                except:
-                    pass
+            response = self.SendRequestToNcbi(geneID)
+            updatedOn_Website = self.FetchUpdateOn(response)
             
-                
-            # check UpdatedAt
-            resHeader = res.find('span', {"class": "geneid"})
-            resUpdateOn = ( ( ( str( resHeader.renderContents ) ).split() )[-1].split('<') )[0]
-            self.timeStampUpdateOn = self.ConvertDatetimeToTimeStamp(resUpdateOn)
-            
-            print( self.timeStampUpdateOn, '<==>', updatedAt)
-            if ( self.timeStampUpdateOn == updatedAt):
-                print('Not update yet\n')
+            print( updatedOn_Website, '<==>', updatedOn_CSV)
+            if ( updatedOn_Website == updatedOn_CSV):
+                print(geneID, 'Not update yet\n')
                 continue
             else:
-                print('Let\'s update')
+                print(geneID, 'Let\'s update')
                 
-                resSummaryDl = res.find('dl', {"id": "summaryDl"})
-                resDDArray = resSummaryDl.find_all('dd')
+                resSummaryDl = response.find('dl', {"id": "summaryDl"}) # fetch all detail of website
                 
-                self.officialSymbol = resDDArray[0].contents[0]
+                officialSymbol = self.FetchOfficialSymbol(resSummaryDl)
                 
                 if ( len( resSummaryDl.find_all(text = 'Also known as') ) >= 1 ):
-                
-                    resDDArray = resSummaryDl.find_all()
-                    indexOldSymbol = resDDArray.index( resSummaryDl.find('dt', text = 'Also known as') )
-                    self.alsoKnownAs = resDDArray[indexOldSymbol + 1].contents
-                
-                data = {
-                    'geneID': self.geneID,
-                    'geneSymbol': self.officialSymbol,
-                    'alsoKnowAs': [self.alsoKnownAs],
-                    'foundStatus': 1,
-                    'updatedAt': self.timeStampUpdateOn
-                }
-                print( data )
+                    alsoKnownAs = self.FetchAlsoKnowAs(resSummaryDl)
+                else:
+                    alsoKnownAs = ['']
                 
                 df = self.ReadNcbiData()
-                df.loc[_Index + self.startIndex] = data
-                df.to_csv( self.GetPathToGeneWithMap(), index=False)
+                
+                # update data
+                df.loc[_Index + self.startIndex, 'geneID'] = geneID
+                df.loc[_Index + self.startIndex, 'geneSymbol'] = officialSymbol
+                df.loc[_Index + self.startIndex, 'alsoKnowAs'] = alsoKnownAs
+                df.loc[_Index + self.startIndex, 'updatedAt'] = updatedOn_Website
+                
+                df.to_csv( self.GetPathToGeneWithMap(), index=False) # after updated will store back to csv
         
         return
 
@@ -270,13 +291,13 @@ class NcbiInfo(GetDataFromFile):
         for count in range(self.numberOfThread): # Number of Thread CPU
             if ( count != ( self.numberOfThread - 1) ):
                 eachThread = Createncbi(
-                    _GeneID = listUniqueGeneID,
+                    _ListGenesID = listUniqueGeneID,
                     _IndexStart = lengthEachRound * count,
                     _IndexStop = ( lengthEachRound * count ) + lengthEachRound
                 )
             else:
                 eachThread = Createncbi(
-                    _GeneID = listUniqueGeneID,
+                    _ListGenesID = listUniqueGeneID,
                     _IndexStart = lengthEachRound * count,
                     _IndexStop = lengthUniqueGeneID
                 )
@@ -303,7 +324,7 @@ class NcbiInfo(GetDataFromFile):
 
 if __name__ == "__main__":
     ncbiInfo = NcbiInfo(
-        _NumberOfThread = 1
+        _NumberOfThread = 5
     )
     
     ncbiInfo.CreateNuciInformation()

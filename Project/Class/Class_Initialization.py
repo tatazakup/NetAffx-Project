@@ -19,7 +19,7 @@ class GetDataFromFile():
     
     pathToDataSet = os.getcwd() + "/Project/Dataset"
     
-    ncbiHeader = ['geneID', 'geneSymbol', 'alsoKnowAs', 'createAt', 'updatedAt']
+    ncbiHeader = ['geneID', 'geneSymbol', 'alsoKnowAs', 'updatedAt']
     diseaseHeader = pd.DataFrame( data=[], columns=['geneSymbol', 'ganeID'] )
     
     def __init__(self):
