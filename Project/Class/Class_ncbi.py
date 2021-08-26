@@ -16,10 +16,6 @@ class GeneWithMap():
         self.GeneSymbol = _GeneSymbol
         self.AlsoKnowAs = _AlsoKnowAs
         self.UpdatedAt = _UpdatedAt
-        
-    def UpdateAlsoKnowAs(self, _AlsoKnowAs, _UpdatedAt):
-        self.AlsoKnowAs = _AlsoKnowAs
-        self.UpdatedAt = _UpdatedAt
 
 """
 Class Createncbi uses to fetch data from ncbi website by that will send each a geneID to website or suffix back.

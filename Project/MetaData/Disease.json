@@ -1,10 +1,9 @@
 {
     "technical": {
+        "category": "Disease",
         "type": "table",
         "system": "",
         "tableType": "",
-        "createionTime": 0,
-        "lastMedoficationTime": 0,
         "ExpirationTime": "",
         "location": "",
         "resource": {
@@ -20,13 +19,17 @@
         "diseases": [
             {
                 "diseaseName" : "Type 1 diabetes mellitus",
+                "kegeID" : "H00408",
                 "hugeID" : "C0011854",
-                "kegeID" : "H00408"
+                "createionTime": 0,
+                "lastMedoficationTime": 0
             },
             {
                 "diseaseName" : "Type 2 diabetes mellitus",
+                "kegeID" : "H00409",
                 "hugeID" : "C0011860",
-                "kegeID" : "H00409"
+                "createionTime": 0,
+                "lastMedoficationTime": 0
             }
         ],
         "records": 1

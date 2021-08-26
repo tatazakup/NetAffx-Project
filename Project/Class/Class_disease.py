@@ -3,6 +3,12 @@ import urllib.request
 from Class_Initialization import GetDataFromFile
 import pandas as pd
 
+class ModelDisease():
+    def __init__(self, _GeneID, _GeneSymbol, _Source):
+        self.GeneID = _GeneID
+        self.GeneSymbol = _GeneSymbol
+        self.Source = _Source
+
 """
 Class detail
 """
@@ -24,7 +30,10 @@ class HugeInfo(GetDataFromFile):
         for i in a:
             geneSymbol = ( i.get_text()[4:].split('\r\n   \t\t\t\t\t\t\n') )[0]
             
-            listGene.append(geneSymbol)
+            listGene.append({
+                'geneSymbol' : geneSymbol,
+                'source' : 'huge'
+            })
 
         return listGene
 
@@ -52,7 +61,7 @@ class KeggInfo(GetDataFromFile):
     def KeggDataset(self):
         
         pathDisease = self.sourceWebsite['kegg'] + '/H00409' # Set default path for get data from website
-        
+
         res = soup(urllib.request.urlopen(pathDisease), 'html.parser')
         
         diseaseName = self.GetName(res)
@@ -62,10 +71,13 @@ class KeggInfo(GetDataFromFile):
         listGene = []
         for eachGene in allGene:
             separateWord = eachGene.split('[')
-            ganeSymbol = ( separateWord[0].split() )[0]
+            geneSymbol = ( separateWord[0].split() )[0]
             # ganeID = ( ( separateWord[1].split(':')[1] ).split() )[0].replace(']', '')
             
-            listGene.append( ganeSymbol )
+            listGene.append({
+                'geneSymbol' : geneSymbol,
+                'source' : 'kegg'
+            })
         
         return diseaseName, listGene
 
@@ -81,60 +93,66 @@ class Disease(GetDataFromFile):
         self.listNcbiData = self.ReadNcbiData()
         return
     
-    def CreateDiseaseFile(self, fileName):
+    def ImportDataToFile(self, fileName, data):
         self.pathDisease = self.GetPathToListDisease() + "/" + fileName + ".csv"
-        self.diseaseHeader.to_csv( self.pathDisease, index = False)
+        importData = pd.DataFrame([t.__dict__ for t in data])
+        importData.to_csv( self.pathDisease, mode='a', index = False)
         return
     
-    def ImportDataToFile(self, data):
-        importData = pd.DataFrame(data)
-        importData.to_csv( self.pathDisease, mode='a', index = False, header=False)
-        return
+    def FetchGeneID(self, geneSymbol):
+        geneObject =  self.listNcbiData[self.listNcbiData['geneSymbol'] == str(geneSymbol)] # try map geneSymbol with geneSymbol on file GeneWithMap
+        
+        if ( geneObject.size == 0 ): # if not found geneSymbol
+            geneObject =  self.listNcbiData[self.listNcbiData['alsoKnowAs'].str.contains(str(geneSymbol), na=False)] # try map geneAlsoKnowAs with geneSymbol on file GeneWithMap
+                
+            for index, row in geneObject.iterrows():
+                
+                result = [v for v in row['alsoKnowAs'].split('; ') if str(geneSymbol) == str(v)]
+                if ( result != [] ):
+                    return row['geneID']
+        else: # if found geneSymbol
+            return (geneObject['geneID'].values)[0]
+        
+        return ''
     
-    def CheckGeneWithMap(self, listGene):
-        unique_list = []
-        unique_list_done = []
-        for geneSymbol in listGene:
-            if geneSymbol not in unique_list_done:
+    def CheckGeneWithMap(self, listDiseaseGene):
+        listGeneDisease = []
+        unique_list = [] # uses for check unique geneID
+        for diseaseGene in listDiseaseGene:
+            
+            geneSymbol = diseaseGene['geneSymbol']
+            
+            if geneSymbol not in unique_list:
+                geneID = self.FetchGeneID(geneSymbol)
                 
-                geneDetail = {
-                    'geneSymbol' : geneSymbol,
-                    'geneID' : ''
-                }
+                matches = (x for x in (listDiseaseGene) if x['geneSymbol'] == geneSymbol)
                 
-                listGene =  self.listNcbiData[self.listNcbiData['geneSymbol'] == str(geneSymbol)]
+                sources = ''
                 
-                if ( listGene.size == 0 ):
-                    print('Gene Symbol not matching with', geneSymbol)
-                    
-                    geneObject =  self.listNcbiData[self.listNcbiData['alsoKnowAs'].str.contains(geneSymbol)]
-                    
-                    index = 0
-                    for index, row in geneObject.iterrows():
-                        
-                        result = [v for v in row['alsoKnowAs'][2:-2].split('; ') if geneSymbol == v]
-                        if ( result != [] ):
-                            geneDetail['geneID'] = row['geneID']
-                            break
-                        else:
-                            index += 1
-                else:
-                    geneDetail['geneID'] = (listGene['geneID'].values)[0]
+                for match in matches: sources = sources + match['source'] + "; "
                 
-                print( geneDetail )
-                unique_list_done.append(geneSymbol)
-                unique_list.append(geneDetail)
+                sources = sources[:-2]
                 
+                print(geneSymbol, geneID, sources)
+                
+                geneDisease = ModelDisease(
+                    _GeneID = geneID,
+                    _GeneSymbol = geneSymbol,
+                    _Source = sources
+                )
+                listGeneDisease.append(geneDisease)
+                unique_list.append(geneSymbol)
+            
             else:
                 continue
             
-        return unique_list
+        return listGeneDisease
     
     def CreateDiseaseDataset(self):
         
         keggInfo = KeggInfo()
         diseaseName, listGeneKegg = keggInfo.KeggDataset()
-        
+
         hugeDataset = HugeInfo()
         listGeneHuge = hugeDataset.HugeDataset()
         
@@ -142,8 +160,7 @@ class Disease(GetDataFromFile):
         
         listGene = self.CheckGeneWithMap(listGene)
         
-        self.CreateDiseaseFile(diseaseName)
-        self.ImportDataToFile(listGene)
+        self.ImportDataToFile(diseaseName, listGene)
         
         return
     
