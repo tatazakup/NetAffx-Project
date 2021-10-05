@@ -55,7 +55,7 @@ class Maindata(GetDataFromFile):
                 memory = []
                 listGeneInSNP = []
                 if eachrow_ProbeID and eachrow_SnpID and eachrow_Gene != '---':
-                     for Gene in split_Gene:
+                    for Gene in split_Gene:
                         GeneDetail = Gene.split(' // ') # -- Gene[1] = relationship // Gene[2] = distance // Gene[4] = GeneSymbol // Gene[5] = GeneID
                         if GeneDetail[5] != '---': #Check GeneID != '---'
                             GeneSymbol = GeneDetail[4] 

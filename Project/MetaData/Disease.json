@@ -19,15 +19,15 @@
         "diseases": [
             {
                 "diseaseName" : "Type 1 diabetes mellitus",
-                "kegeID" : "H00408",
-                "hugeID" : "C0011854",
+                "kegeID" : "https://www.kegg.jp/entry/H00408",
+                "hugeID" : "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Diabetes%20Mellitus,%20Type%201&cuiID=C0011854&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
                 "createionTime": 0,
                 "lastMedoficationTime": 0
             },
             {
                 "diseaseName" : "Type 2 diabetes mellitus",
-                "kegeID" : "H00409",
-                "hugeID" : "C0011860",
+                "kegeID" : "https://www.kegg.jp/entry/H00409",
+                "hugeID" : "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Diabetes%20Mellitus,%20Type%202&cuiID=C0011860&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
                 "createionTime": 0,
                 "lastMedoficationTime": 0
             }

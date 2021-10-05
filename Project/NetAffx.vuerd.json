@@ -1,0 +1,1030 @@
+{
+  "canvas": {
+    "version": "2.2.6",
+    "width": 2000,
+    "height": 2000,
+    "scrollTop": -238,
+    "scrollLeft": -41.953125,
+    "zoomLevel": 0.6,
+    "show": {
+      "tableComment": true,
+      "columnComment": true,
+      "columnDataType": true,
+      "columnDefault": true,
+      "columnAutoIncrement": true,
+      "columnPrimaryKey": true,
+      "columnUnique": true,
+      "columnNotNull": true,
+      "relationship": true
+    },
+    "database": "MySQL",
+    "databaseName": "NetAffx",
+    "canvasType": "ERD",
+    "language": "GraphQL",
+    "tableCase": "pascalCase",
+    "columnCase": "camelCase",
+    "highlightTheme": "VS2015",
+    "bracketType": "none",
+    "setting": {
+      "relationshipDataTypeSync": true,
+      "columnOrder": [
+        "columnName",
+        "columnDataType",
+        "columnNotNull",
+        "columnUnique",
+        "columnAutoIncrement",
+        "columnDefault",
+        "columnComment"
+      ]
+    },
+    "pluginSerializationMap": {}
+  },
+  "table": {
+    "tables": [
+      {
+        "name": "SNP_AN",
+        "comment": "",
+        "columns": [
+          {
+            "name": "RS_ID",
+            "comment": "",
+            "dataType": "VARCHAR(25)",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": true,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": true,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 87.72509765625,
+              "widthDefault": 60
+            },
+            "id": "4280b47c-b4d7-42e3-8e9a-d3da697bd75a"
+          },
+          {
+            "name": "PROBE_ID",
+            "comment": "",
+            "dataType": "VARCHAR(25)",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 67.74267578125,
+              "widthComment": 60,
+              "widthDataType": 87.72509765625,
+              "widthDefault": 60
+            },
+            "id": "fa95f2d1-1e3a-40b3-ad42-80c8b6f94493"
+          },
+          {
+            "name": "CHROMOSOME",
+            "comment": "",
+            "dataType": "INT",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 99.5,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "6d620cc0-33f6-4cb8-a354-e710d362d489"
+          },
+          {
+            "name": "POSITION",
+            "comment": "",
+            "dataType": "INT",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 64.1181640625,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "f0fda6d9-49d8-4ffd-9b53-81e98b96cdc7"
+          },
+          {
+            "name": "SOURCE_NAME",
+            "comment": "",
+            "dataType": "INT",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 102.4072265625,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "6f673b4c-e5f9-47cf-92f3-7b5d82adff85"
+          }
+        ],
+        "ui": {
+          "active": false,
+          "left": 32.5008,
+          "top": 693.6664,
+          "zIndex": 5,
+          "widthName": 60,
+          "widthComment": 60
+        },
+        "visible": true,
+        "id": "1776c9cc-1f4d-4284-a330-62063de10f65"
+      },
+      {
+        "name": "SNP_AN_AS",
+        "comment": "",
+        "columns": [
+          {
+            "name": "GENE_ID",
+            "comment": "",
+            "dataType": "INT",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": true,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": true,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "364a640b-d08d-413e-9371-71be4b40e851"
+          },
+          {
+            "name": "RS_ID",
+            "comment": "",
+            "dataType": "VARCHAR(25)",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": true,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": true,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 87.72509765625,
+              "widthDefault": 60
+            },
+            "id": "22c43e62-d5b9-4b6e-89a9-7e72eac06d8b"
+          },
+          {
+            "name": "GENE_SYMBOL",
+            "comment": "",
+            "dataType": "VARCHAR(20)",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 100.25537109375,
+              "widthComment": 60,
+              "widthDataType": 87.72509765625,
+              "widthDefault": 60
+            },
+            "id": "81130767-89e3-4ef8-9c48-7eafb1589b3f"
+          }
+        ],
+        "ui": {
+          "active": false,
+          "left": 597.833,
+          "top": 548.6661,
+          "zIndex": 6,
+          "widthName": 78.5908203125,
+          "widthComment": 60
+        },
+        "visible": true,
+        "id": "28e6f3de-502c-4c0f-a234-2dc73f01400e"
+      },
+      {
+        "name": "AN_AS_DETAIL",
+        "comment": "",
+        "columns": [
+          {
+            "name": "DETAIL_ID",
+            "comment": "",
+            "dataType": "INT",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": true,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": true,
+              "fk": false,
+              "pfk": false,
+              "widthName": 66.7841796875,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "25481715-a60b-4460-80a1-1fc28a0f53ae"
+          },
+          {
+            "name": "RS_ID",
+            "comment": "",
+            "dataType": "VARCHAR(25)",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": true,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": true,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 87.72509765625,
+              "widthDefault": 60
+            },
+            "id": "fd582dce-4152-4fff-b2c4-8a565777752d"
+          },
+          {
+            "name": "GENE_ID",
+            "comment": "",
+            "dataType": "INT",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": true,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": true,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "1872bb36-4b89-413b-9eb2-db8c7c987d5e"
+          },
+          {
+            "name": "DISTANCE",
+            "comment": "",
+            "dataType": "INT",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 66.771484375,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "4f9fa6c9-fd48-4442-8994-2d4c92df5428"
+          },
+          {
+            "name": "RELATIONSHIP",
+            "comment": "",
+            "dataType": "VARCHAR(10)",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 96.39599609375,
+              "widthComment": 60,
+              "widthDataType": 87.72509765625,
+              "widthDefault": 60
+            },
+            "id": "98e034b8-ce61-43e5-a7d6-b7e3efd68144"
+          }
+        ],
+        "ui": {
+          "active": false,
+          "left": 598.1955,
+          "top": 244.0831,
+          "zIndex": 7,
+          "widthName": 96.4150390625,
+          "widthComment": 60
+        },
+        "visible": true,
+        "id": "0ef4387b-2e5c-48d0-abcd-8097f25e60c1"
+      },
+      {
+        "name": "NCBI",
+        "comment": "",
+        "columns": [
+          {
+            "name": "GENE_ID",
+            "comment": "",
+            "dataType": "INT",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": true,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": true,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "2b5bfd82-6ede-49f7-9afe-6e1f87d119f5"
+          },
+          {
+            "name": "UPDATE_AT",
+            "comment": "",
+            "dataType": "DATETIME",
+            "default": "CURRENT_TIMESTAMP",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 76.65478515625,
+              "widthComment": 60,
+              "widthDataType": 66.76513671875,
+              "widthDefault": 147.65966796875
+            },
+            "id": "5188acaa-6bd6-4cb7-a1be-f1021cf59d96"
+          }
+        ],
+        "ui": {
+          "active": false,
+          "left": 1160.8047,
+          "top": 241.3333,
+          "zIndex": 9,
+          "widthName": 60,
+          "widthComment": 60
+        },
+        "visible": true,
+        "id": "063dd49f-cd51-40e6-8480-0a32d86ebf56"
+      },
+      {
+        "name": "DISEASE",
+        "comment": "",
+        "columns": [
+          {
+            "name": "DISEASE_ID",
+            "comment": "",
+            "dataType": "INT",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": true,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": true,
+              "fk": false,
+              "pfk": false,
+              "widthName": 78.58447265625,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "99616c49-266f-4199-93ad-8bd43e4bb395"
+          },
+          {
+            "name": "DISEASE_NAME",
+            "comment": "",
+            "dataType": "VARCHAR(100)",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 103.1435546875,
+              "widthComment": 60,
+              "widthDataType": 94.955078125,
+              "widthDefault": 60
+            },
+            "id": "9eca1010-0e7f-44ca-91b9-115329ba077c"
+          },
+          {
+            "name": "DISEASE_ABBREVIATION",
+            "comment": "",
+            "dataType": "VARCHAR(10)",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 160.7041015625,
+              "widthComment": 60,
+              "widthDataType": 87.72509765625,
+              "widthDefault": 60
+            },
+            "id": "4a87d895-c6be-4701-b78e-f2e4e5db7524"
+          }
+        ],
+        "ui": {
+          "active": false,
+          "left": 1139.2303,
+          "top": 958.778,
+          "zIndex": 1,
+          "widthName": 60,
+          "widthComment": 60
+        },
+        "visible": true,
+        "id": "38134a45-8f14-46a7-8ca0-687d0441cb9a"
+      },
+      {
+        "name": "DISEASE_AS",
+        "comment": "",
+        "columns": [
+          {
+            "name": "GENE_SYMBOL",
+            "comment": "",
+            "dataType": "VARCHAR(20)",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": true,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": true,
+              "fk": false,
+              "pfk": false,
+              "widthName": 100.25537109375,
+              "widthComment": 60,
+              "widthDataType": 87.72509765625,
+              "widthDefault": 60
+            },
+            "id": "d708f218-5606-42e8-adca-a1766c59c25d"
+          },
+          {
+            "name": "DISEASE_ID",
+            "comment": "",
+            "dataType": "INT",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": true,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": true,
+              "widthName": 78.58447265625,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "a90bd72f-d3e8-4370-8b09-a9283392ecd3"
+          },
+          {
+            "name": "GENE_ID",
+            "comment": "",
+            "dataType": "INT",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": false,
+              "unique": false,
+              "notNull": false
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": false,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "0c05f57e-6843-4890-aae5-3974f370e025"
+          }
+        ],
+        "ui": {
+          "active": false,
+          "left": 577.9732,
+          "top": 1029.8615,
+          "zIndex": 2,
+          "widthName": 82.92626953125,
+          "widthComment": 60
+        },
+        "visible": true,
+        "id": "c3ffcaa5-5657-4a55-9975-f2ec8847495a"
+      },
+      {
+        "name": "AS_SOURCE",
+        "comment": "",
+        "columns": [
+          {
+            "name": "GENE_SYMBOL",
+            "comment": "",
+            "dataType": "VARCHAR(20)",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": true,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": true,
+              "widthName": 100.25537109375,
+              "widthComment": 60,
+              "widthDataType": 87.72509765625,
+              "widthDefault": 60
+            },
+            "id": "2224b356-26dd-4626-8d55-6fa82b0fe5de"
+          },
+          {
+            "name": "SOURCE_WEBSITE",
+            "comment": "",
+            "dataType": "INT",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": true,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": true,
+              "fk": false,
+              "pfk": false,
+              "widthName": 123.3544921875,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "bb5dc627-0bbb-470e-80f4-cc682092dace"
+          }
+        ],
+        "ui": {
+          "active": false,
+          "left": 567.5839,
+          "top": 1280.7781,
+          "zIndex": 3,
+          "widthName": 82.18994140625,
+          "widthComment": 60,
+          "color": "#000000"
+        },
+        "visible": true,
+        "id": "7e65342b-da6e-47b7-9ff0-aa07a153d7f7"
+      },
+      {
+        "name": "SNP_AN_DISEASE",
+        "comment": "",
+        "columns": [
+          {
+            "name": "RS_ID",
+            "comment": "",
+            "dataType": "VARCHAR(25)",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": true,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": true,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 87.72509765625,
+              "widthDefault": 60
+            },
+            "id": "9c00f992-6fa9-40b3-9397-5b04c27650e7"
+          },
+          {
+            "name": "DISEASE_ID",
+            "comment": "",
+            "dataType": "INT",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": true,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": true,
+              "widthName": 78.58447265625,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "73899ef5-a697-42c8-9e76-3a21c433ade9"
+          }
+        ],
+        "ui": {
+          "active": false,
+          "left": 597.4448,
+          "top": 874.4444,
+          "zIndex": 4,
+          "widthName": 117.603515625,
+          "widthComment": 60
+        },
+        "visible": true,
+        "id": "759964cf-cde5-47a9-a973-a6552ce58131"
+      },
+      {
+        "name": "OTHER_SYMBOL",
+        "comment": "",
+        "columns": [
+          {
+            "name": "GENE_ID",
+            "comment": "",
+            "dataType": "INT",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": true,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": false,
+              "fk": false,
+              "pfk": true,
+              "widthName": 60,
+              "widthComment": 60,
+              "widthDataType": 60,
+              "widthDefault": 60
+            },
+            "id": "d1943a5f-7d16-4bc8-911b-ea25000bfb93"
+          },
+          {
+            "name": "OTHER_SYMBOL",
+            "comment": "",
+            "dataType": "VARCHAR(100)",
+            "default": "",
+            "option": {
+              "autoIncrement": false,
+              "primaryKey": true,
+              "unique": false,
+              "notNull": true
+            },
+            "ui": {
+              "active": false,
+              "pk": true,
+              "fk": false,
+              "pfk": false,
+              "widthName": 108.91357421875,
+              "widthComment": 60,
+              "widthDataType": 94.955078125,
+              "widthDefault": 60
+            },
+            "id": "6600911a-a181-4076-92a6-2aa54c1d6a39"
+          }
+        ],
+        "ui": {
+          "active": false,
+          "left": 1169.9531,
+          "top": 549,
+          "zIndex": 8,
+          "widthName": 108.91357421875,
+          "widthComment": 60
+        },
+        "visible": true,
+        "id": "0f8077e1-5108-4b75-aa1f-3b13140f0e67"
+      }
+    ],
+    "indexes": []
+  },
+  "memo": {
+    "memos": []
+  },
+  "relationship": {
+    "relationships": [
+      {
+        "identification": true,
+        "relationshipType": "OneN",
+        "startRelationshipType": "Dash",
+        "start": {
+          "tableId": "1776c9cc-1f4d-4284-a330-62063de10f65",
+          "columnIds": [
+            "4280b47c-b4d7-42e3-8e9a-d3da697bd75a"
+          ],
+          "x": 496.63312421875,
+          "y": 736.5414,
+          "direction": "right"
+        },
+        "end": {
+          "tableId": "28e6f3de-502c-4c0f-a234-2dc73f01400e",
+          "columnIds": [
+            "22c43e62-d5b9-4b6e-89a9-7e72eac06d8b"
+          ],
+          "x": 597.833,
+          "y": 613.9161,
+          "direction": "left"
+        },
+        "constraintName": "fk_snp_an_to_snp_an_as",
+        "visible": true,
+        "id": "d97a6eec-745d-4a88-ad23-6c23cbf2a5af"
+      },
+      {
+        "identification": true,
+        "relationshipType": "OneN",
+        "startRelationshipType": "Dash",
+        "start": {
+          "tableId": "38134a45-8f14-46a7-8ca0-687d0441cb9a",
+          "columnIds": [
+            "99616c49-266f-4199-93ad-8bd43e4bb395"
+          ],
+          "x": 1139.2303,
+          "y": 1056.653,
+          "direction": "left"
+        },
+        "end": {
+          "tableId": "c3ffcaa5-5657-4a55-9975-f2ec8847495a",
+          "columnIds": [
+            "a90bd72f-d3e8-4370-8b09-a9283392ecd3"
+          ],
+          "x": 1039.95366875,
+          "y": 1095.1115,
+          "direction": "right"
+        },
+        "constraintName": "fk_disease_to_disease_as",
+        "visible": true,
+        "id": "d00a551d-1af5-45e1-81b1-281e09391872"
+      },
+      {
+        "identification": true,
+        "relationshipType": "OneN",
+        "startRelationshipType": "Dash",
+        "start": {
+          "tableId": "38134a45-8f14-46a7-8ca0-687d0441cb9a",
+          "columnIds": [
+            "99616c49-266f-4199-93ad-8bd43e4bb395"
+          ],
+          "x": 1139.2303,
+          "y": 991.403,
+          "direction": "left"
+        },
+        "end": {
+          "tableId": "759964cf-cde5-47a9-a973-a6552ce58131",
+          "columnIds": [
+            "73899ef5-a697-42c8-9e76-3a21c433ade9"
+          ],
+          "x": 1037.7543703125,
+          "y": 929.4444,
+          "direction": "right"
+        },
+        "constraintName": "fk_disease_to_snp_an_disease",
+        "visible": true,
+        "id": "d9a16d90-4784-432a-8220-41a0280ea394"
+      },
+      {
+        "identification": true,
+        "relationshipType": "OneN",
+        "startRelationshipType": "Dash",
+        "start": {
+          "tableId": "1776c9cc-1f4d-4284-a330-62063de10f65",
+          "columnIds": [
+            "4280b47c-b4d7-42e3-8e9a-d3da697bd75a"
+          ],
+          "x": 496.63312421875,
+          "y": 822.2914,
+          "direction": "right"
+        },
+        "end": {
+          "tableId": "759964cf-cde5-47a9-a973-a6552ce58131",
+          "columnIds": [
+            "9c00f992-6fa9-40b3-9397-5b04c27650e7"
+          ],
+          "x": 597.4448,
+          "y": 929.4444,
+          "direction": "left"
+        },
+        "constraintName": "fk_snp_an_to_snp_an_disease",
+        "visible": true,
+        "id": "830adb7e-1484-4a92-ac7e-1d9b41aab404"
+      },
+      {
+        "identification": true,
+        "relationshipType": "OneN",
+        "startRelationshipType": "Dash",
+        "start": {
+          "tableId": "28e6f3de-502c-4c0f-a234-2dc73f01400e",
+          "columnIds": [
+            "364a640b-d08d-413e-9371-71be4b40e851"
+          ],
+          "x": 1059.81346875,
+          "y": 613.9161,
+          "direction": "right"
+        },
+        "end": {
+          "tableId": "063dd49f-cd51-40e6-8480-0a32d86ebf56",
+          "columnIds": [
+            "2b5bfd82-6ede-49f7-9afe-6e1f87d119f5"
+          ],
+          "x": 1160.8047,
+          "y": 296.3333,
+          "direction": "left"
+        },
+        "constraintName": "fk_snp_an_as_to_also_know_as",
+        "visible": true,
+        "id": "2a71f3ad-a770-4f81-9714-fe0ae8155d69"
+      },
+      {
+        "identification": true,
+        "relationshipType": "OneN",
+        "startRelationshipType": "Dash",
+        "start": {
+          "tableId": "28e6f3de-502c-4c0f-a234-2dc73f01400e",
+          "columnIds": [
+            "364a640b-d08d-413e-9371-71be4b40e851",
+            "22c43e62-d5b9-4b6e-89a9-7e72eac06d8b"
+          ],
+          "x": 828.823234375,
+          "y": 548.6661,
+          "direction": "top"
+        },
+        "end": {
+          "tableId": "0ef4387b-2e5c-48d0-abcd-8097f25e60c1",
+          "columnIds": [
+            "1872bb36-4b89-413b-9eb2-db8c7c987d5e",
+            "fd582dce-4152-4fff-b2c4-8a565777752d"
+          ],
+          "x": 827.256046875,
+          "y": 415.5831,
+          "direction": "bottom"
+        },
+        "constraintName": "fk_snp_an_as_to_an_as_detail",
+        "visible": true,
+        "id": "aa40fb29-f626-44d0-92ee-c64a7e814cc3"
+      },
+      {
+        "identification": true,
+        "relationshipType": "OneN",
+        "startRelationshipType": "Dash",
+        "start": {
+          "tableId": "c3ffcaa5-5657-4a55-9975-f2ec8847495a",
+          "columnIds": [
+            "d708f218-5606-42e8-adca-a1766c59c25d"
+          ],
+          "x": 808.963434375,
+          "y": 1160.3615,
+          "direction": "bottom"
+        },
+        "end": {
+          "tableId": "7e65342b-da6e-47b7-9ff0-aa07a153d7f7",
+          "columnIds": [
+            "2224b356-26dd-4626-8d55-6fa82b0fe5de"
+          ],
+          "x": 810.123694921875,
+          "y": 1280.7781,
+          "direction": "top"
+        },
+        "constraintName": "fk_disease_as_to_as_source",
+        "visible": true,
+        "id": "e60a6e53-64b8-48b1-af0c-da6d4eeb62d0"
+      },
+      {
+        "identification": true,
+        "relationshipType": "OneN",
+        "startRelationshipType": "Dash",
+        "start": {
+          "tableId": "063dd49f-cd51-40e6-8480-0a32d86ebf56",
+          "columnIds": [
+            "2b5bfd82-6ede-49f7-9afe-6e1f87d119f5"
+          ],
+          "x": 1413.344494921875,
+          "y": 351.3333,
+          "direction": "bottom"
+        },
+        "end": {
+          "tableId": "0f8077e1-5108-4b75-aa1f-3b13140f0e67",
+          "columnIds": [
+            "d1943a5f-7d16-4bc8-911b-ea25000bfb93"
+          ],
+          "x": 1408.887426171875,
+          "y": 549,
+          "direction": "top"
+        },
+        "constraintName": "fk_ncbi_to_other_symbol",
+        "visible": true,
+        "id": "1c6b3dd5-8553-4c24-80ea-0b848b98700c"
+      }
+    ]
+  }
+}

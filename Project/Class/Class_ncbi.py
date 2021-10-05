@@ -4,8 +4,9 @@ import os
 from threading import Thread
 from datetime import datetime
 from bs4 import BeautifulSoup as soup
-from Class_Initialization import GetDataFromFile, MetaData
+from Class_Initialization import GetDataFromFile, MetaData, Database
 import time
+import sqlite3
 
 """
 Model of GeneWithMap
@@ -23,7 +24,7 @@ After send request to website, this class will use urllib to get some data in HT
 
 ** Any data must store at ** pathToDataSet **
 """
-class Createncbi(Thread, GetDataFromFile):
+class Createncbi(Thread, GetDataFromFile, Database):
     
     # initialize value
     listGenesID = []
@@ -34,6 +35,7 @@ class Createncbi(Thread, GetDataFromFile):
     def __init__(self, _ListGenesID, _IndexStart, _IndexStop):
         Thread.__init__(self)
         GetDataFromFile.__init__(self)
+        Database.__init__(self)
         
         self.listGenesID = _ListGenesID
         self.indexStart = _IndexStart
@@ -84,10 +86,11 @@ class Createncbi(Thread, GetDataFromFile):
         return alsoKnownAs
         
     def run(self):
+        listGene = []
         self.CreateFile() # set initialization
         
         # for _Index in range(self.indexStart, self.indexStop + 1):
-        for _Index in range(self.indexStart, self.indexStart + 5):
+        for _Index in range(self.indexStart, self.indexStart + 2):
             geneID = self.FetchGeneID(_Index)
             
             response = self.SendRequestToNcbi(geneID)
@@ -207,7 +210,7 @@ class UpdateNcbi(Thread, GetDataFromFile):
         
         return
 
-class NcbiInfo(GetDataFromFile):
+class NcbiInfo(GetDataFromFile, Database):
     numberOfRow = None
     numberOfThread = 1
     
@@ -215,6 +218,7 @@ class NcbiInfo(GetDataFromFile):
     
     def __init__(self, _NumberOfThread):
         GetDataFromFile.__init__(self)
+        Database.__init__(self)
         self.numberOfThread = _NumberOfThread
     
     def ChangeNumberOfThread(self, _NumberOfThread):
@@ -261,22 +265,28 @@ class NcbiInfo(GetDataFromFile):
     
     def CombineDataNcbi(self):
         dfs = []
+        conn = self.ConnectDatabase()
+        
         for filename in os.listdir(self.GetPathToGeneData()):
             if ( filename == ".DS_Store"):
                 continue
             else:
-                dfs.append(pd.read_csv(self.GetPathToGeneData() + '/' + filename))
-                os.remove(self.GetPathToGeneData() + '/' + filename)
+                data = pd.read_csv(self.GetPathToGeneData() + '/' + filename)
                 
-            
-        big_frame = pd.concat(dfs, ignore_index=True)
-        
-        ncbiDataFrame = pd.DataFrame( data=big_frame )
-        ncbiDataFrame.to_csv( self.GetPathToGeneWithMap() , mode='w', index = False, header=True)
+                for row_index, row in data.iterrows():
+                    print( str(row['AlsoKnowAs']), type(row['AlsoKnowAs']) )
+                    if ( str(row['AlsoKnowAs']) == 'nan' ):
+                        sqlCommand = ''' INSERT INTO ALSO_KNOW_AS(GENEID,UPDATE_AT) VALUES(?,?) '''
+                        self.CreateTask(conn, sqlCommand, (row['GeneID'], row['UpdatedAt']))
+                    else:
+                        sqlCommand = ''' INSERT INTO ALSO_KNOW_AS(GENEID,OTHER_SYMBOL,UPDATE_AT) VALUES(?,?,?) '''
+                        self.CreateTask(conn, sqlCommand, (row['GeneID'], row['AlsoKnowAs'], row['UpdatedAt']))
+                    
+                os.remove(self.GetPathToGeneData() + '/' + filename)
         
         return
     
-    def CreateNuciInformation(self):
+    def CreateNubiInformation(self):
         metaData = MetaData()
         listUniqueGeneID = self.ReadAllUniqueGeneID()
         
@@ -323,6 +333,6 @@ if __name__ == "__main__":
         _NumberOfThread = 5
     )
     
-    ncbiInfo.CreateNuciInformation()
+    ncbiInfo.CreateNubiInformation()
     
     print('run main')

@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup as soup
 import urllib.request
-from Class_Initialization import GetDataFromFile
+from Class_Initialization import GetDataFromFile, Database
 import pandas as pd
 
 class ModelDisease():
@@ -19,21 +19,29 @@ class HugeInfo(GetDataFromFile):
         return
     
     def HugeDataset(self):
-        
-        pathDisease = self.sourceWebsite['huge']['first'] + r'C0011860' + self.sourceWebsite['huge']['second'] # Set default path for get data from website
-        
-        res = soup(urllib.request.urlopen( pathDisease ), 'html.parser')
-        
-        findinres = res.find_all('table', {'style':'table_inside'})
-        a = findinres[0].find_all('td', {'align':'left'})
         listGene = []
-        for i in a:
-            geneSymbol = ( i.get_text()[4:].split('\r\n   \t\t\t\t\t\t\n') )[0]
+        # isExist = input("already have a Huge link for fetch data: ")
+        isExist = "y"
+        
+        if (isExist == "y"):
             
-            listGene.append({
-                'geneSymbol' : geneSymbol,
-                'source' : 'huge'
-            })
+            # pathDisease = input("what is the link: ")
+            pathDisease = 'https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Diabetes%20Mellitus,%20Type%201&cuiID=C0011854&typeSubmit=GO&check=y&which=2&pubOrderType=pubD'
+            
+            # pathDisease = self.sourceWebsite['huge']['first'] + r'C0011860' + self.sourceWebsite['huge']['second'] # Set default path for get data from website
+            
+            res = soup(urllib.request.urlopen( pathDisease ), 'html.parser')
+            
+            findinres = res.find_all('table', {'style':'table_inside'})
+            a = findinres[0].find_all('td', {'align':'left'})
+            
+            for i in a:
+                geneSymbol = ( i.get_text()[4:].split('\r\n   \t\t\t\t\t\t\n') )[0]
+                
+                listGene.append({
+                    'geneSymbol' : geneSymbol,
+                    'source' : 'huge'
+                })
 
         return listGene
 
@@ -59,37 +67,44 @@ class KeggInfo(GetDataFromFile):
         return allGene
     
     def KeggDataset(self):
-        
-        pathDisease = self.sourceWebsite['kegg'] + '/H00409' # Set default path for get data from website
-
-        res = soup(urllib.request.urlopen(pathDisease), 'html.parser')
-        
-        diseaseName = self.GetName(res)
-        
-        allGene = self.GetAllGene(res)
-        
         listGene = []
-        for eachGene in allGene:
-            separateWord = eachGene.split('[')
-            geneSymbol = ( separateWord[0].split() )[0]
-            # ganeID = ( ( separateWord[1].split(':')[1] ).split() )[0].replace(']', '')
-            
-            listGene.append({
-                'geneSymbol' : geneSymbol,
-                'source' : 'kegg'
-            })
         
-        return diseaseName, listGene
+        # isExist = input("already have a Kegg link for fetch data: ")
+        isExist = "y"
+        
+        if (isExist == "y"):
+            # pathDisease = input("what is the link: ")
+            pathDisease = 'https://www.kegg.jp/entry/H00408'
+        
+            # pathDisease = self.sourceWebsite['kegg'] + '/H00409' # Set default path for get data from website
+
+            res = soup(urllib.request.urlopen(pathDisease), 'html.parser')
+            
+            # diseaseName = self.GetName(res)
+            
+            allGene = self.GetAllGene(res)
+            for eachGene in allGene:
+                separateWord = eachGene.split('[')
+                geneSymbol = ( separateWord[0].split() )[0]
+                # ganeID = ( ( separateWord[1].split(':')[1] ).split() )[0].replace(']', '')
+                
+                listGene.append({
+                    'geneSymbol' : geneSymbol,
+                    'source' : 'kegg'
+                })
+        
+        return listGene
 
 """
 Class detail
 """
-class Disease(GetDataFromFile):
+class Disease(GetDataFromFile, Database):
     listNcbiData = []
     pathDisease = ''
     
     def __init__(self):
         GetDataFromFile.__init__(self)
+        Database.__init__(self)
         self.listNcbiData = self.ReadNcbiData()
         return
     
@@ -100,6 +115,7 @@ class Disease(GetDataFromFile):
         return
     
     def FetchGeneID(self, geneSymbol):
+        
         geneObject =  self.listNcbiData[self.listNcbiData['geneSymbol'] == str(geneSymbol)] # try map geneSymbol with geneSymbol on file GeneWithMap
         
         if ( geneObject.size == 0 ): # if not found geneSymbol
@@ -121,6 +137,8 @@ class Disease(GetDataFromFile):
         for diseaseGene in listDiseaseGene:
             
             geneSymbol = diseaseGene['geneSymbol']
+            
+            print( geneSymbol )
             
             if geneSymbol not in unique_list:
                 geneID = self.FetchGeneID(geneSymbol)
@@ -148,11 +166,23 @@ class Disease(GetDataFromFile):
             
         return listGeneDisease
     
+    def CheckDiseaseID(self):
+        diseaseShotName = input('disease abbreviation: ')
+        conn = self.ConnectDatabase()
+        sqlCommand = '''
+            SELECT DISEASE_ID FROM DISEASE WHERE SHORT_NAME = ?
+        '''
+        result = self.CreateTask(conn, sqlCommand, (str(diseaseShotName),))
+        print( result[0][0] )
+        return
+    
     def CreateDiseaseDataset(self):
         
+        diseaseID = self.CheckDiseaseID()
+        
         keggInfo = KeggInfo()
-        diseaseName, listGeneKegg = keggInfo.KeggDataset()
-
+        listGeneKegg = keggInfo.KeggDataset()
+        
         hugeDataset = HugeInfo()
         listGeneHuge = hugeDataset.HugeDataset()
         
@@ -160,12 +190,21 @@ class Disease(GetDataFromFile):
         
         listGene = self.CheckGeneWithMap(listGene)
         
-        self.ImportDataToFile(diseaseName, listGene)
+        print( listGene )
+        
+        # self.ImportDataToFile(diseaseName, listGene)
         
         return
     
 if __name__ == "__main__":
+    # Test full process
     disease = Disease()
     disease.CreateDiseaseDataset()
+    
+    # Test Input fetch data form website
+    # hugeDataset = HugeInfo()
+    # listGeneHuge = hugeDataset.HugeDataset()
+    
+    # print('listGeneHuge :', listGeneHuge)
     
     print('run main')
