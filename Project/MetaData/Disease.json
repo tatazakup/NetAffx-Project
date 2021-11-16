@@ -7,8 +7,8 @@
         "ExpirationTime": "",
         "location": "",
         "resource": {
-            "kegg" : "https://www.kegg.jp/entry",
-            "huge" : "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Diabetes%20Mellitus,%20Type%202&cuiID={cuiID}&typeSubmit=GO&check=y&which=2&pubOrderType=pubD"
+            "kegg": "https://www.kegg.jp",
+            "huge": "https://phgkb.cdc.gov"
         },
         "labels": "",
         "description": "This data uses for know gene in disease",
@@ -18,18 +18,67 @@
         },
         "diseases": [
             {
-                "diseaseName" : "Type 1 diabetes mellitus",
-                "kegeID" : "https://www.kegg.jp/entry/H00408",
-                "hugeID" : "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Diabetes%20Mellitus,%20Type%201&cuiID=C0011854&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
-                "createionTime": 0,
-                "lastMedoficationTime": 0
+                "DiseaseID": "1",
+                "Name": "Type 1 Diabete",
+                "Abbreviation": "T1D",
+                "kege": "https://www.kegg.jp/entry/H00408",
+                "huge": "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Diabetes%20Mellitus,%20Type%201&cuiID=C0011854&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
+                "createionTime": 1634210000.0,
+                "lastMedoficationTime": 1634239924.57854
             },
             {
-                "diseaseName" : "Type 2 diabetes mellitus",
-                "kegeID" : "https://www.kegg.jp/entry/H00409",
-                "hugeID" : "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Diabetes%20Mellitus,%20Type%202&cuiID=C0011860&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
-                "createionTime": 0,
-                "lastMedoficationTime": 0
+                "DiseaseID": "2",
+                "Name": "Type 2 Diabete",
+                "Abbreviation": "T2D",
+                "kege": "https://www.kegg.jp/entry/H00409",
+                "huge": "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Diabetes%20Mellitus,%20Type%202&cuiID=C0011860&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
+                "createionTime": 1634210000.0,
+                "lastMedoficationTime": 1634239928.7342021
+            },
+            {
+                "DiseaseID": "3",
+                "Name": "Bipolar Disorde",
+                "Abbreviation": "BD",
+                "kege": "https://www.kegg.jp/entry/H01653",
+                "huge": "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Bipolar%20Disorder&cuiID=C0005586&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
+                "createionTime": 1634210000.0,
+                "lastMedoficationTime": 1634239934.270454
+            },
+            {
+                "DiseaseID": "4",
+                "Name": "Coronary Artery Disease",
+                "Abbreviation": "CAD",
+                "kege": "https://www.kegg.jp/entry/H01742",
+                "huge": "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Coronary%20artery%20disease&cuiID=C1956346&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
+                "createionTime": 1634210000.0,
+                "lastMedoficationTime": 1634239941.006051
+            },
+            {
+                "DiseaseID": "5",
+                "Name": "Crohn\u2019s Disease",
+                "Abbreviation": "CD",
+                "kege": "https://www.kegg.jp/entry/H00286",
+                "huge": "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Crohn%20Disease&cuiID=C0010346&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
+                "createionTime": 1634210000.0,
+                "lastMedoficationTime": 1634239944.93291
+            },
+            {
+                "DiseaseID": "6",
+                "Name": "Hypertension",
+                "Abbreviation": "HT",
+                "kege": "https://www.kegg.jp/entry/H01633",
+                "huge": "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Hypertension&cuiID=C0020538&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
+                "createionTime": 1634210000.0,
+                "lastMedoficationTime": 1634239953.142336
+            },
+            {
+                "DiseaseID": "7",
+                "Name": "Rheumatoid Arthritis",
+                "Abbreviation": "RA",
+                "kege": "https://www.kegg.jp/entry/H00630",
+                "huge": "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Arthritis,%20Rheumatoid&cuiID=C0003873&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
+                "createionTime": 1634210000.0,
+                "lastMedoficationTime": 1634239957.0289931
             }
         ],
         "records": 1

@@ -26,7 +26,7 @@ class HugeInfo(GetDataFromFile):
         if (isExist == "y"):
             
             # pathDisease = input("what is the link: ")
-            pathDisease = 'https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Diabetes%20Mellitus,%20Type%201&cuiID=C0011854&typeSubmit=GO&check=y&which=2&pubOrderType=pubD'
+            pathDisease = 'https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Bipolar%20Disorder&cuiID=C0005586&typeSubmit=GO&check=y&which=2&pubOrderType=pubD'
             
             # pathDisease = self.sourceWebsite['huge']['first'] + r'C0011860' + self.sourceWebsite['huge']['second'] # Set default path for get data from website
             
@@ -39,6 +39,7 @@ class HugeInfo(GetDataFromFile):
                 geneSymbol = ( i.get_text()[4:].split('\r\n   \t\t\t\t\t\t\n') )[0]
                 
                 listGene.append({
+                    'geneID': 'Not found',
                     'geneSymbol' : geneSymbol,
                     'source' : 'huge'
                 })
@@ -74,7 +75,7 @@ class KeggInfo(GetDataFromFile):
         
         if (isExist == "y"):
             # pathDisease = input("what is the link: ")
-            pathDisease = 'https://www.kegg.jp/entry/H00408'
+            pathDisease = 'https://www.kegg.jp/entry/H01653'
         
             # pathDisease = self.sourceWebsite['kegg'] + '/H00409' # Set default path for get data from website
 
@@ -86,9 +87,10 @@ class KeggInfo(GetDataFromFile):
             for eachGene in allGene:
                 separateWord = eachGene.split('[')
                 geneSymbol = ( separateWord[0].split() )[0]
-                # ganeID = ( ( separateWord[1].split(':')[1] ).split() )[0].replace(']', '')
+                ganeID = ( ( separateWord[1].split(':')[1] ).split() )[0].replace(']', '')
                 
                 listGene.append({
+                    'geneID': ganeID,
                     'geneSymbol' : geneSymbol,
                     'source' : 'kegg'
                 })
@@ -138,16 +140,16 @@ class Disease(GetDataFromFile, Database):
             
             geneSymbol = diseaseGene['geneSymbol']
             
-            print( geneSymbol )
-            
             if geneSymbol not in unique_list:
-                geneID = self.FetchGeneID(geneSymbol)
                 
+                geneID = self.FetchGeneID(geneSymbol)
                 matches = (x for x in (listDiseaseGene) if x['geneSymbol'] == geneSymbol)
                 
                 sources = ''
                 
-                for match in matches: sources = sources + match['source'] + "; "
+                for match in matches: 
+                    sources = sources + match['source'] + "; "
+                    if ( match['geneID'] != "Not found"): geneID = match['geneID']
                 
                 sources = sources[:-2]
                 
@@ -178,21 +180,21 @@ class Disease(GetDataFromFile, Database):
     
     def CreateDiseaseDataset(self):
         
-        diseaseID = self.CheckDiseaseID()
+        # diseaseID = self.CheckDiseaseID()
         
         keggInfo = KeggInfo()
-        listGeneKegg = keggInfo.KeggDataset()
+        # listGeneKegg = keggInfo.KeggDataset()
         
         hugeDataset = HugeInfo()
         listGeneHuge = hugeDataset.HugeDataset()
         
-        listGene = listGeneHuge + listGeneKegg
+        # listGene = listGeneHuge + listGeneKegg
         
-        listGene = self.CheckGeneWithMap(listGene)
+        listGene = self.CheckGeneWithMap(listGeneHuge)
         
         print( listGene )
         
-        # self.ImportDataToFile(diseaseName, listGene)
+        self.ImportDataToFile('Bipolar Disorde', listGene)
         
         return
     

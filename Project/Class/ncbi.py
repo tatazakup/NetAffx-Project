@@ -4,9 +4,14 @@ import os
 from threading import Thread
 from datetime import datetime
 from bs4 import BeautifulSoup as soup
-from Class_Initialization import GetDataFromFile, MetaData, Database
+from Class_Initialization import GetDataFromFile, MetaData, Database, Initialize
 import time
 import sqlite3
+
+"""
+Global variable
+"""
+listNcbiUpdated = []
 
 """
 Model of GeneWithMap
@@ -123,7 +128,7 @@ class Createncbi(Thread, GetDataFromFile, Database):
 Class UpdateNcbi is used to update information through each thread on the computer by will separate the data and check each data.
 If the date of the website does not match the old date of the data, it will fetch the new data and replace it.
 """
-class UpdateNcbi(Thread, GetDataFromFile):
+class UpdateNcbi(Thread, GetDataFromFile, Initialize):
     listDataUnCheck = []
     startIndex = 0
     
@@ -174,20 +179,17 @@ class UpdateNcbi(Thread, GetDataFromFile):
         return alsoKnownAs
         
     def run(self):
-        for _Index in range(len(self.listDataUnCheck)):
+        for GeneID, UpdateAt in self.listDataUnCheck[0:1]:
             
-            geneID = self.listDataUnCheck['geneID'][_Index + self.startIndex]
-            updatedOn_CSV = self.listDataUnCheck['updatedAt'][_Index + self.startIndex]
-            
-            response = self.SendRequestToNcbi(geneID)
+            response = self.SendRequestToNcbi( GeneID )
             updatedOn_Website = self.FetchUpdateOn(response)
-            
-            print( updatedOn_Website, '<==>', updatedOn_CSV)
-            if ( updatedOn_Website == updatedOn_CSV):
-                print(geneID, 'Not update yet\n')
+            updatedOn_OldData = self.ConvertUpdateAtToTimeStamp(UpdateAt)
+            print( updatedOn_OldData, '<==>', updatedOn_Website)
+            if ( updatedOn_OldData == updatedOn_Website):
+                print('GeneID :', GeneID, 'Not update yet\n')
                 continue
             else:
-                print(geneID, 'Let\'s update')
+                print('GeneID :', GeneID, 'Let\'s update')
                 
                 resSummaryDl = response.find('dl', {"id": "summaryDl"}) # fetch all detail of website
                 
@@ -196,29 +198,23 @@ class UpdateNcbi(Thread, GetDataFromFile):
                 if ( len( resSummaryDl.find_all(text = 'Also known as') ) >= 1 ):
                     alsoKnownAs = self.FetchAlsoKnowAs(resSummaryDl)
                 else:
-                    alsoKnownAs = ['']
+                    alsoKnownAs = None
                 
-                df = self.ReadNcbiData()
+                df = self.ReadUpdateNcbiData()
                 
-                # update data
-                df.loc[_Index + self.startIndex, 'geneID'] = geneID
-                df.loc[_Index + self.startIndex, 'geneSymbol'] = officialSymbol
-                df.loc[_Index + self.startIndex, 'alsoKnowAs'] = alsoKnownAs
-                df.loc[_Index + self.startIndex, 'updatedAt'] = updatedOn_Website
+                new_row = ( GeneID, officialSymbol, alsoKnownAs, updatedOn_Website )
                 
-                df.to_csv( self.GetPathToGeneWithMap(), index=False) # after updated will store back to csv
-        
-        return
+                listNcbiUpdated.append(new_row)
 
-class NcbiInfo(GetDataFromFile, Database):
+class NcbiInfo(Initialize):
     numberOfRow = None
     numberOfThread = 1
     
     # ------ Default function ------ #
     
     def __init__(self, _NumberOfThread):
-        GetDataFromFile.__init__(self)
-        Database.__init__(self)
+        # GetDataFromFile.__init__(self)
+        Initialize.__init__(self)
         self.numberOfThread = _NumberOfThread
     
     def ChangeNumberOfThread(self, _NumberOfThread):
@@ -229,22 +225,28 @@ class NcbiInfo(GetDataFromFile, Database):
     
     def UpdateNcbiInformation(self):
         metaData = MetaData()
-        listUncheckData = self.ReadNcbiData()
         
-        lengthUncheckData = len( listUncheckData )
-        lengthEachRound = lengthUncheckData // self.numberOfThread
+        conn = self.ConnectDatabase()
+        print('connect database')
+        sqlCommand = """
+            SELECT * FROM NCBI;
+        """
+        ncbiData = self.CreateTask(conn, sqlCommand, () )
+        
+        lengthNcbiData = len( ncbiData )
+        lengthEachRound = lengthNcbiData // self.numberOfThread
         startIndex = 0
         threadArray = []
         for count in range( self.numberOfThread ):
             
             if ( count != ( self.numberOfThread - 1) ):
                 updateNcbi = UpdateNcbi(
-                    _ListDataUnCheck = listUncheckData[lengthEachRound * count : ( lengthEachRound * count ) + lengthEachRound],
+                    _ListDataUnCheck = ncbiData[lengthEachRound * count : ( lengthEachRound * count ) + lengthEachRound],
                     _StartIndex = startIndex
                 )
             else:
                 updateNcbi = UpdateNcbi(
-                    _ListDataUnCheck = listUncheckData[lengthEachRound * count : lengthUncheckData],
+                    _ListDataUnCheck = ncbiData[lengthEachRound * count : lengthNcbiData],
                     _StartIndex = startIndex
                 )
                 
@@ -256,7 +258,52 @@ class NcbiInfo(GetDataFromFile, Database):
             
         for eachThread in threadArray:
             eachThread.join()
+        
+        # GET OLD OTHER SYMBOL OF GENE ID
+        # SELECT * FROM TestCommand.OTHER_SYMBOL
+        # WHERE TestCommand.OTHER_SYMBOL.GENE_ID = 79147 AND
+        # TestCommand.OTHER_SYMBOL.OTHER_SYMBOL NOT IN ('MDC1C', 'LGMD2I', 'LGMDR9', 'MDDGA5', 'MDDGB5', 'MDDGC5');
+        
+        for ncbiData in listNcbiUpdated:
+            # print( '\n', ncbiData[0], ncbiData[2])
+            if ( ncbiData[2] != None ):
+                GeneID = ncbiData[0]
+                ListOtherSymbol = ( list(map(str, (ncbiData[2][0]).split('; '))) )
+                UpdateAt = datetime.fromtimestamp(ncbiData[3]).strftime('%Y-%m-%d %H:%M:%S')
+                
+                # Update Update_at field on database
+                sqlCommand = """
+                    UPDATE NCBI SET
+                    UPDATE_AT = %s WHERE
+                    GENE_ID = %s
+                """
+                self.CreateTask( conn, sqlCommand, (UpdateAt, GeneID) )
+                
+                Records = [GeneID] + ListOtherSymbol
+                FormatStrings = ', '.join(['%s'] * len(str(ncbiData[2]).split('; ')))
+                
+                # Delete the other symbol if new other symbol list not match with old other symbol field
+                sqlCommand = """
+                    DELETE FROM OTHER_SYMBOL
+                    WHERE OTHER_SYMBOL.GENE_ID = %%s
+                    AND OTHER_SYMBOL.OTHER_SYMBOL NOT IN (%s);
+                """ % FormatStrings
+                
+                self.CreateTask(conn, sqlCommand, Records )
+                
+                # insert new data if other symbol not exist
+                sqlCommand = """
+                    INSERT IGNORE INTO OTHER_SYMBOL ( GENE_ID, OTHER_SYMBOL )
+                    VALUE (%s, %s)
+                """
+                
+                for OtherSymbol in ListOtherSymbol:
+                    print( GeneID, OtherSymbol )
+                    self.CreateTask(conn, sqlCommand, (GeneID, OtherSymbol, ) )
             
+            
+        self.CloseDatabase(conn)
+        
         metaData.ReadMetadata('MapSnpWithNcbi')
         metaData.UpdateMetadata('lastMedoficationTime', time.time())
         metaData.SaveUpdateMetadata()
