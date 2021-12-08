@@ -142,8 +142,7 @@ class Disease(GetDataFromFile, MetaData, Initialize):
             return result[0][0]
         except:
             return 'Not found'
-    
-    
+      
     def CheckGeneWithMap(self, diseaseList, excludeList ):
         
         listGeneDisease = []

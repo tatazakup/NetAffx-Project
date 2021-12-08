@@ -6,7 +6,7 @@ from pathlib import Path
 from mysql.connector import Error
 
 class Database():
-    host = '192.168.1.128'
+    host = 'localhost'
     database = 'DemoDatabase'
     user = 'root'
     password = 'password'
@@ -74,6 +74,7 @@ class Database():
 class FilePath():
 
     pathToDataSet = os.getcwd() + "/Project/Dataset"
+    pathToMetaData = os.getcwd() + "/Project/MetaData"
 
     def __init__(self):
         Path( os.getcwd() + "/Project/Dataset" ).mkdir(parents=True, exist_ok=True)
@@ -98,13 +99,13 @@ class LinkDataAndHeader():
     def __init__(self):
         return
 
-class MetaData():
-    pathToMetaData = os.getcwd() + "/Project/MetaData"
+class MetaData(FilePath):
     jsonData = None
     metadataName = ''
     dataOnMetadata = None
 
     def __init__(self):
+        FilePath.__init__(self)
         return
     
     def ReadMetadata(self, metadataName):
