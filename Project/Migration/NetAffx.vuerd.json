@@ -3,8 +3,8 @@
     "version": "2.2.10",
     "width": 2000,
     "height": 2000,
-    "scrollTop": -518.4000000000004,
-    "scrollLeft": -552.7999999999997,
+    "scrollTop": -925.0444344153229,
+    "scrollLeft": -471,
     "zoomLevel": 1,
     "show": {
       "tableComment": true,
@@ -43,7 +43,7 @@
   "table": {
     "tables": [
       {
-        "name": "SNP_AN",
+        "name": "SNP",
         "comment": "",
         "columns": [
           {
@@ -70,7 +70,7 @@
             "id": "4280b47c-b4d7-42e3-8e9a-d3da697bd75a"
           },
           {
-            "name": "PROBE_ID",
+            "name": "PROBESET_ID",
             "comment": "",
             "dataType": "VARCHAR(25)",
             "default": "",
@@ -85,7 +85,7 @@
               "pk": false,
               "fk": false,
               "pfk": false,
-              "widthName": 67.74267578125,
+              "widthName": 93.025390625,
               "widthComment": 60,
               "widthDataType": 87.71875,
               "widthDefault": 60
@@ -139,7 +139,7 @@
             "id": "f0fda6d9-49d8-4ffd-9b53-81e98b96cdc7"
           },
           {
-            "name": "SOURCE_NAME",
+            "name": "SOURCE_GENESHIP",
             "comment": "",
             "dataType": "VARCHAR(25)",
             "default": "",
@@ -154,7 +154,7 @@
               "pk": false,
               "fk": false,
               "pfk": false,
-              "widthName": 102.4072265625,
+              "widthName": 132.03173828125,
               "widthComment": 60,
               "widthDataType": 87.71875,
               "widthDefault": 60
@@ -164,9 +164,9 @@
         ],
         "ui": {
           "active": false,
-          "left": 34.5008,
-          "top": 687.6664,
-          "zIndex": 6,
+          "left": 1,
+          "top": 675.2218,
+          "zIndex": 174,
           "widthName": 60,
           "widthComment": 60,
           "color": "#03A9F4"
@@ -175,7 +175,7 @@
         "id": "1776c9cc-1f4d-4284-a330-62063de10f65"
       },
       {
-        "name": "SNP_AN_AS",
+        "name": "GENE_SNP",
         "comment": "",
         "columns": [
           {
@@ -250,10 +250,10 @@
         ],
         "ui": {
           "active": false,
-          "left": 598.833,
-          "top": 526.6661,
-          "zIndex": 4,
-          "widthName": 78.5908203125,
+          "left": 698.833,
+          "top": 693.6661,
+          "zIndex": 175,
+          "widthName": 72.8017578125,
           "widthComment": 60,
           "color": "#03A9F4"
         },
@@ -313,9 +313,9 @@
         ],
         "ui": {
           "active": false,
-          "left": 1178.0268,
-          "top": 537.222,
-          "zIndex": 7,
+          "left": 1329.0268,
+          "top": 705.222,
+          "zIndex": 177,
           "widthName": 60,
           "widthComment": 60,
           "color": "#009688"
@@ -399,9 +399,9 @@
         ],
         "ui": {
           "active": false,
-          "left": 553.7857,
-          "top": 1103.2227,
-          "zIndex": 9,
+          "left": 253.7857,
+          "top": 1175.2227,
+          "zIndex": 156,
           "widthName": 60,
           "widthComment": 60,
           "color": "#F44336"
@@ -410,7 +410,7 @@
         "id": "38134a45-8f14-46a7-8ca0-687d0441cb9a"
       },
       {
-        "name": "DISEASE_AS",
+        "name": "GENE_DISEASE",
         "comment": "",
         "columns": [
           {
@@ -485,10 +485,10 @@
         ],
         "ui": {
           "active": false,
-          "left": 1200.6125,
-          "top": 1102.5007,
-          "zIndex": 10,
-          "widthName": 82.92626953125,
+          "left": 933.6125,
+          "top": 1175.5007,
+          "zIndex": 190,
+          "widthName": 102.42626953125,
           "widthComment": 60,
           "color": "#F44336"
         },
@@ -496,7 +496,7 @@
         "id": "c3ffcaa5-5657-4a55-9975-f2ec8847495a"
       },
       {
-        "name": "AS_SOURCE",
+        "name": "GENE_DISEASE_SOURCE",
         "comment": "",
         "columns": [
           {
@@ -506,15 +506,15 @@
             "default": "",
             "option": {
               "autoIncrement": false,
-              "primaryKey": true,
+              "primaryKey": false,
               "unique": false,
               "notNull": true
             },
             "ui": {
               "active": false,
               "pk": false,
-              "fk": false,
-              "pfk": true,
+              "fk": true,
+              "pfk": false,
               "widthName": 100.25537109375,
               "widthComment": 60,
               "widthDataType": 87.71875,
@@ -529,13 +529,13 @@
             "default": "",
             "option": {
               "autoIncrement": false,
-              "primaryKey": true,
+              "primaryKey": false,
               "unique": false,
               "notNull": true
             },
             "ui": {
               "active": false,
-              "pk": true,
+              "pk": false,
               "fk": false,
               "pfk": false,
               "widthName": 123.3544921875,
@@ -547,11 +547,11 @@
           }
         ],
         "ui": {
-          "active": false,
-          "left": 1189.1119,
-          "top": 842.6108,
-          "zIndex": 1,
-          "widthName": 82.18994140625,
+          "active": true,
+          "left": 921.5563,
+          "top": 1428.4996,
+          "zIndex": 209,
+          "widthName": 165.2744140625,
           "widthComment": 60,
           "color": "#F44336"
         },
@@ -559,7 +559,7 @@
         "id": "7e65342b-da6e-47b7-9ff0-aa07a153d7f7"
       },
       {
-        "name": "SNP_AN_DISEASE",
+        "name": "MATCHING_SNP_DISEASE",
         "comment": "",
         "columns": [
           {
@@ -611,10 +611,10 @@
         ],
         "ui": {
           "active": false,
-          "left": 597.6952,
-          "top": 884.3333,
-          "zIndex": 3,
-          "widthName": 117.603515625,
+          "left": 296.6952,
+          "top": 934.3333,
+          "zIndex": 172,
+          "widthName": 167.90869140625,
           "widthComment": 60,
           "color": "#FFC107"
         },
@@ -674,9 +674,9 @@
         ],
         "ui": {
           "active": false,
-          "left": 1190.2868,
-          "top": 262.2773,
-          "zIndex": 8,
+          "left": 1341.2868,
+          "top": 422.2773,
+          "zIndex": 178,
           "widthName": 108.91357421875,
           "widthComment": 60,
           "color": "#009688"
@@ -685,7 +685,7 @@
         "id": "0f8077e1-5108-4b75-aa1f-3b13140f0e67"
       },
       {
-        "name": "SNP_AN_AS_DETAIL",
+        "name": "GENE_DETAIL",
         "comment": "",
         "columns": [
           {
@@ -806,10 +806,10 @@
         ],
         "ui": {
           "active": false,
-          "left": 600.25,
-          "top": 247.75,
-          "zIndex": 5,
-          "widthName": 130.36865234375,
+          "left": 701.25,
+          "top": 363.75,
+          "zIndex": 176,
+          "widthName": 90.61962890625,
           "widthComment": 60,
           "color": "#2196F3"
         },
@@ -892,9 +892,9 @@
         ],
         "ui": {
           "active": false,
-          "left": 596.5557,
-          "top": 1380.4445,
-          "zIndex": 2,
+          "left": 295.5557,
+          "top": 1415.4445,
+          "zIndex": 157,
           "widthName": 62.90576171875,
           "widthComment": 60,
           "color": "#F44336"
@@ -919,8 +919,8 @@
           "columnIds": [
             "4280b47c-b4d7-42e3-8e9a-d3da697bd75a"
           ],
-          "x": 498.6267765625,
-          "y": 816.2914,
+          "x": 494.75048828125,
+          "y": 760.9718,
           "direction": "right"
         },
         "end": {
@@ -928,8 +928,8 @@
           "columnIds": [
             "22c43e62-d5b9-4b6e-89a9-7e72eac06d8b"
           ],
-          "x": 598.833,
-          "y": 591.9161,
+          "x": 698.833,
+          "y": 758.9161,
           "direction": "left"
         },
         "constraintName": "fk_snp_an_to_snp_an_as",
@@ -945,8 +945,8 @@
           "columnIds": [
             "99616c49-266f-4199-93ad-8bd43e4bb395"
           ],
-          "x": 1083.432184375,
-          "y": 1168.4727,
+          "x": 783.432184375,
+          "y": 1240.4727,
           "direction": "right"
         },
         "end": {
@@ -954,8 +954,8 @@
           "columnIds": [
             "a90bd72f-d3e8-4370-8b09-a9283392ecd3"
           ],
-          "x": 1200.6125,
-          "y": 1167.7507,
+          "x": 933.6125,
+          "y": 1240.7507,
           "direction": "left"
         },
         "constraintName": "fk_disease_to_disease_as",
@@ -971,8 +971,8 @@
           "columnIds": [
             "99616c49-266f-4199-93ad-8bd43e4bb395"
           ],
-          "x": 818.6089421875,
-          "y": 1103.2227,
+          "x": 518.6089421875,
+          "y": 1175.2227,
           "direction": "top"
         },
         "end": {
@@ -980,8 +980,8 @@
           "columnIds": [
             "73899ef5-a697-42c8-9e76-3a21c433ade9"
           ],
-          "x": 817.846811328125,
-          "y": 994.3333,
+          "x": 516.846811328125,
+          "y": 1044.3333,
           "direction": "bottom"
         },
         "constraintName": "fk_disease_to_snp_an_disease",
@@ -997,17 +997,17 @@
           "columnIds": [
             "4280b47c-b4d7-42e3-8e9a-d3da697bd75a"
           ],
-          "x": 498.6267765625,
-          "y": 730.5414,
-          "direction": "right"
+          "x": 247.875244140625,
+          "y": 846.7218,
+          "direction": "bottom"
         },
         "end": {
           "tableId": "759964cf-cde5-47a9-a973-a6552ce58131",
           "columnIds": [
             "9c00f992-6fa9-40b3-9397-5b04c27650e7"
           ],
-          "x": 597.6952,
-          "y": 939.3333,
+          "x": 296.6952,
+          "y": 989.3333,
           "direction": "left"
         },
         "constraintName": "fk_snp_an_to_snp_an_disease",
@@ -1023,8 +1023,8 @@
           "columnIds": [
             "364a640b-d08d-413e-9371-71be4b40e851"
           ],
-          "x": 1060.80712109375,
-          "y": 591.9161,
+          "x": 1160.80712109375,
+          "y": 758.9161,
           "direction": "right"
         },
         "end": {
@@ -1032,8 +1032,8 @@
           "columnIds": [
             "2b5bfd82-6ede-49f7-9afe-6e1f87d119f5"
           ],
-          "x": 1178.0268,
-          "y": 592.222,
+          "x": 1329.0268,
+          "y": 760.222,
           "direction": "left"
         },
         "constraintName": "fk_snp_an_as_to_also_know_as",
@@ -1041,7 +1041,7 @@
         "id": "2a71f3ad-a770-4f81-9714-fe0ae8155d69"
       },
       {
-        "identification": true,
+        "identification": false,
         "relationshipType": "OneN",
         "startRelationshipType": "Dash",
         "start": {
@@ -1049,18 +1049,18 @@
           "columnIds": [
             "d708f218-5606-42e8-adca-a1766c59c25d"
           ],
-          "x": 1431.599560546875,
-          "y": 1102.5007,
-          "direction": "top"
+          "x": 1164.599560546875,
+          "y": 1306.0007,
+          "direction": "bottom"
         },
         "end": {
           "tableId": "7e65342b-da6e-47b7-9ff0-aa07a153d7f7",
           "columnIds": [
             "2224b356-26dd-4626-8d55-6fa82b0fe5de"
           ],
-          "x": 1431.64852109375,
-          "y": 952.6108,
-          "direction": "bottom"
+          "x": 1164.09292109375,
+          "y": 1428.4996,
+          "direction": "top"
         },
         "constraintName": "fk_disease_as_to_as_source",
         "visible": true,
@@ -1075,8 +1075,8 @@
           "columnIds": [
             "2b5bfd82-6ede-49f7-9afe-6e1f87d119f5"
           ],
-          "x": 1430.553899609375,
-          "y": 537.222,
+          "x": 1581.553899609375,
+          "y": 705.222,
           "direction": "top"
         },
         "end": {
@@ -1084,8 +1084,8 @@
           "columnIds": [
             "d1943a5f-7d16-4bc8-911b-ea25000bfb93"
           ],
-          "x": 1429.21795234375,
-          "y": 372.2773,
+          "x": 1580.21795234375,
+          "y": 532.2773,
           "direction": "bottom"
         },
         "constraintName": "fk_ncbi_to_other_symbol",
@@ -1102,8 +1102,8 @@
             "364a640b-d08d-413e-9371-71be4b40e851",
             "22c43e62-d5b9-4b6e-89a9-7e72eac06d8b"
           ],
-          "x": 829.820060546875,
-          "y": 526.6661,
+          "x": 929.820060546875,
+          "y": 693.6661,
           "direction": "top"
         },
         "end": {
@@ -1112,8 +1112,8 @@
             "9ec124b1-5ea7-4d6a-93cf-7ed5df5578e5",
             "72d3de80-385c-4607-b089-6478415c2484"
           ],
-          "x": 829.30419921875,
-          "y": 419.25,
+          "x": 930.30419921875,
+          "y": 535.25,
           "direction": "bottom"
         },
         "constraintName": "fk_snp_an_as_to_snp_an_as_detail",
@@ -1129,8 +1129,8 @@
           "columnIds": [
             "99616c49-266f-4199-93ad-8bd43e4bb395"
           ],
-          "x": 818.6089421875,
-          "y": 1233.7227,
+          "x": 518.6089421875,
+          "y": 1305.7227,
           "direction": "bottom"
         },
         "end": {
@@ -1138,8 +1138,8 @@
           "columnIds": [
             "eb5a153b-f45e-422b-b3d1-25bcad3c0ad1"
           ],
-          "x": 818.98294609375,
-          "y": 1380.4445,
+          "x": 517.98294609375,
+          "y": 1415.4445,
           "direction": "top"
         },
         "constraintName": "fk_disease_to_pathway",
