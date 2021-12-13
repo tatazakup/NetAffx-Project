@@ -6,7 +6,8 @@ from pathlib import Path
 from mysql.connector import Error
 
 class Database():
-    host = 'localhost'
+    # host = 'localhost'
+    host = '192.168.1.128'
     database = 'DemoDatabase'
     user = 'root'
     password = 'password'

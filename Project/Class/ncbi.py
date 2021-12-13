@@ -250,7 +250,6 @@ class Ncbi(Database, MetaData, FilePath):
 
         lengthUniqueGeneID = len( listUniqueGeneID )
         lengthEachRound = lengthUniqueGeneID // self.numberOfThread        
-
         threadArray = []
 
         for count in range(self.numberOfThread): # Number of Thread CPU
@@ -317,7 +316,7 @@ class Ncbi(Database, MetaData, FilePath):
             eachThread.join()
 
         for ncbiData in listNcbiUpdated:
-            # print( '\n', ncbiData[0], ncbiData[2])
+
             if ( ncbiData[2] != None ):
                 GeneID = ncbiData[0]
                 ListOtherSymbol = ( list(map(str, (ncbiData[2][0]).split('; '))) )
@@ -350,7 +349,6 @@ class Ncbi(Database, MetaData, FilePath):
                 """
                 
                 for OtherSymbol in ListOtherSymbol:
-                    print( GeneID, OtherSymbol )
                     database.CreateTask(conn, sqlCommand, (GeneID, OtherSymbol, ) )
             
             

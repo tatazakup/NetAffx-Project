@@ -140,23 +140,210 @@ class Disease(MetaData):
         except:
             return 'Not found'
 
+    def FetchGeneID(self, GeneSymbol):
+        database = Database()
+        conn = database.ConnectDatabase()
+        sqlCommand = """
+            SELECT snp_an_as.GENE_ID
+            FROM snp_an_as
+            WHERE snp_an_as.GENE_SYMBOL = %s LIMIT 1;
+        """
+        
+        result = database.CreateTask(conn, sqlCommand, (GeneSymbol, ))
+        if ( result == [] ):
+            sqlCommand = """
+                SELECT other_symbol.GENE_ID
+                FROM other_symbol
+                WHERE other_symbol.OTHER_SYMBOL = %s LIMIT 1;
+            """
+            result = database.CreateTask(conn, sqlCommand, (GeneSymbol, ))
+
+        database.CloseDatabase(conn)
+        try:
+            return result[0][0]
+        except:
+            return 'Not found'
+
+    def CheckGeneWithMap(self, diseaseList, keggList ):
+        
+        listGeneDisease = []
+        UniqueList = [] # uses for check unique geneID
+        ExcludeList = [eachGene['GENE_SYMBOL'] for eachGene in keggList] # List of gene, Don't have to find gene id
+        
+        for diseaseGene in diseaseList[:]:
+            Sources = ""
+            GeneSymbol = diseaseGene['GENE_SYMBOL'].strip()
+            SourceWebsite = diseaseGene['SOURCE_WEBSITE']
+            diseaseID = diseaseGene['DISEASE_ID']
+
+            IsFoundUniqueList = GeneSymbol in UniqueList
+            IsFoundExcludeList = GeneSymbol in ExcludeList
+            if IsFoundUniqueList:                
+                print( 'condition 1 |', GeneSymbol, SourceWebsite)
+                continue
+
+            # Condition for What Gene not have gene id on website and must have to find gene id on database ( Huge )
+            elif not(IsFoundUniqueList) and not(IsFoundExcludeList):
+                print( 'condition 2 |', GeneSymbol, SourceWebsite)
+                
+                GeneID = self.FetchGeneID(GeneSymbol)
+                
+                listGeneDisease.append({
+                    'GENE_ID' : GeneID,
+                    'GENE_SYMBOL' : GeneSymbol,
+                    'SOURCE_WEBSITE' : SourceWebsite
+                })
+                
+                UniqueList.append(GeneSymbol)
+
+            # Condition for what gene have gene id on website and don't have to find gene id on database ( Kegg )
+            elif not(IsFoundUniqueList) and IsFoundExcludeList:
+                print( 'condition 3 |', GeneSymbol, SourceWebsite)
+                
+                Matches = (detailDisease for detailDisease in (diseaseList) if detailDisease['GENE_SYMBOL'] == GeneSymbol)
+                for Match in Matches: Sources = Sources + Match['SOURCE_WEBSITE'] + "; "
+                Sources = Sources[:-2]
+                
+                listGeneDisease.append({
+                    'GENE_ID' : diseaseGene['GENE_ID'],
+                    'GENE_SYMBOL' : GeneSymbol,
+                    'SOURCE_WEBSITE' : Sources
+                })
+                
+                UniqueList.append(GeneSymbol)
+            
+        print('\n')
+        
+        return listGeneDisease
+
     def CreateDiseaseDataset(self):
         metaData = MetaData()
         diseaseInfo = metaData.ReadMetadata('Disease')
 
-        for eachDisease in diseaseInfo['technical']['diseases']:
+        for eachDisease in diseaseInfo['technical']['diseases']:                       
             diseaseID = self.CheckDiseaseID(eachDisease['Abbreviation'])
+            
+            print('Disease ID :', diseaseID)
             
             keggInfo = KeggInfo(eachDisease['kege'])
             hugeDataset = HugeInfo(eachDisease['huge'])
 
-            listGeneKegg = keggInfo.KeggDataset(diseaseID)
-            listGeneHuge = hugeDataset.HugeDataset(diseaseID)
+            listGeneFromKegg = keggInfo.KeggDataset(diseaseID)
+            listGeneFromHuge = hugeDataset.HugeDataset(diseaseID)
 
-            listGeneEachDisease = listGeneKegg + listGeneHuge
+            listGeneEachDisease = listGeneFromKegg + listGeneFromHuge
+            listGene = self.CheckGeneWithMap(listGeneEachDisease, listGeneFromKegg)
+
+            database = Database()
+            conn = database.ConnectDatabase()
+
+            for row in listGene:
+                geneID = str(row['GENE_ID'])
+                geneSymbol = str(row['GENE_SYMBOL']) 
+                sources = row['SOURCE_WEBSITE'].split('; ')
+
+                if ( str(row['GENE_ID']) == 'Not found' ):
+                    sqlCommand = """
+                        INSERT IGNORE INTO disease_as ( GENE_SYMBOL, DISEASE_ID ) 
+                        VALUES ( %s, %s ) 
+                    """
+
+                    database.CreateTask(conn, sqlCommand, (geneSymbol, diseaseID))
+
+                else:                    
+                    sqlCommand = """
+                        INSERT IGNORE INTO disease_as ( GENE_SYMBOL, DISEASE_ID, GENE_ID ) 
+                        VALUES ( %s, %s, %s )
+                    """
+
+                    database.CreateTask(conn, sqlCommand, (geneSymbol, diseaseID, geneID))
+                
+                for source in sources:                
+                    sqlCommand = """
+                        INSERT IGNORE INTO as_source ( GENE_SYMBOL, SOURCE_WEBSITE ) 
+                        VALUES ( %s, %s ) 
+                    """
+                    
+                    database.CreateTask(conn, sqlCommand, (geneSymbol, source))
             
+            database.CloseDatabase(conn)
+
+            if ( str(diseaseID) == "2" ):
+                return
+        return
+
+    def UpdateDiseaseDataset(self):
+        metaData = MetaData()
+        diseaseInfo = metaData.ReadMetadata('Disease')
+        
+        for eachDisease in diseaseInfo['technical']['diseases']:
+            diseaseID = self.CheckDiseaseID(eachDisease['Abbreviation'])
+
+            keggInfo = KeggInfo(eachDisease['kege'])
+            hugeDataset = HugeInfo(eachDisease['huge'])
+
+            listGeneFromKegg = keggInfo.KeggDataset(diseaseID)
+            listGeneFromHuge = hugeDataset.HugeDataset(diseaseID)
+
+            listGeneEachDisease = listGeneFromKegg + listGeneFromHuge
+
+            listGene = self.CheckGeneWithMap(listGeneEachDisease, listGeneFromKegg)
+            listGeneSymbolOnDisease = [eachGene['GENE_SYMBOL'] for eachGene in listGene]
+
+            database = Database()
+            conn = database.ConnectDatabase()
+
+            FormatStrings = ', '.join(['%s'] * len(listGeneSymbolOnDisease))
+
+            sqlCommand = '''
+                DELETE FROM disease_as
+                WHERE disease_as.DISEASE_ID = %%s
+                AND disease_as.GENE_SYMBOL NOT IN (%s)
+            ''' % FormatStrings   
+
+            Records = [diseaseID] + listGeneSymbolOnDisease            
+
+            database.CreateTask(conn, sqlCommand, Records)
+
+            for row in listGene:
+                geneID = str(row['GENE_ID'])
+                geneSymbol = str(row['GENE_SYMBOL']) 
+                sources = row['SOURCE_WEBSITE'].split('; ')
+
+                if ( str(row['GENE_ID']) == 'Not found' ):
+                    sqlCommand = """
+                        INSERT IGNORE INTO disease_as ( GENE_SYMBOL, DISEASE_ID ) 
+                        VALUES ( %s, %s ) 
+                    """
+
+                    database.CreateTask(conn, sqlCommand, (geneSymbol, diseaseID))
+
+                else:                    
+                    sqlCommand = """
+                        INSERT IGNORE INTO disease_as ( GENE_SYMBOL, DISEASE_ID, GENE_ID ) 
+                        VALUES ( %s, %s, %s )
+                    """
+
+                    database.CreateTask(conn, sqlCommand, (geneSymbol, diseaseID, geneID))
+
+                for source in sources:                
+                    sqlCommand = """
+                        INSERT IGNORE INTO as_source ( GENE_SYMBOL, SOURCE_WEBSITE ) 
+                        VALUES ( %s, %s ) 
+                    """
+                    
+                    database.CreateTask(conn, sqlCommand, (geneSymbol, source))
+
+            database.CloseDatabase(conn)
+
+            if ( str(diseaseID) == "1" ):
+                return
         return
 
 if __name__ == "__main__":
     disease = Disease()
-    disease.CreateDiseaseDataset()
+    disease.UpdateDiseaseDataset()
+
+    # testList = ['HLA-DRB1', 'HLA-DQB1', 'HLA-DQA1', 'INS', 'CTLA-4', 'PTPN22', 'IL-2RA', 'PTPN2', 'ERBB3', 'IL2', 'IFIH1', 'CLEC16A', 'BACH2', 'PRKCQ', 'CTSH', 'C1QTNF6', 'SH2B3', 'C12orf30', 'CD226', 'ITPR3', 'CYP27B1', 'ACE']
+    # testString = 'HLA-DQB1'
+    # print( testString in testList )
