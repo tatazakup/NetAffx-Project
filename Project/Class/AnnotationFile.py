@@ -69,7 +69,7 @@ class Manage_AnnotationFile:
         List_SNP = []
         number = 0
         for dataset in self.list_DataSet:
-            for row_index in range(2): #dataset.shape[0]
+            for row_index in range(10): #dataset.shape[0]
                 Geneship = self.list_Geneship[number]
                 SNP = self.Manage_SNP(dataset, row_index, Geneship)
                 List_AssoGene = self.Split_AssociatedGene(dataset, row_index)
@@ -104,21 +104,21 @@ class Manage_AnnotationFile:
         conn = database.ConnectDatabase()
         for SNP in list:
             sql = """
-            INSERT INTO snp_an VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO snp VALUES (%s, %s, %s, %s, %s)
             """
             val = (SNP.RS_ID, SNP.ProbeSet_ID, SNP.Chromosome, SNP.Position, SNP.Soure_Geneship)
             database.CreateTask(conn, sql, val)
 
             for gene in SNP.Associated_Gene:
                 sql2 = """
-                INSERT INTO snp_an_as VALUES (%s, %s, %s)
+                INSERT INTO gene_snp VALUES (%s, %s, %s)
                 """
                 val2 = (gene.Gene_ID, SNP.RS_ID, gene.GeneSymbol)
                 database.CreateTask(conn, sql2, val2)
                 print("sql2success")
 
                 sql3 = """
-                INSERT INTO snp_an_as_detail (GENE_ID, RS_ID, DISTANCE, RELATIONSHIP) VALUES (%s, %s, %s, %s)
+                INSERT INTO gene_detail (GENE_ID, RS_ID, DISTANCE, RELATIONSHIP) VALUES (%s, %s, %s, %s)
                 """
                 val3 = (gene.Gene_ID, SNP.RS_ID, gene.Distance, gene.Relationship)
                 database.CreateTask(conn, sql3, val3)
@@ -130,15 +130,15 @@ class Manage_AnnotationFile:
         database = Database()
         conn = database.ConnectDatabase()
         sql3 =   """
-                DELETE FROM snp_an_as_detail
+                DELETE FROM gene_detail
                 """
         database.CreateTask(conn, sql3, ())
         sql2 =   """
-                DELETE FROM snp_an_as
+                DELETE FROM gene_snp
                 """
         database.CreateTask(conn, sql2, ())
         sql =   """
-                DELETE FROM snp_an
+                DELETE FROM snp
                 """
         database.CreateTask(conn, sql, ())
         database.CloseDatabase(conn)
