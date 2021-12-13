@@ -55,7 +55,7 @@ class Database():
         for disease in self.listDisease:
             
             sqlCommand = """
-                INSERT INTO DISEASE ( DISEASE_NAME, DISEASE_ABBREVIATION ) 
+                INSERT INTO disease ( DISEASE_NAME, DISEASE_ABBREVIATION ) 
                 VALUES ( %s, %s ) 
             """
             

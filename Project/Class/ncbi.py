@@ -243,7 +243,7 @@ class Ncbi(Database, MetaData, FilePath):
 
         conn = database.ConnectDatabase()
         mysqlCommand = """
-            SELECT DISTINCT GENE_ID FROM snp_an_as;
+            SELECT DISTINCT GENE_ID FROM gene_snp;
         """
         listUniqueGeneID = database.CreateTask(conn, mysqlCommand, ())
         database.CloseDatabase(conn)

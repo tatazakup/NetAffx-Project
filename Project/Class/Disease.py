@@ -117,7 +117,7 @@ class Disease(MetaData):
         database = Database()
         conn = database.ConnectDatabase()
         mysqlCommand = """
-            SELECT DISTINCT GENE_ID FROM snp_an_as;
+            SELECT DISTINCT GENE_ID FROM gene_snp;
         """
         self.listNcbiData = database.CreateTask(conn, mysqlCommand, ())
         database.CloseDatabase(conn)
@@ -144,9 +144,9 @@ class Disease(MetaData):
         database = Database()
         conn = database.ConnectDatabase()
         sqlCommand = """
-            SELECT snp_an_as.GENE_ID
-            FROM snp_an_as
-            WHERE snp_an_as.GENE_SYMBOL = %s LIMIT 1;
+            SELECT gene_snp.GENE_ID
+            FROM gene_snp
+            WHERE gene_snp.GENE_SYMBOL = %s LIMIT 1;
         """
         
         result = database.CreateTask(conn, sqlCommand, (GeneSymbol, ))
@@ -244,7 +244,7 @@ class Disease(MetaData):
 
                 if ( str(row['GENE_ID']) == 'Not found' ):
                     sqlCommand = """
-                        INSERT IGNORE INTO disease_as ( GENE_SYMBOL, DISEASE_ID ) 
+                        INSERT IGNORE INTO gene_disease ( GENE_SYMBOL, DISEASE_ID ) 
                         VALUES ( %s, %s ) 
                     """
 
@@ -252,7 +252,7 @@ class Disease(MetaData):
 
                 else:                    
                     sqlCommand = """
-                        INSERT IGNORE INTO disease_as ( GENE_SYMBOL, DISEASE_ID, GENE_ID ) 
+                        INSERT IGNORE INTO gene_disease ( GENE_SYMBOL, DISEASE_ID, GENE_ID ) 
                         VALUES ( %s, %s, %s )
                     """
 
@@ -260,7 +260,7 @@ class Disease(MetaData):
                 
                 for source in sources:                
                     sqlCommand = """
-                        INSERT IGNORE INTO as_source ( GENE_SYMBOL, SOURCE_WEBSITE ) 
+                        INSERT IGNORE INTO gene_disease_source ( GENE_SYMBOL, SOURCE_WEBSITE ) 
                         VALUES ( %s, %s ) 
                     """
                     
@@ -296,9 +296,9 @@ class Disease(MetaData):
             FormatStrings = ', '.join(['%s'] * len(listGeneSymbolOnDisease))
 
             sqlCommand = '''
-                DELETE FROM disease_as
-                WHERE disease_as.DISEASE_ID = %%s
-                AND disease_as.GENE_SYMBOL NOT IN (%s)
+                DELETE FROM gene_disease
+                WHERE gene_disease.DISEASE_ID = %%s
+                AND gene_disease.GENE_SYMBOL NOT IN (%s)
             ''' % FormatStrings   
 
             Records = [diseaseID] + listGeneSymbolOnDisease            
@@ -312,7 +312,7 @@ class Disease(MetaData):
 
                 if ( str(row['GENE_ID']) == 'Not found' ):
                     sqlCommand = """
-                        INSERT IGNORE INTO disease_as ( GENE_SYMBOL, DISEASE_ID ) 
+                        INSERT IGNORE INTO gene_disease ( GENE_SYMBOL, DISEASE_ID ) 
                         VALUES ( %s, %s ) 
                     """
 
@@ -320,7 +320,7 @@ class Disease(MetaData):
 
                 else:                    
                     sqlCommand = """
-                        INSERT IGNORE INTO disease_as ( GENE_SYMBOL, DISEASE_ID, GENE_ID ) 
+                        INSERT IGNORE INTO gene_disease ( GENE_SYMBOL, DISEASE_ID, GENE_ID ) 
                         VALUES ( %s, %s, %s )
                     """
 
@@ -328,7 +328,7 @@ class Disease(MetaData):
 
                 for source in sources:                
                     sqlCommand = """
-                        INSERT IGNORE INTO as_source ( GENE_SYMBOL, SOURCE_WEBSITE ) 
+                        INSERT IGNORE INTO gene_disease_source ( GENE_SYMBOL, SOURCE_WEBSITE ) 
                         VALUES ( %s, %s ) 
                     """
                     
