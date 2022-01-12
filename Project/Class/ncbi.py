@@ -25,7 +25,7 @@ class CreateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
         self.listGenesID = ListGenesID
         self.indexStart = IndexStart
         self.indexStop = IndexStop
-        self.pathGeneWithMap = self.GetPathToNCBI() + '/gene' + str(IndexStart) + "_" + str(IndexStop) + ".csv"
+        self.pathGeneWithMap = self.GetPathToNCBI() + '/gene' + str(IndexStart + 1) + "_" + str(IndexStop + 1) + ".csv"
         return
 
     def CreateFile(self):
@@ -78,10 +78,12 @@ class CreateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
     def run(self):
         self.CreateFile() # set initialization
 
-        # for _Index in range(self.indexStart, self.indexStop + 1):
-        for _Index in range(self.indexStart, self.indexStart + 5):
+        for _Index in range(self.indexStart, self.indexStop + 1):
+        # for _Index in range(self.indexStart, self.indexStart + 5):
 
             geneID = self.FetchGeneID(_Index)
+
+            # print( '_Index :', _Index, 'GeneID :', geneID )
 
             response = self.SendRequestToNcbi(geneID)
 
@@ -248,7 +250,7 @@ class Ncbi(Database, MetaData, FilePath):
         listUniqueGeneID = database.CreateTask(conn, mysqlCommand, ())
         database.CloseDatabase(conn)
 
-        lengthUniqueGeneID = len( listUniqueGeneID )
+        lengthUniqueGeneID = len( listUniqueGeneID ) - 1
         lengthEachRound = lengthUniqueGeneID // self.numberOfThread        
         threadArray = []
 
@@ -257,7 +259,7 @@ class Ncbi(Database, MetaData, FilePath):
                 eachThread = CreateNcbi(
                     ListGenesID = listUniqueGeneID,
                     IndexStart = lengthEachRound * count,
-                    IndexStop = ( lengthEachRound * count ) + lengthEachRound
+                    IndexStop = ( ( lengthEachRound * count ) + lengthEachRound ) - 1
                 )
             else:
                 eachThread = CreateNcbi(
@@ -358,4 +360,4 @@ class Ncbi(Database, MetaData, FilePath):
 
 if __name__ == "__main__":
     ncbi = Ncbi(5)
-    ncbi.UpdateNcbiInformation()
+    ncbi.CreateNcbiInformation()
