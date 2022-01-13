@@ -12,7 +12,7 @@ class Search(Database):
         # 3 Chomosome#2
         # \/
         # 23 Chomosome#23
-        self.Chromosome = [0]
+        self.Chromosome = []
 
         # 0 equal
         # 1 less than
@@ -52,9 +52,26 @@ class Search(Database):
 
         return
 
-    def ImportData(self, newData):
-        
+    def Add_RSID_PROBE_SET(self, newData):
+        if 'rs' in str(newData): (self.RS_ID).append(str(newData))
+        elif 'SNP' in str(newData): (self.ProbeSet_ID).append(str(newData))
+
+        print(
+            'RS_ID :', self.RS_ID,
+            'ProbeSet_ID :', self.ProbeSet_ID
+        )
         return
+
+    def ImportData(self, newData):
+        print()
+        for Each_data in newData:
+            self.Add_RSID_PROBE_SET(Each_data)
+        return
+
+    def ChangeChromosome(self, newData):
+        return
+
+
 
     def CreateFormatStrings_RSID_ProbeSetID(self):
         FormatStrings_RSID_ProbeSetID = ''
@@ -67,6 +84,9 @@ class Search(Database):
         
         elif ( len(self.RS_ID) == 0 ) and ( len(self.ProbeSet_ID) == 1 ):
             FormatStrings_RSID_ProbeSetID = "snp.PROBESET_ID = '" + str(self.ProbeSet_ID[0]) + "'"
+        
+        elif ( len(self.RS_ID) == 1 ) and ( len(self.ProbeSet_ID) == 1 ):
+            FormatStrings_RSID_ProbeSetID = "snp.PROBESET_ID = '" + str(self.ProbeSet_ID[0]) + "' and " + "snp.RS_ID = '" + str(self.RS_ID[0]) + "'"
 
         elif ( len(self.RS_ID) != 0 ) and ( len(self.ProbeSet_ID) == 0 ):
             listRS_ID = ", ".join([("'" + str(Each_RS_ID) + "'") for Each_RS_ID in self.RS_ID])
@@ -81,6 +101,7 @@ class Search(Database):
             listProbeSet_ID = ", ".join([("'" + str(Each_ProbeSet_ID) + "'") for Each_ProbeSet_ID in self.ProbeSet_ID])
 
             FormatStrings_RSID_ProbeSetID = '( snp.RS_ID IN (' + listRS_ID + ') OR snp.PROBESET_ID IN (' + listProbeSet_ID + ') )'
+
         return FormatStrings_RSID_ProbeSetID
 
     def CreateFormatStrings_GeneID(self):
@@ -226,7 +247,7 @@ class Search(Database):
             and FormatStrings_Relationship == '' and FormatStrings_Disease == '' and FormatStrings_GeneShip == '' 
             and FormatStrings_Source_Website == '' ): 
             IsUseWhere = ''
-        else: 
+        else:
             IsUseWhere = 'WHERE'
 
         mysqlCommand = """
@@ -280,7 +301,7 @@ class Search(Database):
             FormatStrings_Source_Website
         )
 
-        if ( FormatStrings_RSID_ProbeSetID == ''):
+        if ( FormatStrings_RSID_ProbeSetID == '' and IsUseWhere != ''):
             mysqlCommand = mysqlCommand.replace('and', '', 1)
 
         print('mysqlCommand :', mysqlCommand)
@@ -300,7 +321,7 @@ class Search(Database):
                 other_symbol = database.CreateTask(conn, mysqlCommand, (result[8], ))
 
                 print(
-                    '               Index :', Index, '\n'
+                    '               INDEX :', Index, '\n'
                     '                RSID :', result[0], '\n'
                     '         PROBESET_ID :', result[1], '\n'
                     '          CHROMOSOME :', result[2], '\n'
@@ -311,9 +332,9 @@ class Search(Database):
                     '         GENE_SYMBOL :', result[7], '\n'
                     '             GENE_ID :', result[8], '\n'
                     '        OTHER_SYMBOL :', ', '.join([str(elem)[2:-3] for elem in other_symbol]), '\n'
-                    '        Disease_NAME :', result[9], '\n'
+                    '        DISEASE_NAME :', result[9], '\n'
                     'DISEASE_ABBREVIATION :', result[10], '\n'
-                    '             MatchBy :', result[11], '\n'
+                    '            MATCH_BY :', result[11], '\n'
                 )
 
                 Index = Index + 1

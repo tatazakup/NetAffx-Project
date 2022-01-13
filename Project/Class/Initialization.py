@@ -8,7 +8,7 @@ from mysql.connector import Error
 class Database():
     # host = 'localhost'
     host = '192.168.1.128'
-    database = 'DemoDatabase'
+    database = 'demo_automap3'
     user = 'root'
     password = 'password'
 
@@ -147,7 +147,7 @@ if __name__ == "__main__":
     database = Database()
     conn = database.ConnectDatabase()
     mysqlCommand = """
-        SELECT * FROM snp_an WHERE RS_ID = %s
+        SELECT * FROM snp WHERE RS_ID = %s
     """
     result = database.CreateTask(conn, mysqlCommand, ('rs10000012', ))
     print('result :', result)

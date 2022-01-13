@@ -14,9 +14,9 @@ Class detail
 class Initialize():
     
     host = 'localhost'
-    database = 'DemoDatabase'
+    database = 'demo_automap3'
     user = 'root'
-    password = 'tata_tata@23107'
+    password = 'password'
     
     listDisease = [
         ("Type 1 Diabete", "T1D"),

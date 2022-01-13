@@ -3,12 +3,13 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.uic import loadUi
+from Search import Search
 
 
 class ChromosomeFilter(QDialog):
     def __init__(self):
         super(ChromosomeFilter, self).__init__()
-        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\chromosomefilter.ui",self)
+        loadUi("D:\\NetAffx Project\\NetAffx-Project\\Project\\ui\\chromosomefilter.ui",self)
         self.ch_all.stateChanged.connect(self.clickboxall)
         self.Listcheckbox = [self.ch_all, self.ch_1, self.ch_2, self.ch_3, self.ch_4, self.ch_5, self.ch_6, self.ch_7, self.ch_8, self.ch_9, self.ch_10, self.ch_11, self.ch_12, self.ch_13
         , self.ch_14, self.ch_15, self.ch_16, self.ch_17, self.ch_18, self.ch_19, self.ch_20, self.ch_21, self.ch_22, self.ch_23]
@@ -33,7 +34,7 @@ class ChromosomeFilter(QDialog):
 class PositionFilter(QDialog):
     def __init__(self):
         super(PositionFilter, self).__init__()
-        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\PositionFilter.ui",self)
+        loadUi("D:\\NetAffx Project\\NetAffx-Project\\Project\\ui\\PositionFilter.ui",self)
         self.display = []
         #self.comboBox.currentTextChanged.connect(self.combobox_changed)
         self.Add_btn_layout = QHBoxLayout()
@@ -95,7 +96,7 @@ class PositionFilter(QDialog):
 class DistanceFilter(QDialog):
     def __init__(self):
         super(DistanceFilter, self).__init__()
-        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\DistanceFilter.ui",self)
+        loadUi("D:\\NetAffx Project\\NetAffx-Project\\Project\\ui\\DistanceFilter.ui",self)
         self.display = []
         self.Add_btn_layout = QHBoxLayout()
         self.Add_btn_layout.addWidget(self.Add_btn)
@@ -151,7 +152,7 @@ class DistanceFilter(QDialog):
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow,self).__init__()
-        loadUi("D:\SNP_Project\\NetAffx-Project\Project\\ui\\maingui.ui",self)
+        loadUi("D:\\NetAffx Project\\NetAffx-Project\\Project\\ui\\maingui.ui",self)
         self.browse.clicked.connect(self.browsefiles)
         self.search.clicked.connect(self.searchsnp)
         self.toolchromosome.clicked.connect(self.filterchromosome)
@@ -161,7 +162,7 @@ class MainWindow(QMainWindow):
         
 
     def browsefiles(self):
-        fname=QFileDialog.getOpenFileName(self, 'Open file', 'D:\SNP_Project\\NetAffx-Project')
+        fname=QFileDialog.getOpenFileName(self, 'Open file', 'D:\\NetAffx Project\\NetAffx-Project')
         self.filename.setText(fname[0])
         self.filecsvname = fname[0]
     
@@ -190,7 +191,6 @@ class MainWindow(QMainWindow):
         filterPos = DistanceFilter()
         filterPos.exec_()
         
-        
     def searchsnp(self):
         print("textSNP :", self.inputSNP_display.toPlainText())
         print("csvSNPFile :", self.filename.text())
@@ -200,6 +200,9 @@ class MainWindow(QMainWindow):
         print("GeneID :", self.GeneID_display.toPlainText())
         print("GeneSymbol :", self.genesym_display.toPlainText())
         print("Distance :", self.dist_display.toPlainText())
+
+        SearchFunction = Search()
+        SearchFunction.Add_RSID_PROBE_SET(self.inputSNP_display.toPlainText())
     
 
 app=QApplication(sys.argv)
