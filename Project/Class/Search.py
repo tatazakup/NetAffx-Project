@@ -2,7 +2,7 @@ from Initialization import Database
 
 class Search(Database):
     def __init__(self):
-        self.RS_ID = ['rs9380593']
+        self.RS_ID = []
         self.ProbeSet_ID = []
         self.GeneID = []
         self.GeneSymbol = []
@@ -18,7 +18,7 @@ class Search(Database):
         # 1 less than
         # 2 more than
         # 3 between
-        self.Position = [ [3, 1000, 100000000] ]
+        self.Position = []
 
         # 0 All 
         # 1 Nsp
@@ -48,27 +48,54 @@ class Search(Database):
         # 1 Huge
         # 2 Kegg
         # 3 Pathway
-        self.source_website = 3
+        self.source_website = 0
 
+        return
+
+    def ImportData(self, newData):
+        for Each_data in newData:
+            self.Add_RSID_PROBE_SET(Each_data)
         return
 
     def Add_RSID_PROBE_SET(self, newData):
         if 'rs' in str(newData): (self.RS_ID).append(str(newData))
         elif 'SNP' in str(newData): (self.ProbeSet_ID).append(str(newData))
-
-        print(
-            'RS_ID :', self.RS_ID,
-            'ProbeSet_ID :', self.ProbeSet_ID
-        )
         return
 
-    def ImportData(self, newData):
-        print()
-        for Each_data in newData:
-            self.Add_RSID_PROBE_SET(Each_data)
+    def Add_GeneID(self, newData):
+        self.GeneID = newData
+        return
+    
+    def Add_GeneSymbol(self, newData):
+        self.GeneSymbol = newData
         return
 
-    def ChangeChromosome(self, newData):
+    def Add_Chromosome(self, newData):
+        self.Chromosome = newData
+        return
+
+    def Add_Position(self, newData):
+        self.Position = newData
+        return
+
+    def Add_Geneship(self, newData):
+        self.Geneship = newData
+        return
+
+    def Add_Distance(self, newData):
+        self.Distance = newData
+        return
+
+    def Add_Relationship(self, newData):
+        self.Relationship = newData
+        return
+
+    def Add_Disease(self, newData):
+        self.Disease = newData
+        return
+
+    def Add_source_website(self, newData):
+        self.source_website = newData
         return
 
 
@@ -152,15 +179,23 @@ class Search(Database):
     def CreateFormatStrings_Position(self):
         FormatStrings_Position = ''
 
-        for condition in self.Position:
-            if (condition[0] == 0):
-                FormatStrings_Position = FormatStrings_Position + 'and snp.POSITION = ' + str(condition[1]) + ' '
-            elif (condition[0] == 1):
-                FormatStrings_Position = FormatStrings_Position + 'and snp.POSITION > ' + str(condition[1]) + ' '
-            elif (condition[0] == 2):
-                FormatStrings_Position = FormatStrings_Position + 'and snp.POSITION < ' + str(condition[1]) + ' '
-            elif (condition[0] == 3):
-                FormatStrings_Position = FormatStrings_Position + 'and snp.POSITION between ' + str(condition[1]) + ' and ' + str(condition[2]) + ' '
+        if ( len(self.Position) > 0):
+            index = 0
+            FormatStrings_Position = 'and '
+
+            for condition in self.Position:
+                if (condition[0] == 0):
+                    FormatStrings_Position = FormatStrings_Position + 'snp.POSITION = ' + str(condition[1]) + ' '
+                elif (condition[0] == 1):
+                    FormatStrings_Position = FormatStrings_Position + 'snp.POSITION > ' + str(condition[1]) + ' '
+                elif (condition[0] == 2):
+                    FormatStrings_Position = FormatStrings_Position + 'snp.POSITION < ' + str(condition[1]) + ' '
+                elif (condition[0] == 3):
+                    FormatStrings_Position = FormatStrings_Position + 'snp.POSITION between ' + str(condition[1]) + ' and ' + str(condition[2]) + ' '
+
+                if index != (len(self.Position) - 1 ):
+                   FormatStrings_Position = FormatStrings_Position + " OR " 
+                index = index + 1
 
         return FormatStrings_Position
 
@@ -250,6 +285,8 @@ class Search(Database):
         else:
             IsUseWhere = 'WHERE'
 
+        print( 'FormatStrings_RSID_ProbeSetID :', len(FormatStrings_RSID_ProbeSetID))
+
         mysqlCommand = """
             SELECT
                 snp.RS_ID,
@@ -301,7 +338,7 @@ class Search(Database):
             FormatStrings_Source_Website
         )
 
-        if ( FormatStrings_RSID_ProbeSetID == '' and IsUseWhere != ''):
+        if ( len(FormatStrings_RSID_ProbeSetID) == 0):
             mysqlCommand = mysqlCommand.replace('and', '', 1)
 
         print('mysqlCommand :', mysqlCommand)
