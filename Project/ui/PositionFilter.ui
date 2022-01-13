@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PositionFilter</class>
+ <widget class="QDialog" name="PositionFilter">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>502</width>
+    <height>300</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>PositionFilter</string>
+  </property>
+  <widget class="QPushButton" name="AddNewButton">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>10</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Add New</string>
+   </property>
+  </widget>
+  <widget class="QDialogButtonBox" name="buttonBox">
+   <property name="geometry">
+    <rect>
+     <x>340</x>
+     <y>270</y>
+     <width>156</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="standardButtons">
+    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
