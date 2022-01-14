@@ -9,7 +9,7 @@ from Search import Search
 class ChromosomeFilter(QDialog):
     def __init__(self):
         super(ChromosomeFilter, self).__init__()
-        loadUi("D:\\NetAffx Project\\NetAffx-Project\\Project\\ui\\chromosomefilter.ui",self)
+        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\chromosomefilter.ui",self)
         self.ch_all.stateChanged.connect(self.clickboxall)
         self.Listcheckbox = [self.ch_all, self.ch_1, self.ch_2, self.ch_3, self.ch_4, self.ch_5, self.ch_6, self.ch_7, self.ch_8, self.ch_9, self.ch_10, self.ch_11, self.ch_12, self.ch_13
         , self.ch_14, self.ch_15, self.ch_16, self.ch_17, self.ch_18, self.ch_19, self.ch_20, self.ch_21, self.ch_22, self.ch_23]
@@ -34,7 +34,7 @@ class ChromosomeFilter(QDialog):
 class PositionFilter(QDialog):
     def __init__(self):
         super(PositionFilter, self).__init__()
-        loadUi("D:\\NetAffx Project\\NetAffx-Project\\Project\\ui\\PositionFilter.ui",self)
+        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\PositionFilter.ui",self)
         self.display = []
         #self.comboBox.currentTextChanged.connect(self.combobox_changed)
         self.Add_btn_layout = QHBoxLayout()
@@ -106,7 +106,7 @@ class PositionFilter(QDialog):
 class DistanceFilter(QDialog):
     def __init__(self):
         super(DistanceFilter, self).__init__()
-        loadUi("D:\\NetAffx Project\\NetAffx-Project\\Project\\ui\\DistanceFilter.ui",self)
+        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\DistanceFilter.ui",self)
         self.display = []
         self.Add_btn_layout = QHBoxLayout()
         self.Add_btn_layout.addWidget(self.Add_btn)
@@ -168,17 +168,72 @@ class DistanceFilter(QDialog):
         self.comboBox.setDisabled(True)
         self.confirm.setDisabled(True)
         self.display.append(condi)
+
+class RelationshipFilter(QDialog):
+    def __init__(self):
+        super(RelationshipFilter, self).__init__()
+        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\RelationshipFilter.ui",self)
+        self.checkBox_all.stateChanged.connect(self.clickboxall)
+        self.Listcheckbox = [self.checkBox_all, self.checkBox_CDS, self.checkBox_UTR3, self.checkBox_UTR5, self.checkBox_downstream, self.checkBox_exon, self.checkBox_intron
+                            , self.checkBox_missense, self.checkBox_nonsense, self.checkBox_spicesite, self.checkBox_synon, self.checkBox_upstream]
+    
+        self.buttonBox.accepted.connect(self.displayFilter)
+        self.display = []
+
+    def clickboxall(self, state):
+        if state == QtCore.Qt.Checked:
+            print('All Checked')
+            for i in self.Listcheckbox:
+                i.setChecked(True)
+        else:
+            print('All Unchecked')
+            for i in self.Listcheckbox:
+                i.setChecked(False)
+
+    def displayFilter(self):
+        for i in range(len(self.Listcheckbox)):
+            if self.Listcheckbox[i].isChecked():
+                relationship_name = self.Listcheckbox[i].objectName()[9:]
+                self.display.append(relationship_name)
+    
+class DiseaseFilter(QDialog):
+    def __init__(self):
+        super(DiseaseFilter, self).__init__()
+        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\DiseaseFilter.ui",self)
+        self.All.stateChanged.connect(self.clickboxall)
+        self.Listcheckbox = [self.All, self.BD, self.CAD, self.CD, self.HT, self.RA, self.T1D, self.T2D]
+    
+        self.buttonBox.accepted.connect(self.displayFilter)
+        self.display = []
+
+    def clickboxall(self, state):
+        if state == QtCore.Qt.Checked:
+            print('All Checked')
+            for i in self.Listcheckbox:
+                i.setChecked(True)
+        else:
+            print('All Unchecked')
+            for i in self.Listcheckbox:
+                i.setChecked(False)
+
+    def displayFilter(self):
+        for i in range(len(self.Listcheckbox)):
+            if self.Listcheckbox[i].isChecked():
+                Disease_name = self.Listcheckbox[i].objectName()
+                self.display.append(Disease_name)
         
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow,self).__init__()
-        loadUi("D:\\NetAffx Project\\NetAffx-Project\\Project\\ui\\maingui.ui",self)
+        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\maingui.ui",self)
         self.browse.clicked.connect(self.browsefiles)
         self.search.clicked.connect(self.searchsnp)
         self.toolchromosome.clicked.connect(self.filterchromosome)
         self.toolposition.clicked.connect(self.filterposition)
         self.tooldistance.clicked.connect(self.filterdistance)
+        self.toolrelationship.clicked.connect(self.filterrelationship)
+        self.tooldisease.clicked.connect(self.filterdisease)
         self.filecsvname = ''
         self.SearchFunction = Search()
 
@@ -220,6 +275,27 @@ class MainWindow(QMainWindow):
                 text_DisFilter = text_DisFilter + "," + str(j)
             text_DisFilter = text_DisFilter + '|'
         self.dist_display.setText(text_DisFilter)
+    
+    def filterrelationship(self):
+        self.filterRel = RelationshipFilter()
+        self.filterRel.exec_()
+        print('filterRel :', self.filterRel.display)
+        self.SearchFunction.Add_Relationship(self.filterRel.display)
+        text_RelFilter = ''
+        for i in self.filterRel.display:
+            text_RelFilter = text_RelFilter + str(i) + ', ' 
+        self.rel_display.setText(text_RelFilter[:-2])
+    
+    def filterdisease(self):
+        self.filterDise = DiseaseFilter()
+        self.filterDise.exec_()
+        print('filterDise :', self.filterDise.display)
+        self.SearchFunction.Add_Disease(self.filterDise.display)
+        text_DiseFilter = ''
+        for i in self.filterDise.display:
+            text_DiseFilter = text_DiseFilter + str(i) + ', ' 
+        self.dise_display.setText(text_DiseFilter[:-2])
+        
         
     def searchsnp(self):
         print("textSNP :", self.inputSNP_display.toPlainText())
@@ -261,6 +337,23 @@ class MainWindow(QMainWindow):
         self.SearchFunction.Add_GeneSymbol(listinputgenesym)
 
         print("Distance :", self.dist_display.toPlainText())
+
+        print("Relationship :", self.rel_display.toPlainText())
+
+        print("Disease :", self.dise_display.toPlainText())
+
+        print("SourceWeb :", self.sourcewebBox.currentText())
+        SourceWeb = self.sourcewebBox.currentText()
+        if SourceWeb == 'All':
+            SourceWeb_state = 0
+        elif SourceWeb == 'Huge':
+            SourceWeb_state = 1
+        elif SourceWeb == 'Kegg':
+            SourceWeb_state = 2
+        elif SourceWeb == 'Pathway':
+            SourceWeb_state = 3
+        print(" SourceWeb_state = ", SourceWeb_state) 
+        self.SearchFunction.Add_Geneship(SourceWeb_state)
 
         # self.SearchFunction.SearchData()
 
