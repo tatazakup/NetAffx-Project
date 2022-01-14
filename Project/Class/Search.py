@@ -37,11 +37,11 @@ class Search(Database):
         # intron
         self.Relationship = []
 
-        # 0 All
-        # 1 T1D
-        # 2 T2D
+        # All
+        # T1D
+        # T2D
         # \/
-        # 7 RA
+        # RA
         self.Disease = []
 
         # 0 All 
@@ -121,11 +121,11 @@ class Search(Database):
 
         elif ( len(self.RS_ID) != 0 ) and ( len(self.ProbeSet_ID) == 0 ):
             listRS_ID = ", ".join([("'" + str(Each_RS_ID) + "'") for Each_RS_ID in self.RS_ID])
-            FormatStrings_RSID_ProbeSetID = '( snp.RS_ID IN (' + listRS_ID + ') )'
+            FormatStrings_RSID_ProbeSetID = 'snp.RS_ID IN (' + listRS_ID + ')'
 
         elif ( len(self.RS_ID) == 0 ) and ( len(self.ProbeSet_ID) != 0 ):
             listProbeSet_ID = ", ".join([("'" + str(Each_ProbeSet_ID) + "'") for Each_ProbeSet_ID in self.ProbeSet_ID])
-            FormatStrings_RSID_ProbeSetID = '( snp.PROBESET_ID IN (' + listProbeSet_ID + ') )'
+            FormatStrings_RSID_ProbeSetID = 'snp.PROBESET_ID IN (' + listProbeSet_ID + ')'
 
         elif ( len(self.RS_ID) != 0 ) and ( len(self.ProbeSet_ID) != 0 ):
             listRS_ID = ", ".join([("'" + str(Each_RS_ID) + "'") for Each_RS_ID in self.RS_ID])
@@ -139,9 +139,9 @@ class Search(Database):
         FormatStrings_GeneID = ''
         if len(self.GeneID) > 1:
             listGeneID = ", ".join([str(Each_GeneID) for Each_GeneID in self.GeneID])
-            FormatStrings_GeneID = 'and gene_snp.GENE_ID IN (' + listGeneID + ')'
+            FormatStrings_GeneID = 'and gene_detail.GENE_ID IN (' + listGeneID + ')'
         elif len(self.GeneID) == 1:
-            FormatStrings_GeneID = 'and gene_snp.GENE_ID = ' + str(self.GeneID[0])
+            FormatStrings_GeneID = 'and gene_detail.GENE_ID = ' + str(self.GeneID[0])
         return FormatStrings_GeneID
 
     def CreateFormatStrings_GeneSymbol(self):
@@ -311,7 +311,7 @@ class Search(Database):
                 matching_snp_disease.MatchBy
             FROM ( ( ( ( ( ( snp
             INNER JOIN gene_snp ON gene_snp.RS_ID = snp.RS_ID )
-            INNER JOIN gene_detail ON gene_detail.RS_ID = gene_snp.RS_ID)
+            INNER JOIN gene_detail ON gene_detail.RS_ID = gene_snp.RS_ID AND gene_detail.GENE_ID = gene_snp.GENE_ID)
             INNER JOIN ncbi ON ncbi.GENE_ID = gene_snp.GENE_ID )
             INNER JOIN other_symbol ON other_symbol.GENE_ID = ncbi.GENE_ID )
             INNER JOIN matching_snp_disease ON matching_snp_disease.RS_ID = snp.RS_ID )
