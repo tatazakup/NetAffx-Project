@@ -117,7 +117,7 @@ class Search(Database):
             FormatStrings_RSID_ProbeSetID = "snp.PROBESET_ID = '" + str(self.ProbeSet_ID[0]) + "'"
         
         elif ( len(self.RS_ID) == 1 ) and ( len(self.ProbeSet_ID) == 1 ):
-            FormatStrings_RSID_ProbeSetID = "snp.PROBESET_ID = '" + str(self.ProbeSet_ID[0]) + "' and " + "snp.RS_ID = '" + str(self.RS_ID[0]) + "'"
+            FormatStrings_RSID_ProbeSetID = "snp.PROBESET_ID = '" + str(self.ProbeSet_ID[0]) + "' OR " + "snp.RS_ID = '" + str(self.RS_ID[0]) + "'"
 
         elif ( len(self.RS_ID) != 0 ) and ( len(self.ProbeSet_ID) == 0 ):
             listRS_ID = ", ".join([("'" + str(Each_RS_ID) + "'") for Each_RS_ID in self.RS_ID])
@@ -348,7 +348,7 @@ class Search(Database):
         print('mysqlCommand :', mysqlCommand)
 
         results = set( database.CreateTask(conn, mysqlCommand, ()) )
-
+        listresult = []
         if ( results != [] ):
             Index = 0
             for result in results:
@@ -379,10 +379,11 @@ class Search(Database):
                 )
 
                 Index = Index + 1
+                # listresult.extend(result, other_symbol)
 
         database.CloseDatabase(conn)
 
-        return
+        return 
 
 if __name__ == "__main__":
     searchFunction = Search()
