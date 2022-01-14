@@ -67,6 +67,10 @@ class Search(Database):
         return
     
     def Add_GeneSymbol(self, newData):
+        print('Add_GeneSymbol :', newData)
+        if ( len(newData) == 1 ):
+            if newData[0] == '':
+                return
         self.GeneSymbol = newData
         return
 
@@ -225,7 +229,7 @@ class Search(Database):
                 return FormatStrings_Relationship
 
             elif len(self.Relationship) > 1:
-                listRelationship = ", ".join("'" + [str(Each_Relationship) + "'" for Each_Relationship in self.Relationship])
+                listRelationship = ", ".join( [ ( "'" + str(Each_Relationship) + "'" ) for Each_Relationship in self.Relationship])
                 FormatStrings_Relationship = 'and gene_detail.RELATIONSHIP IN (' + listRelationship + ')'
 
             elif len(self.Relationship) == 1:
@@ -244,11 +248,11 @@ class Search(Database):
                 return FormatStrings_Disease
 
             elif len(self.Disease) > 1:
-                listDisease = ", ".join([str(Each_Disease) for Each_Disease in self.Disease])
-                FormatStrings_Disease = 'and matching_snp_disease.Disease_ID IN (' + listDisease + ')'
+                listDisease = ", ".join( [("'" + str(Each_Disease) + "'") for Each_Disease in self.Disease])
+                FormatStrings_Disease = 'and disease.DISEASE_ABBREVIATION IN (' + listDisease + ')'
 
             elif len(self.Disease) == 1:
-                FormatStrings_Disease = 'and matching_snp_disease.Disease_ID = ' + str(self.Disease[0])
+                FormatStrings_Disease = "and disease.DISEASE_ABBREVIATION = '" + str(self.Disease[0]) + "'"
 
         return FormatStrings_Disease
 
