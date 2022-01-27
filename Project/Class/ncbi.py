@@ -172,13 +172,16 @@ class UpdateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
         return timeOutput
 
     def run(self):
-        for GeneID, UpdateAt in self.listDataUnCheck:
+        for GeneID, UpdateAt in self.listDataUnCheck[:5]:
             
             response = self.SendRequestToNcbi( GeneID )
             updatedOn_Website = self.FetchUpdateOn(response)
             updatedOn_OldData = self.ConvertUpdateAtToTimeStamp(UpdateAt)
 
+            print('GeneID :', GeneID, ':', updatedOn_Website, updatedOn_OldData)
+
             if ( updatedOn_OldData == updatedOn_Website):
+                print('GeneID :', GeneID, 'last updated')
                 continue
             else:
                 resSummaryDl = response.find('dl', {"id": "summaryDl"}) # fetch all detail of website
@@ -194,6 +197,7 @@ class UpdateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
                 new_row = ( GeneID, officialSymbol, alsoKnownAs, updatedOn_Website )
                 
                 listNcbiUpdated.append(new_row)
+                print('GeneID :', GeneID, 'updated ||', new_row)
         
         return
 
@@ -319,19 +323,20 @@ class Ncbi(Database, MetaData, FilePath):
 
         for ncbiData in listNcbiUpdated:
 
+            GeneID = ncbiData[0]
+            UpdateAt = datetime.fromtimestamp(ncbiData[3]).strftime('%Y-%m-%d %H:%M:%S')
+
+            # Update Update_at field on database
+            sqlCommand = """
+                UPDATE ncbi SET
+                UPDATE_AT = %s WHERE
+                GENE_ID = %s
+            """
+            database.CreateTask( conn, sqlCommand, (UpdateAt, GeneID) )
+
             if ( ncbiData[2] != None ):
-                GeneID = ncbiData[0]
+                
                 ListOtherSymbol = ( list(map(str, (ncbiData[2][0]).split('; '))) )
-                UpdateAt = datetime.fromtimestamp(ncbiData[3]).strftime('%Y-%m-%d %H:%M:%S')
-                
-                # Update Update_at field on database
-                sqlCommand = """
-                    UPDATE ncbi SET
-                    UPDATE_AT = %s WHERE
-                    GENE_ID = %s
-                """
-                database.CreateTask( conn, sqlCommand, (UpdateAt, GeneID) )
-                
                 Records = [GeneID] + ListOtherSymbol
                 FormatStrings = ', '.join(['%s'] * len(str(ncbiData[2]).split('; ')))
                 

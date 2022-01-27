@@ -1,7 +1,9 @@
 from Initialization import Database, FilePath
+from Ncbi import Ncbi
+from Disease import Disease
 from Search import Search
+from datetime import datetime
 import pandas as pd
-import mpu.pd
 
 class TestCase():
     def __init__(self):
@@ -177,6 +179,83 @@ class TestCase():
 
         return
 
+    # UPDATE NCBI
+    def UPDATE_NCBI_WITH_CONDITION_01(self):
+        """Test Update ncbi data with delete GENE_ID(388) on other_symbol table"""
+
+        database = Database()
+        conn = database.ConnectDatabase()
+        mysqlCommand = """
+            DELETE FROM other_symbol WHERE GENE_ID = %s;
+        """
+        database.CreateTask(conn, mysqlCommand, (338, ))
+
+        mysqlCommand = """
+            UPDATE ncbi SET
+            UPDATE_AT = %s WHERE
+            GENE_ID = %s
+        """
+        database.CreateTask(conn, mysqlCommand, (datetime.fromtimestamp(1643000000).strftime('%Y-%m-%d %H:%M:%S'), 338))
+        database.CloseDatabase(conn)
+
+        ncbi = Ncbi(1)
+        ncbi.UpdateNcbiInformation()
+
+        return
+
+    def UPDATE_NCBI_WITH_CONDITION_02(self):
+        """Test Delete 1 ncbi data with delete other_symbol table on GENE_ID(338)"""
+
+        database = Database()
+        conn = database.ConnectDatabase()
+        mysqlCommand = """
+            DELETE FROM other_symbol WHERE GENE_ID = %s and OTHER_SYMBOL = %s;
+        """
+        database.CreateTask(conn, mysqlCommand, (338, 'FCHL2', ))
+
+        mysqlCommand = """
+            UPDATE ncbi SET
+            UPDATE_AT = %s WHERE
+            GENE_ID = %s
+        """
+        database.CreateTask(conn, mysqlCommand, (datetime.fromtimestamp(1643000000).strftime('%Y-%m-%d %H:%M:%S'), 338))
+        database.CloseDatabase(conn)
+
+        ncbi = Ncbi(1)
+        ncbi.UpdateNcbiInformation()
+
+        return
+
+    def UPDATE_NCBI_WITH_CONDITION_03(self):
+        """Test Add new 1 ncbi data with add other_symbol table on GENE_ID(338)"""
+
+        database = Database()
+        conn = database.ConnectDatabase()
+        mysqlCommand = """
+            INSERT IGNORE INTO other_symbol (GENE_ID, OTHER_SYMBOL) VALUE (%s, %s);
+        """
+        database.CreateTask(conn, mysqlCommand, (338, 'FCHL1', ))
+
+        mysqlCommand = """
+            UPDATE ncbi SET
+            UPDATE_AT = %s WHERE
+            GENE_ID = %s
+        """
+        database.CreateTask(conn, mysqlCommand, (datetime.fromtimestamp(1643000000).strftime('%Y-%m-%d %H:%M:%S'), 338))
+        database.CloseDatabase(conn)
+
+        ncbi = Ncbi(1)
+        ncbi.UpdateNcbiInformation()
+
+        return
+
+    # UPDATE DISEASE
+    def UPDATE_DISEASE_WITH_CONDITION_01(self):
+        disease = Disease()
+        disease.UpdateDiseaseDataset()
+        
+        return
+
 class CreateTestCase():
     def __init__(self):
         self.listcolumns_FD = ['RSID', 'PROBESET_ID', 'CHROMOSOME', 'POSITION',
@@ -289,7 +368,7 @@ class CreateTestCase():
         return
 
 if __name__ == "__main__":
-    createTestCase = CreateTestCase()
+    # createTestCase = CreateTestCase()
 
     testCase = TestCase()
-    testCase.SEARCH_RELATIONSHIP_WITH_CONDITION_01()
+    testCase.UPDATE_NCBI_WITH_CONDITION_03()
