@@ -37,6 +37,7 @@ class TestCase():
 
         return LIST_FD_FROM_FILE, LIST_NFD_FROM_FILE
 
+
     def SEARCH_ALL_DATA_01(self, newData_FD = [], newDATA_NFD = []):
         """Test search all data with out condition"""
 
@@ -50,6 +51,7 @@ class TestCase():
         self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_ALL_DATA_01_NFD')
 
         return
+
 
     def SEARCH_GENE_ID_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
         """Test search all data with out condition"""
@@ -67,6 +69,39 @@ class TestCase():
 
         return
 
+    def SEARCH_GENE_ID_WITH_CONDITION_02(self, newData_FD = [], newDATA_NFD = []):
+        """Test search all data with out condition"""
+
+        self.TestSearch.Add_GeneID([1000, 1996, 2272, 5996, 6870])
+
+        PathToTestCase_FD = self.Allpath.GetPathToTestCase() + '/' +  'Search_GENE_ID_WITH_CONDITION_02_FD.csv'
+        PathToTestCase_NFD = self.Allpath.GetPathToTestCase() + '/' +  'Search_GENE_ID_WITH_CONDITION_02_NFD.csv'
+
+        LIST_FD_FROM_FILE, LIST_NFD_FROM_FILE = self.CheckInputData(newData_FD, newDATA_NFD, PathToTestCase_FD, PathToTestCase_NFD)
+        RESULT_FD, RESULT_NFD = self.TestSearch.SearchData()
+
+        self.CheckAccuracy(RESULT_FD, LIST_FD_FROM_FILE, 'SEARCH_GENE_ID_WITH_CONDITION_02_FD')
+        self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_GENE_ID_WITH_CONDITION_02_NFD')
+
+        return
+
+    def SEARCH_GENE_ID_WITH_CONDITION_03(self, newData_FD = [], newDATA_NFD = []):
+        """Test search all data with out condition"""
+
+        self.TestSearch.Add_GeneID([1])
+
+        PathToTestCase_FD = self.Allpath.GetPathToTestCase() + '/' +  'Search_GENE_ID_WITH_CONDITION_03_FD.csv'
+        PathToTestCase_NFD = self.Allpath.GetPathToTestCase() + '/' +  'Search_GENE_ID_WITH_CONDITION_03_NFD.csv'
+
+        LIST_FD_FROM_FILE, LIST_NFD_FROM_FILE = self.CheckInputData(newData_FD, newDATA_NFD, PathToTestCase_FD, PathToTestCase_NFD)
+        RESULT_FD, RESULT_NFD = self.TestSearch.SearchData()
+
+        self.CheckAccuracy(RESULT_FD, LIST_FD_FROM_FILE, 'SEARCH_GENE_ID_WITH_CONDITION_03_FD')
+        self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_GENE_ID_WITH_CONDITION_03_NFD')
+
+        return
+
+
     def SEARCH_GENE_SYMBOL_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
         """Test search all data with out condition"""
 
@@ -82,6 +117,7 @@ class TestCase():
         self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_GENE_SYMBOL_WITH_CONDITION_01_NFD')
 
         return
+
 
     def SEARCH_CHROMOSOME_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
         """Test search all data with out condition"""
@@ -99,10 +135,11 @@ class TestCase():
 
         return
 
+
     def SEARCH_GENESHIP_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
         """Test search all data with out condition"""
 
-        self.TestSearch.Add_Geneship(1)
+        self.TestSearch.Add_Geneship(0)
 
         PathToTestCase_FD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_GENESHIP_WITH_CONDITION_01_FD.csv'
         PathToTestCase_NFD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_GENESHIP_WITH_CONDITION_01_NFD.csv'
@@ -115,6 +152,7 @@ class TestCase():
 
         return
     
+
     def SEARCH_DISTANCE_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
         """Test search all data with out condition"""
 
@@ -130,6 +168,7 @@ class TestCase():
         self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_DISTANCE_WITH_CONDITION_01_NFD')
 
         return
+
 
     def SEARCH_RELATIONSHIP_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
         """Test search all data with out condition"""
@@ -147,21 +186,6 @@ class TestCase():
 
         return
 
-    def SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
-        """Test search all data with out condition"""
-
-        self.TestSearch.Add_Geneship(1)
-
-        PathToTestCase_FD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_GENESHIP_WITH_CONDITION_01_FD.csv'
-        PathToTestCase_NFD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_GENESHIP_WITH_CONDITION_01_NFD.csv'
-
-        LIST_FD_FROM_FILE, LIST_NFD_FROM_FILE = self.CheckInputData(newData_FD, newDATA_NFD, PathToTestCase_FD, PathToTestCase_NFD)
-        RESULT_FD, RESULT_NFD = self.TestSearch.SearchData()
-
-        self.CheckAccuracy(RESULT_FD, LIST_FD_FROM_FILE, 'SEARCH_GENESHIP_WITH_CONDITION_01_FD')
-        self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_GENESHIP_WITH_CONDITION_01_NFD')
-
-        return
 
     def SEARCH_DISEASE_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
         """Test search all data with out condition"""
@@ -176,6 +200,23 @@ class TestCase():
 
         self.CheckAccuracy(RESULT_FD, LIST_FD_FROM_FILE, 'SEARCH_DISEASE_WITH_CONDITION_01_FD')
         self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_DISEASE_WITH_CONDITION_01_NFD')
+
+        return
+
+
+    def SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
+        """Test search all data with out condition"""
+
+        self.TestSearch.Add_source_website(1)
+
+        PathToTestCase_FD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01_FD.csv'
+        PathToTestCase_NFD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01_NFD.csv'
+
+        LIST_FD_FROM_FILE, LIST_NFD_FROM_FILE = self.CheckInputData(newData_FD, newDATA_NFD, PathToTestCase_FD, PathToTestCase_NFD)
+        RESULT_FD, RESULT_NFD = self.TestSearch.SearchData()
+
+        self.CheckAccuracy(RESULT_FD, LIST_FD_FROM_FILE, 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01_FD')
+        self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01_NFD')
 
         return
 
@@ -249,6 +290,7 @@ class TestCase():
 
         return
 
+
     # UPDATE DISEASE
     def UPDATE_DISEASE_WITH_CONDITION_01(self):
         disease = Disease()
@@ -266,18 +308,37 @@ class CreateTestCase():
         'SOURCE_GENESHIP', 'RELATIONSHIP', 'DISTANCE', 'GENE_SYMBOL', 'GENE_ID', 
         'OTHER_SYMBOL']
 
-        self.TestSearch = Search()
         self.allpath = FilePath()
 
         # self.CREATE_SEARCH_ALL_DATA_01()
-        # self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_01()
-        # self.CREATE_SEARCH_GENESHIP_WITH_CONDITION_01()
-        # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01()
-        # self.CREATE_SEARCH_DISEASE_WITH_CONDITION_01()
+
         # self.CREATE_SEARCH_GENE_ID_WITH_CONDITION_01()
+        # self.CREATE_SEARCH_GENE_ID_WITH_CONDITION_02()
+        # self.CREATE_SEARCH_GENE_ID_WITH_CONDITION_03()
+
         # self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_01()
+        # self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_02()
+        # self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_03()
+
+        # self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_01()
+        # self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_02()
+        # self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_03()
+        # self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_ALL()
+
+        # self.CREATE_SEARCH_GENESHIP_WITH_CONDITION_ALL()   
+        # self.CREATE_SEARCH_GENESHIP_WITH_CONDITION_01()   
+        # self.CREATE_SEARCH_GENESHIP_WITH_CONDITION_02()
+
         # self.CREATE_SEARCH_DISTANCE_WITH_CONDITION_01()
-        self.CREATE_SEARCH_RELATIONSHIP_WITH_CONDITION_01()
+        self.CREATE_SEARCH_DISTANCE_WITH_CONDITION_02()
+        # self.CREATE_SEARCH_DISTANCE_WITH_CONDITION_03()
+
+        # self.CREATE_SEARCH_RELATIONSHIP_WITH_CONDITION_01()
+
+        # self.CREATE_SEARCH_DISEASE_WITH_CONDITION_01()      
+
+        # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01()
+
         return
 
     def ImportDataTo_FD(self, fileName, data):
@@ -291,84 +352,185 @@ class CreateTestCase():
         df.to_csv(path_output,index=False)
 
     def CREATE_SEARCH_ALL_DATA_01(self):
-        Results_FD, Result_NFD = self.TestSearch.SearchData()
+        TestSearch = Search()
+        Results_FD, Result_NFD = TestSearch.SearchData()
         self.ImportDataTo_FD('SEARCH_ALL_DATA_01_FD.csv', Results_FD)
         self.ImportDataTo_NFD('SEARCH_ALL_DATA_01_NFD.csv', Result_NFD)
         return
 
+    # Gene ID
     def CREATE_SEARCH_GENE_ID_WITH_CONDITION_01(self):
+        TestSearch = Search()
+        TestSearch.Add_GeneID([2272])
 
-        self.TestSearch.Add_GeneID([2272])
-
-        Results_FD, Result_NFD = self.TestSearch.SearchData()
+        Results_FD, Result_NFD = TestSearch.SearchData()
         self.ImportDataTo_FD('SEARCH_GENE_ID_WITH_CONDITION_01_FD.csv', Results_FD)
         self.ImportDataTo_NFD('SEARCH_GENE_ID_WITH_CONDITION_01_NFD.csv', Result_NFD)
         return
 
+    def CREATE_SEARCH_GENE_ID_WITH_CONDITION_02(self):
+        TestSearch = Search()
+        TestSearch.Add_GeneID([1000, 1996, 2272, 5996, 6870])
+
+        Results_FD, Result_NFD = TestSearch.SearchData()
+        self.ImportDataTo_FD('SEARCH_GENE_ID_WITH_CONDITION_02_FD.csv', Results_FD)
+        self.ImportDataTo_NFD('SEARCH_GENE_ID_WITH_CONDITION_02_NFD.csv', Result_NFD)
+        return
+
+    def CREATE_SEARCH_GENE_ID_WITH_CONDITION_03(self):
+        TestSearch = Search()
+        TestSearch.Add_GeneID([1])
+
+        Results_FD, Result_NFD = TestSearch.SearchData()
+        self.ImportDataTo_FD('SEARCH_GENE_ID_WITH_CONDITION_03_FD.csv', Results_FD)
+        self.ImportDataTo_NFD('SEARCH_GENE_ID_WITH_CONDITION_03_NFD.csv', Result_NFD)
+        return
+
+    # Gene Symbol
     def CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_01(self):
+        TestSearch = Search()
+        TestSearch.Add_GeneSymbol(['RFPL4B'])
 
-        self.TestSearch.Add_GeneSymbol(['RFPL4B'])
-
-        Results_FD, Result_NFD = self.TestSearch.SearchData()
+        Results_FD, Result_NFD = TestSearch.SearchData()
         self.ImportDataTo_FD('SEARCH_GENE_SYMBOL_WITH_CONDITION_01_FD.csv', Results_FD)
         self.ImportDataTo_NFD('SEARCH_GENE_SYMBOL_WITH_CONDITION_01_NFD.csv', Result_NFD)
         return
 
+    def CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_02(self):
+        TestSearch = Search()
+        TestSearch.Add_GeneSymbol(['RFPL4B', 'BICD1', 'LIPC', 'ATP1B', 'NHE9'])
+
+        Results_FD, Result_NFD = TestSearch.SearchData()
+        self.ImportDataTo_FD('SEARCH_GENE_SYMBOL_WITH_CONDITION_02_FD.csv', Results_FD)
+        self.ImportDataTo_NFD('SEARCH_GENE_SYMBOL_WITH_CONDITION_02_NFD.csv', Result_NFD)
+        return
+
+    def CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_03(self):
+        TestSearch = Search()
+        TestSearch.Add_GeneSymbol(['ABC123'])
+
+        Results_FD, Result_NFD = TestSearch.SearchData()
+        self.ImportDataTo_FD('SEARCH_GENE_SYMBOL_WITH_CONDITION_03_FD.csv', Results_FD)
+        self.ImportDataTo_NFD('SEARCH_GENE_SYMBOL_WITH_CONDITION_03_NFD.csv', Result_NFD)
+        return
+
+    # Chromosome
+    def CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_ALL(self):
+        TestSearch = Search()
+        TestSearch.Add_Chromosome([0])
+
+        Results_FD, Result_NFD = TestSearch.SearchData()
+        self.ImportDataTo_FD('SEARCH_CHROMOSOME_WITH_CONDITION_04_FD.csv', Results_FD)
+        self.ImportDataTo_NFD('SEARCH_CHROMOSOME_WITH_CONDITION_04_NFD.csv', Result_NFD)
+        return
+
     def CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_01(self):
+        TestSearch = Search()
+        TestSearch.Add_Chromosome([1])
 
-        self.TestSearch.Add_Chromosome([1])
-
-        Results_FD, Result_NFD = self.TestSearch.SearchData()
+        Results_FD, Result_NFD = TestSearch.SearchData()
         self.ImportDataTo_FD('SEARCH_CHROMOSOME_WITH_CONDITION_01_FD.csv', Results_FD)
         self.ImportDataTo_NFD('SEARCH_CHROMOSOME_WITH_CONDITION_01_NFD.csv', Result_NFD)
         return
 
+    def CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_02(self):
+        TestSearch = Search()
+        TestSearch.Add_Chromosome([1, 2, 10, 11, 12])
+
+        Results_FD, Result_NFD = TestSearch.SearchData()
+        self.ImportDataTo_FD('SEARCH_CHROMOSOME_WITH_CONDITION_02_FD.csv', Results_FD)
+        self.ImportDataTo_NFD('SEARCH_CHROMOSOME_WITH_CONDITION_02_NFD.csv', Result_NFD)
+        return
+
+    def CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_03(self):
+        TestSearch = Search()
+        TestSearch.Add_Chromosome([100])
+
+        Results_FD, Result_NFD = TestSearch.SearchData()
+        self.ImportDataTo_FD('SEARCH_CHROMOSOME_WITH_CONDITION_03_FD.csv', Results_FD)
+        self.ImportDataTo_NFD('SEARCH_CHROMOSOME_WITH_CONDITION_03_NFD.csv', Result_NFD)
+        return
+
+    # Geneship
+    def CREATE_SEARCH_GENESHIP_WITH_CONDITION_ALL(self):
+        TestSearch = Search()
+        TestSearch.Add_Geneship(0)
+
+        Results_FD, Result_NFD = TestSearch.SearchData()
+        self.ImportDataTo_FD('SEARCH_GENESHIP_WITH_CONDITION_ALL_FD.csv', Results_FD)
+        self.ImportDataTo_NFD('SEARCH_GENESHIP_WITH_CONDITION_ALL_NFD.csv', Result_NFD)
+        return
+
     def CREATE_SEARCH_GENESHIP_WITH_CONDITION_01(self):
+        TestSearch = Search()
+        TestSearch.Add_Geneship(1)
 
-        self.TestSearch.Add_Geneship(1)
-
-        Results_FD, Result_NFD = self.TestSearch.SearchData()
+        Results_FD, Result_NFD = TestSearch.SearchData()
         self.ImportDataTo_FD('SEARCH_GENESHIP_WITH_CONDITION_01_FD.csv', Results_FD)
         self.ImportDataTo_NFD('SEARCH_GENESHIP_WITH_CONDITION_01_NFD.csv', Result_NFD)
         return
 
+    def CREATE_SEARCH_GENESHIP_WITH_CONDITION_02(self):
+        TestSearch = Search()
+        TestSearch.Add_Geneship(2)
+
+        Results_FD, Result_NFD = TestSearch.SearchData()
+        self.ImportDataTo_FD('SEARCH_GENESHIP_WITH_CONDITION_02_FD.csv', Results_FD)
+        self.ImportDataTo_NFD('SEARCH_GENESHIP_WITH_CONDITION_02_NFD.csv', Result_NFD)
+        return
+
+    # Distance
     def CREATE_SEARCH_DISTANCE_WITH_CONDITION_01(self):
+        TestSearch = Search()
+        TestSearch.Add_Distance([ [0, 1204066] ])
 
-        self.TestSearch.Add_Distance([ [0, 1204066] ])
-
-        Results_FD, Result_NFD = self.TestSearch.SearchData()
+        Results_FD, Result_NFD = TestSearch.SearchData()
         self.ImportDataTo_FD('SEARCH_DISTANCE_WITH_CONDITION_01_FD.csv', Results_FD)
         self.ImportDataTo_NFD('SEARCH_DISTANCE_WITH_CONDITION_01_NFD.csv', Result_NFD)
         return
 
+    def CREATE_SEARCH_DISTANCE_WITH_CONDITION_02(self):
+        TestSearch = Search()
+        TestSearch.Add_Distance([ [0, 1572755], [0, 465866], [0, 126121] ])
+
+        Results_FD, Result_NFD = TestSearch.SearchData()
+        self.ImportDataTo_FD('SEARCH_DISTANCE_WITH_CONDITION_02_FD.csv', Results_FD)
+        self.ImportDataTo_NFD('SEARCH_DISTANCE_WITH_CONDITION_02_NFD.csv', Result_NFD)
+        return
+
+    # Relationship
     def CREATE_SEARCH_RELATIONSHIP_WITH_CONDITION_01(self):
+        TestSearch = Search()
+        TestSearch.Add_Relationship(['upstream'])
 
-        self.TestSearch.Add_Relationship(['upstream'])
-
-        Results_FD, Result_NFD = self.TestSearch.SearchData()
+        Results_FD, Result_NFD = TestSearch.SearchData()
         self.ImportDataTo_FD('SEARCH_RELATIONSHIP_WITH_CONDITION_01_FD.csv', Results_FD)
         self.ImportDataTo_NFD('SEARCH_RELATIONSHIP_WITH_CONDITION_01_NFD.csv', Result_NFD)
         return
 
-    def CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01(self):
-
-        self.TestSearch.Add_source_website(1)
-
-        Results_FD, Result_NFD = self.TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01_NFD.csv', Result_NFD)
-        return
-
+    # Disease
     def CREATE_SEARCH_DISEASE_WITH_CONDITION_01(self):
-        self.TestSearch.Add_Disease(['T1D'])
+        TestSearch = Search()
+        TestSearch.Add_Disease(['T1D'])
 
-        Results_FD, Result_NFD = self.TestSearch.SearchData()
+        Results_FD, Result_NFD = TestSearch.SearchData()
         self.ImportDataTo_FD('SEARCH_DISEASE_WITH_CONDITION_01_FD.csv', Results_FD)
         self.ImportDataTo_NFD('SEARCH_DISEASE_WITH_CONDITION_01_NFD.csv', Result_NFD)
         return
 
-if __name__ == "__main__":
-    # createTestCase = CreateTestCase()
+    # Source Website
+    def CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01(self):
+        TestSearch = Search()
+        TestSearch.Add_source_website(1)
 
-    testCase = TestCase()
-    testCase.UPDATE_NCBI_WITH_CONDITION_03()
+        Results_FD, Result_NFD = TestSearch.SearchData()
+        self.ImportDataTo_FD('SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01_FD.csv', Results_FD)
+        self.ImportDataTo_NFD('SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01_NFD.csv', Result_NFD)
+        return
+ 
+
+if __name__ == "__main__":
+    createTestCase = CreateTestCase()
+
+    # testCase = TestCase()
+    # testCase.SEARCH_GENE_ID_WITH_CONDITION_01()

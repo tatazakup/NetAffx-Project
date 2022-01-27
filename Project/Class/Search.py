@@ -30,7 +30,7 @@ class Search(Database):
         # 1 less than
         # 2 more than
         # 3 between
-        self.Distance = []
+        self.Distance = [ [3, 500, 1000], [0, 1572755], [0, 465866], [0, 126121], [3, 400000, 500000] ]
 
         # All
         # upstream
@@ -206,16 +206,37 @@ class Search(Database):
 
     def CreateFormatStrings_Distance(self):
         FormatStrings_Distance = ''
+        FormatStrings_Distance_0 = ''
+        FormatStrings_Distance_1 = ''
+        FormatStrings_Distance_2 = ''
+        FormatStrings_Distance_3 = ''
+        listDistance_0 = []
+        listDistance_1 = []
+        listDistance_2 = []
+        listDistance_3 = []
 
         for condition in self.Distance:
             if (condition[0] == 0):
-                FormatStrings_Distance = FormatStrings_Distance + 'and gene_detail.DISTANCE = ' + str(condition[1]) + ' '
+                listDistance_0.append(str(condition[1]))
             elif (condition[0] == 1):
                 FormatStrings_Distance = FormatStrings_Distance + 'and gene_detail.DISTANCE > ' + str(condition[1]) + ' '
             elif (condition[0] == 2):
                 FormatStrings_Distance = FormatStrings_Distance + 'and gene_detail.DISTANCE < ' + str(condition[1]) + ' '
             elif (condition[0] == 3):
-                FormatStrings_Distance = FormatStrings_Distance + 'and gene_detail.DISTANCE between ' + str(condition[1]) + ' and ' + str(condition[2]) + ' '
+                listDistance_3.append([condition[1],condition[2]])
+
+        if (len(listDistance_3) > 0):
+            FormatStrings_Distance_3 = " or ".join( ['gene_detail.DISTANCE between ' + (str(Each_Range[0])) + ' and ' + (str(Each_Range[1])) for Each_Range in listDistance_3])
+            print(FormatStrings_Distance_3)
+
+        if (len(listDistance_0) > 0):
+            if len(listDistance_0) == 1:
+                FormatStrings_Distance_0 = FormatStrings_Distance + 'and gene_detail.DISTANCE = ' + str(listDistance_0[0]) + ' '
+            else:
+                listDistance_0 = ", ".join( [(str(Each_Distance)) for Each_Distance in listDistance_0])
+                FormatStrings_Distance_0 = 'and gene_detail.DISTANCE IN (' + listDistance_0 + ' ) '
+
+        FormatStrings_Distance = FormatStrings_Distance_0 + FormatStrings_Distance_1 + FormatStrings_Distance_2 + FormatStrings_Distance_3
 
         return FormatStrings_Distance    
 
@@ -314,7 +335,7 @@ class Search(Database):
             INNER JOIN gene_snp ON gene_snp.RS_ID = snp.RS_ID )
             INNER JOIN gene_detail ON gene_detail.RS_ID = gene_snp.RS_ID AND gene_detail.GENE_ID = gene_snp.GENE_ID)
             INNER JOIN ncbi ON ncbi.GENE_ID = gene_snp.GENE_ID )
-            INNER JOIN other_symbol ON other_symbol.GENE_ID = ncbi.GENE_ID )
+            LEFT JOIN other_symbol ON other_symbol.GENE_ID = ncbi.GENE_ID )
             INNER JOIN matching_snp_disease ON matching_snp_disease.RS_ID = snp.RS_ID )
             INNER JOIN disease ON disease.DISEASE_ID = matching_snp_disease.DISEASE_ID )
             %s
@@ -360,7 +381,7 @@ class Search(Database):
             INNER JOIN gene_snp ON gene_snp.RS_ID = snp.RS_ID )
             INNER JOIN gene_detail ON gene_detail.RS_ID = gene_snp.RS_ID AND gene_detail.GENE_ID = gene_snp.GENE_ID)
             INNER JOIN ncbi ON ncbi.GENE_ID = gene_snp.GENE_ID )
-            INNER JOIN other_symbol ON other_symbol.GENE_ID = ncbi.GENE_ID )
+            LEFT JOIN other_symbol ON other_symbol.GENE_ID = ncbi.GENE_ID )
             LEFT JOIN matching_snp_disease ON matching_snp_disease.RS_ID = snp.RS_ID )
             WHERE demo_automap3.matching_snp_disease.RS_ID IS NULL
             %s
@@ -387,8 +408,8 @@ class Search(Database):
             mysqlCommand_FoundDisease = mysqlCommand_FoundDisease.replace('and', '', 1)
             mysqlCommand_NotFoundDisease = mysqlCommand_NotFoundDisease.replace('and', '', 1)
 
-        # print('mysqlCommand_FD :', mysqlCommand_FoundDisease)
-        # print('mysqlCommand_NFD :', mysqlCommand_NotFoundDisease)
+        print('mysqlCommand_FD :', mysqlCommand_FoundDisease)
+        print('mysqlCommand_NFD :', mysqlCommand_NotFoundDisease)
 
         results_FD = set( database.CreateTask(conn, mysqlCommand_FoundDisease, ()) )
         results_NFD = set( database.CreateTask(conn, mysqlCommand_NotFoundDisease, ()) )
@@ -408,22 +429,22 @@ class Search(Database):
 
                 other_symbol = database.CreateTask(conn, mysqlCommand, (result[8], ))
 
-                # print(
-                #     '               INDEX :', Index, '\n'
-                #     '                RSID :', result[0], '\n'
-                #     '         PROBESET_ID :', result[1], '\n'
-                #     '          CHROMOSOME :', result[2], '\n'
-                #     '            POSITION :', result[3], '\n'
-                #     '     SOURCE_GENESHIP :', result[4], '\n'
-                #     '        RELATIONSHIP :', result[5], '\n'
-                #     '            DISTANCE :', result[6], '\n'
-                #     '         GENE_SYMBOL :', result[7], '\n'
-                #     '             GENE_ID :', result[8], '\n'
-                #     '        OTHER_SYMBOL :', ', '.join([str(elem)[2:-3] for elem in other_symbol]), '\n'
-                #     '        DISEASE_NAME :', result[9], '\n'
-                #     'DISEASE_ABBREVIATION :', result[10], '\n'
-                #     '            MATCH_BY :', result[11], '\n'
-                # )
+                print(
+                    '               INDEX :', Index, '\n'
+                    '                RSID :', result[0], '\n'
+                    '         PROBESET_ID :', result[1], '\n'
+                    '          CHROMOSOME :', result[2], '\n'
+                    '            POSITION :', result[3], '\n'
+                    '     SOURCE_GENESHIP :', result[4], '\n'
+                    '        RELATIONSHIP :', result[5], '\n'
+                    '            DISTANCE :', result[6], '\n'
+                    '         GENE_SYMBOL :', result[7], '\n'
+                    '             GENE_ID :', result[8], '\n'
+                    '        OTHER_SYMBOL :', ', '.join([str(elem)[2:-3] for elem in other_symbol]), '\n'
+                    '        DISEASE_NAME :', result[9], '\n'
+                    'DISEASE_ABBREVIATION :', result[10], '\n'
+                    '            MATCH_BY :', result[11], '\n'
+                )
 
                 each_result = [result[0],result[1],int(result[2]),result[3],result[4],result[5],result[6],result[7],result[8],', '.join([str(elem)[2:-3] for elem in other_symbol]),result[9],result[10], result[11]]
                 Index = Index + 1
@@ -443,20 +464,20 @@ class Search(Database):
 
                 other_symbol = database.CreateTask(conn, mysqlCommand, (result[8], ))
 
-                # print(
-                #     '               INDEX :', Index, '\n'
-                #     '                RSID :', result[0], '\n'
-                #     '         PROBESET_ID :', result[1], '\n'
-                #     '          CHROMOSOME :', result[2], '\n'
-                #     '            POSITION :', result[3], '\n'
-                #     '     SOURCE_GENESHIP :', result[4], '\n'
-                #     '        RELATIONSHIP :', result[5], '\n'
-                #     '            DISTANCE :', result[6], '\n'
-                #     '         GENE_SYMBOL :', result[7], '\n'
-                #     '             GENE_ID :', result[8], '\n'
-                #     '        OTHER_SYMBOL :', ', '.join([str(elem)[2:-3] for elem in other_symbol]), '\n'
-                # )
-                
+                print(
+                    '               INDEX :', Index, '\n'
+                    '                RSID :', result[0], '\n'
+                    '         PROBESET_ID :', result[1], '\n'
+                    '          CHROMOSOME :', result[2], '\n'
+                    '            POSITION :', result[3], '\n'
+                    '     SOURCE_GENESHIP :', result[4], '\n'
+                    '        RELATIONSHIP :', result[5], '\n'
+                    '            DISTANCE :', result[6], '\n'
+                    '         GENE_SYMBOL :', result[7], '\n'
+                    '             GENE_ID :', result[8], '\n'
+                    '        OTHER_SYMBOL :', ', '.join([str(elem)[2:-3] for elem in other_symbol]), '\n'
+                )
+
                 each_result = [result[0],result[1],int(result[2]),result[3],result[4],result[5],result[6],result[7],result[8],', '.join([str(elem)[2:-3] for elem in other_symbol])]
                 Index = Index + 1
                 listResult_NFD.append(each_result)
