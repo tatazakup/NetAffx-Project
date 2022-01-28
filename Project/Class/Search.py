@@ -21,7 +21,7 @@ class Search(Database):
         # 3 between
         self.Position = []
 
-        # 0 All 
+        # 0 All
         # 1 Nsp
         # 2 Sty
         self.Geneship = 0
@@ -30,7 +30,7 @@ class Search(Database):
         # 1 less than
         # 2 more than
         # 3 between
-        self.Distance = [ [3, 500, 1000], [0, 1572755], [0, 465866], [0, 126121], [3, 400000, 500000] ]
+        self.Distance = []
 
         # All
         # upstream
@@ -184,61 +184,86 @@ class Search(Database):
     def CreateFormatStrings_Position(self):
         FormatStrings_Position = ''
 
+        list_FormatStrings_Position = ['', '', '', '']
+        listPosition_0 = []
+        listPosition_1 = []
+        listPosition_2 = []
+        listPosition_3 = []
+
         if ( len(self.Position) > 0):
-            index = 0
-            FormatStrings_Position = 'and '
-
             for condition in self.Position:
-                if (condition[0] == 0):
-                    FormatStrings_Position = FormatStrings_Position + 'snp.POSITION = ' + str(condition[1]) + ' '
-                elif (condition[0] == 1):
-                    FormatStrings_Position = FormatStrings_Position + 'snp.POSITION > ' + str(condition[1]) + ' '
-                elif (condition[0] == 2):
-                    FormatStrings_Position = FormatStrings_Position + 'snp.POSITION < ' + str(condition[1]) + ' '
-                elif (condition[0] == 3):
-                    FormatStrings_Position = FormatStrings_Position + 'snp.POSITION between ' + str(condition[1]) + ' and ' + str(condition[2]) + ' '
+                if (condition[0] == 0): listPosition_0.append(str(condition[1]))
+                elif (condition[0] == 1): listPosition_1.append(str(condition[1]))
+                elif (condition[0] == 2): listPosition_2.append(str(condition[1]))
+                elif (condition[0] == 3): listPosition_3.append([condition[1],condition[2]])
 
-                if index != (len(self.Position) - 1 ):
-                   FormatStrings_Position = FormatStrings_Position + " OR " 
-                index = index + 1
+        if (len(listPosition_0) > 0):
+            if len(listPosition_0) == 1:
+                list_FormatStrings_Position[0] = 'snp.POSITION = ' + str(listPosition_0[0]) + ' '
+            else:
+                listPosition_0 = ", ".join( [(str(Each_Position)) for Each_Position in listPosition_0])
+                list_FormatStrings_Position[0] = 'snp.POSITION IN (' + listPosition_0 + ' ) '
+
+        if (len(listPosition_1) > 0):
+            list_FormatStrings_Position[1] = " or ".join( ['snp.POSITION < ' + (str(Each_Range[0]) ) for Each_Range in listPosition_1])
+            print(list_FormatStrings_Position[1])
+
+        if (len(listPosition_2) > 0):
+            list_FormatStrings_Position[2] = " or ".join( ['snp.POSITION > ' + (str(Each_Range[0]) ) for Each_Range in listPosition_2])
+            print(list_FormatStrings_Position[2])
+
+        if (len(listPosition_3) > 0):
+            list_FormatStrings_Position[3] = " OR ".join( ['snp.POSITION between ' + (str(Each_Range[0])) + ' AND ' + (str(Each_Range[1])) for Each_Range in listPosition_3])
+            print(list_FormatStrings_Position[3])
+
+        FormatStrings_Position = " or ".join( [ (str(Each_FormatStrings_Position) ) for Each_FormatStrings_Position in list_FormatStrings_Position if Each_FormatStrings_Position != '' ])
+
+        if (len(FormatStrings_Position) != 0):
+            FormatStrings_Position = " and ( " + FormatStrings_Position + " ) "
 
         return FormatStrings_Position
 
     def CreateFormatStrings_Distance(self):
         FormatStrings_Distance = ''
-        FormatStrings_Distance_0 = ''
-        FormatStrings_Distance_1 = ''
-        FormatStrings_Distance_2 = ''
-        FormatStrings_Distance_3 = ''
+
+        list_FormatStrings_Distance = ['', '', '', '']
         listDistance_0 = []
         listDistance_1 = []
         listDistance_2 = []
         listDistance_3 = []
 
-        for condition in self.Distance:
-            if (condition[0] == 0):
-                listDistance_0.append(str(condition[1]))
-            elif (condition[0] == 1):
-                FormatStrings_Distance = FormatStrings_Distance + 'and gene_detail.DISTANCE > ' + str(condition[1]) + ' '
-            elif (condition[0] == 2):
-                FormatStrings_Distance = FormatStrings_Distance + 'and gene_detail.DISTANCE < ' + str(condition[1]) + ' '
-            elif (condition[0] == 3):
-                listDistance_3.append([condition[1],condition[2]])
-
-        if (len(listDistance_3) > 0):
-            FormatStrings_Distance_3 = " or ".join( ['gene_detail.DISTANCE between ' + (str(Each_Range[0])) + ' and ' + (str(Each_Range[1])) for Each_Range in listDistance_3])
-            print(FormatStrings_Distance_3)
+        if ( len(self.Distance) > 0):
+            for condition in self.Distance:
+                if (condition[0] == 0): listDistance_0.append(str(condition[1]))
+                elif (condition[0] == 1): listDistance_1.append(str(condition[1]))
+                elif (condition[0] == 2): listDistance_2.append(str(condition[1]))
+                elif (condition[0] == 3): listDistance_3.append([condition[1],condition[2]])
 
         if (len(listDistance_0) > 0):
             if len(listDistance_0) == 1:
-                FormatStrings_Distance_0 = FormatStrings_Distance + 'and gene_detail.DISTANCE = ' + str(listDistance_0[0]) + ' '
+                list_FormatStrings_Distance[0] = 'gene_detail.DISTANCE = ' + str(listDistance_0[0]) + ' '
             else:
                 listDistance_0 = ", ".join( [(str(Each_Distance)) for Each_Distance in listDistance_0])
-                FormatStrings_Distance_0 = 'and gene_detail.DISTANCE IN (' + listDistance_0 + ' ) '
+                list_FormatStrings_Distance[0] = 'gene_detail.DISTANCE IN (' + listDistance_0 + ' ) '
 
-        FormatStrings_Distance = FormatStrings_Distance_0 + FormatStrings_Distance_1 + FormatStrings_Distance_2 + FormatStrings_Distance_3
+        if (len(listDistance_1) > 0):
+            list_FormatStrings_Distance[1] = " or ".join( ['gene_detail.DISTANCE < ' + (str(Each_Range) ) for Each_Range in listDistance_1])
+            print(list_FormatStrings_Distance[1])
 
-        return FormatStrings_Distance    
+        if (len(listDistance_2) > 0):
+            list_FormatStrings_Distance[2] = " or ".join( ['gene_detail.DISTANCE > ' + (str(Each_Range) ) for Each_Range in listDistance_2])
+            print(list_FormatStrings_Distance[2])
+
+        if (len(listDistance_3) > 0):
+            list_FormatStrings_Distance[3] = " OR ".join( ['gene_detail.DISTANCE between ' + (str(Each_Range[0])) + ' AND ' + (str(Each_Range[1])) for Each_Range in listDistance_3])
+            print(list_FormatStrings_Distance[3])
+
+        FormatStrings_Distance = " or ".join( [ (str(Each_FormatStrings_Distance) ) for Each_FormatStrings_Distance in list_FormatStrings_Distance if Each_FormatStrings_Distance != '' ])
+
+        if (len(FormatStrings_Distance) != 0):
+            FormatStrings_Distance = " and ( " + FormatStrings_Distance + " ) "
+
+        return FormatStrings_Distance
 
     def CreateFormatStrings_Relationship(self):
         FormatStrings_Relationship = ''
@@ -416,7 +441,7 @@ class Search(Database):
         listResult_FD = []
         listResult_NFD = []
         if ( results_FD != [] ):
-            # print('\n List gene has found on disease \n')
+            print('\n List gene has found on disease \n')
 
             Index = 0
             for result in results_FD:
@@ -451,7 +476,7 @@ class Search(Database):
                 listResult_FD.append(each_result)
 
         if ( results_NFD != [] ):
-            # print('\n List gene has not found on disease \n')
+            print('\n List gene has not found on disease \n')
 
             Index = 0
             for result in results_NFD:

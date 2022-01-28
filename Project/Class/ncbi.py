@@ -365,4 +365,4 @@ class Ncbi(Database, MetaData, FilePath):
 
 if __name__ == "__main__":
     ncbi = Ncbi(5)
-    ncbi.CreateNcbiInformation()
+    ncbi.UpdateNcbiInformation()

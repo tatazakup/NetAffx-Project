@@ -52,7 +52,7 @@ class TestCase():
 
         return
 
-
+    # Gene ID
     def SEARCH_GENE_ID_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
         """Test search all data with out condition"""
 
@@ -101,7 +101,7 @@ class TestCase():
 
         return
 
-
+    # Gene Symbol
     def SEARCH_GENE_SYMBOL_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
         """Test search all data with out condition"""
 
@@ -118,7 +118,7 @@ class TestCase():
 
         return
 
-
+    # Chromosome
     def SEARCH_CHROMOSOME_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
         """Test search all data with out condition"""
 
@@ -135,7 +135,7 @@ class TestCase():
 
         return
 
-
+    # GeneShip
     def SEARCH_GENESHIP_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
         """Test search all data with out condition"""
 
@@ -152,7 +152,7 @@ class TestCase():
 
         return
     
-
+    # Distance
     def SEARCH_DISTANCE_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
         """Test search all data with out condition"""
 
@@ -169,7 +169,7 @@ class TestCase():
 
         return
 
-
+    # Relationship
     def SEARCH_RELATIONSHIP_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
         """Test search all data with out condition"""
 
@@ -186,7 +186,7 @@ class TestCase():
 
         return
 
-
+    # Disease
     def SEARCH_DISEASE_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
         """Test search all data with out condition"""
 
@@ -203,7 +203,7 @@ class TestCase():
 
         return
 
-
+    # Source Website
     def SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
         """Test search all data with out condition"""
 
@@ -290,9 +290,34 @@ class TestCase():
 
         return
 
-
     # UPDATE DISEASE
     def UPDATE_DISEASE_WITH_CONDITION_01(self):
+        """ Disease ใน Website หาย """
+
+        database = Database()
+        conn = database.ConnectDatabase()
+        mysqlCommand = """
+            INSERT IGNORE INTO gene_disease (GENE_SYMBOL, DISEASE_ID) VALUE (%s, %s);
+        """
+        database.CreateTask(conn, mysqlCommand, ('TEST_DISEASE_1', 1, ))
+        database.CloseDatabase(conn)
+
+        disease = Disease()
+        disease.UpdateDiseaseDataset()
+        
+        return
+
+    def UPDATE_DISEASE_WITH_CONDITION_02(self):
+        """ Disease ใน Database ไม่ครบ """
+
+        database = Database()
+        conn = database.ConnectDatabase()
+        mysqlCommand = """
+            DELETE FROM gene_disease WHERE GENE_SYMBOL = %s and DISEASE_ID = %s;
+        """
+        database.CreateTask(conn, mysqlCommand, ('INS', 1, ))
+        database.CloseDatabase(conn)
+
         disease = Disease()
         disease.UpdateDiseaseDataset()
         
@@ -330,8 +355,11 @@ class CreateTestCase():
         # self.CREATE_SEARCH_GENESHIP_WITH_CONDITION_02()
 
         # self.CREATE_SEARCH_DISTANCE_WITH_CONDITION_01()
-        self.CREATE_SEARCH_DISTANCE_WITH_CONDITION_02()
+        # self.CREATE_SEARCH_DISTANCE_WITH_CONDITION_02()
         # self.CREATE_SEARCH_DISTANCE_WITH_CONDITION_03()
+        # self.CREATE_SEARCH_DISTANCE_WITH_CONDITION_04()
+        # self.CREATE_SEARCH_DISTANCE_WITH_CONDITION_05()
+        # self.CREATE_SEARCH_DISTANCE_WITH_CONDITION_06()
 
         # self.CREATE_SEARCH_RELATIONSHIP_WITH_CONDITION_01()
 
@@ -498,7 +526,51 @@ class CreateTestCase():
         self.ImportDataTo_NFD('SEARCH_DISTANCE_WITH_CONDITION_02_NFD.csv', Result_NFD)
         return
 
+    def CREATE_SEARCH_DISTANCE_WITH_CONDITION_03(self):
+        TestSearch = Search()
+        TestSearch.Add_Distance([ [1, 1000], [0, 1572755], [0, 465866], [0, 126121], [3, 100000, 200000], [3, 400000, 500000], [2, 1000000] ])
+
+        Results_FD, Result_NFD = TestSearch.SearchData()
+        self.ImportDataTo_FD('SEARCH_DISTANCE_WITH_CONDITION_03_FD.csv', Results_FD)
+        self.ImportDataTo_NFD('SEARCH_DISTANCE_WITH_CONDITION_03_NFD.csv', Result_NFD)
+        return
+
+    def CREATE_SEARCH_DISTANCE_WITH_CONDITION_04(self):
+        TestSearch = Search()
+        TestSearch.Add_Distance([ [1, 1000], [1, 10000] ])
+
+        Results_FD, Result_NFD = TestSearch.SearchData()
+        self.ImportDataTo_FD('SEARCH_DISTANCE_WITH_CONDITION_04_FD.csv', Results_FD)
+        self.ImportDataTo_NFD('SEARCH_DISTANCE_WITH_CONDITION_04_NFD.csv', Result_NFD)
+        return
+
+    def CREATE_SEARCH_DISTANCE_WITH_CONDITION_05(self):
+        TestSearch = Search()
+        TestSearch.Add_Distance([ [2, 1000], [2, 10000] ])
+
+        Results_FD, Result_NFD = TestSearch.SearchData()
+        self.ImportDataTo_FD('SEARCH_DISTANCE_WITH_CONDITION_05_FD.csv', Results_FD)
+        self.ImportDataTo_NFD('SEARCH_DISTANCE_WITH_CONDITION_05_NFD.csv', Result_NFD)
+        return
+
+    def CREATE_SEARCH_DISTANCE_WITH_CONDITION_06(self):
+        TestSearch = Search()
+        TestSearch.Add_Distance([ [0, 1] ])
+
+        Results_FD, Result_NFD = TestSearch.SearchData()
+        self.ImportDataTo_FD('SEARCH_DISTANCE_WITH_CONDITION_06_FD.csv', Results_FD)
+        self.ImportDataTo_NFD('SEARCH_DISTANCE_WITH_CONDITION_06_NFD.csv', Result_NFD)
+        return
+
     # Relationship
+    def CREATE_SEARCH_RELATIONSHIP_WITH_CONDITION_ALL(self):
+        TestSearch = Search()
+
+        Results_FD, Result_NFD = TestSearch.SearchData()
+        self.ImportDataTo_FD('SEARCH_RELATIONSHIP_WITH_CONDITION_ALL_FD.csv', Results_FD)
+        self.ImportDataTo_NFD('SEARCH_RELATIONSHIP_WITH_CONDITION_ALL_NFD.csv', Result_NFD)
+        return
+
     def CREATE_SEARCH_RELATIONSHIP_WITH_CONDITION_01(self):
         TestSearch = Search()
         TestSearch.Add_Relationship(['upstream'])
@@ -506,6 +578,15 @@ class CreateTestCase():
         Results_FD, Result_NFD = TestSearch.SearchData()
         self.ImportDataTo_FD('SEARCH_RELATIONSHIP_WITH_CONDITION_01_FD.csv', Results_FD)
         self.ImportDataTo_NFD('SEARCH_RELATIONSHIP_WITH_CONDITION_01_NFD.csv', Result_NFD)
+        return
+    
+    def CREATE_SEARCH_RELATIONSHIP_WITH_CONDITION_03(self):
+        TestSearch = Search()
+        TestSearch.Add_Relationship(['upstream', 'downstream'])
+
+        Results_FD, Result_NFD = TestSearch.SearchData()
+        self.ImportDataTo_FD('SEARCH_RELATIONSHIP_WITH_CONDITION_02_FD.csv', Results_FD)
+        self.ImportDataTo_NFD('SEARCH_RELATIONSHIP_WITH_CONDITION_02_NFD.csv', Result_NFD)
         return
 
     # Disease
@@ -530,7 +611,7 @@ class CreateTestCase():
  
 
 if __name__ == "__main__":
-    createTestCase = CreateTestCase()
+    # createTestCase = CreateTestCase()
 
-    # testCase = TestCase()
-    # testCase.SEARCH_GENE_ID_WITH_CONDITION_01()
+    testCase = TestCase()
+    testCase.UPDATE_DISEASE_WITH_CONDITION_02()

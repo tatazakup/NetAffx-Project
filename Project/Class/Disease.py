@@ -37,7 +37,7 @@ class HugeInfo():
             findinres = res.find_all('table', {'style':'table_inside'})
             a = findinres[0].find_all('td', {'align':'left'})
             
-            for i in a[:]:
+            for i in a[:5]:
                 geneSymbol = ( i.get_text()[4:].split('\r\n   \t\t\t\t\t\t\n') )[0]
 
                 listGene.append({
@@ -95,7 +95,7 @@ class KeggInfo():
             return []
         else:
             allGene = self.GetAllGene(res)
-            for eachGene in allGene[:]:
+            for eachGene in allGene[:5]:
                 separateWord = eachGene.split('[')
                 geneSymbol = ( separateWord[0].split() )[0]
                 ganeID = ( ( separateWord[1].split(':')[1] ).split() )[0].replace(']', '')
