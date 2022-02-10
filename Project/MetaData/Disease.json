@@ -19,19 +19,31 @@
         "diseases": [
             {
                 "DiseaseID": "1",
-                "Name": "Type 1 Diabete",
+                "Name": "Diabetes Mellitus, Type 1",
                 "Abbreviation": "T1D",
                 "kege": "https://www.kegg.jp/entry/H00408",
                 "huge": "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Diabetes%20Mellitus,%20Type%201&cuiID=C0011854&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
+                "HugeNew": {
+                    "Link": "https://phgkb.cdc.gov/PHGKB/searchSummary.action?Mysubmit=Search&firstQuery=Diabetes&dbTypeChoice=All&__checkbox_gwas=true",
+                    "NameTextBox": "Diabetes",
+                    "IDCheckBox": "C0011854",
+                    "Step": "2"
+                },                                
                 "createionTime": 1634210000.0,
                 "lastMedoficationTime": 1634239924.57854
             },
             {
                 "DiseaseID": "2",
-                "Name": "Type 2 Diabete",
+                "Name": "Diabetes Mellitus, Type 2",
                 "Abbreviation": "T2D",
                 "kege": "https://www.kegg.jp/entry/H00409",
                 "huge": "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Diabetes%20Mellitus,%20Type%202&cuiID=C0011860&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
+                "HugeNew": {
+                    "Link": "https://phgkb.cdc.gov/PHGKB/searchSummary.action?Mysubmit=Search&firstQuery=Diabetes&dbTypeChoice=All&__checkbox_gwas=true",
+                    "NameTextBox": "Diabetes",
+                    "IDCheckBox": "C0011860",
+                    "Step": "2"
+                },
                 "createionTime": 1634210000.0,
                 "lastMedoficationTime": 1634239928.7342021
             },
@@ -41,6 +53,12 @@
                 "Abbreviation": "BD",
                 "kege": "https://www.kegg.jp/entry/H01653",
                 "huge": "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Bipolar%20Disorder&cuiID=C0005586&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
+                "HugeNew": {
+                    "Link": "https://phgkb.cdc.gov/PHGKB/searchSummary.action?Mysubmit=Search&firstQuery=Bipolar+Disorder&dbTypeChoice=All&__checkbox_gwas=true",
+                    "NameTextBox": "",
+                    "IDCheckBox": "",
+                    "Step": "1"
+                },
                 "createionTime": 1634210000.0,
                 "lastMedoficationTime": 1634239934.270454
             },
@@ -50,6 +68,12 @@
                 "Abbreviation": "CAD",
                 "kege": "https://www.kegg.jp/entry/H01742",
                 "huge": "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Coronary%20artery%20disease&cuiID=C1956346&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
+                "HugeNew": {
+                    "Link": "https://phgkb.cdc.gov/PHGKB/searchSummary.action?Mysubmit=Search&firstQuery=Coronary+Artery+Disease&dbTypeChoice=All&__checkbox_gwas=true",
+                    "NameTextBox": "",
+                    "IDCheckBox": "",
+                    "Step": "1"
+                },
                 "createionTime": 1634210000.0,
                 "lastMedoficationTime": 1634239941.006051
             },
@@ -59,6 +83,12 @@
                 "Abbreviation": "CD",
                 "kege": "https://www.kegg.jp/entry/H00286",
                 "huge": "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Crohn%20Disease&cuiID=C0010346&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
+                "HugeNew": {
+                    "Link": "https://phgkb.cdc.gov/PHGKB/searchSummary.action?Mysubmit=Search&firstQuery=Crohn%E2%80%99s+Disease&dbTypeChoice=All&__checkbox_gwas=true",
+                    "NameTextBox": "",
+                    "IDCheckBox": "",
+                    "Step": "1"
+                },
                 "createionTime": 1634210000.0,
                 "lastMedoficationTime": 1634239944.93291
             },
@@ -68,6 +98,12 @@
                 "Abbreviation": "HT",
                 "kege": "https://www.kegg.jp/entry/H01633",
                 "huge": "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Hypertension&cuiID=C0020538&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
+                "HugeNew": {
+                    "Link": "https://phgkb.cdc.gov/PHGKB/searchSummary.action?Mysubmit=Search&firstQuery=Hypertension&dbTypeChoice=All&__checkbox_gwas=true",
+                    "NameTextBox": "",
+                    "IDCheckBox": "",
+                    "Step": "1"
+                },
                 "createionTime": 1634210000.0,
                 "lastMedoficationTime": 1634239953.142336
             },
@@ -77,6 +113,12 @@
                 "Abbreviation": "RA",
                 "kege": "https://www.kegg.jp/entry/H00630",
                 "huge": "https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Arthritis,%20Rheumatoid&cuiID=C0003873&typeSubmit=GO&check=y&which=2&pubOrderType=pubD",
+                "HugeNew": {
+                    "Link": "https://phgkb.cdc.gov/PHGKB/searchSummary.action?Mysubmit=Search&firstQuery=Rheumatoid+Arthritis&dbTypeChoice=All&__checkbox_gwas=true",
+                    "NameTextBox": "",
+                    "IDCheckBox": "",
+                    "Step": "1"
+                },
                 "createionTime": 1634210000.0,
                 "lastMedoficationTime": 1634239957.0289931
             }

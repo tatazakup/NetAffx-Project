@@ -74,6 +74,7 @@ class Database():
 
 class FilePath():
 
+    pathToChrome = os.getcwd() + "/Project/ChromeDriver"
     pathToDataSet = os.getcwd() + "/Project/Dataset"
     pathToMetaData = os.getcwd() + "/Project/MetaData"
     pathToTestCase = os.getcwd() + "/Project/TestCase"
@@ -89,6 +90,12 @@ class FilePath():
 
     def GetPathToTestCase(self):
         return self.pathToTestCase
+
+    def GetPathToChromeDriver(self):
+        return self.pathToChrome
+
+    def GetPathToMetadata(self):
+        return self.pathToMetaData
 
 class LinkDataAndHeader():
     sourceWebsite = {

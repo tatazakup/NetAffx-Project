@@ -6,6 +6,7 @@ from threading import Thread
 from datetime import datetime
 from bs4 import BeautifulSoup as soup
 from Initialization import Database, FilePath, LinkDataAndHeader, MetaData, GeneWithMap
+import json
 
 """
 Global variable
@@ -114,12 +115,14 @@ class CreateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
         return
 
 class UpdateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
+    nameMetadata = ""
     listDataUnCheck = []
     startIndex = 0
     
-    def __init__(self, ListDataUnCheck, StartIndex):
+    def __init__(self, Index, ListDataUnCheck, StartIndex):
         Thread.__init__(self)
         FilePath.__init__(self)
+        self.nameMetadata = "NCBI_thread_" + str(Index)
         self.listDataUnCheck = ListDataUnCheck
         self.startIndex = StartIndex
     
@@ -171,10 +174,36 @@ class UpdateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
         timeOutput = datetime.timestamp(timeOutput)
         return timeOutput
 
+    def TryFetchDataOnMetaData(self, objectMetaData, metaname):
+        isCompleted = False
+        while ( isCompleted == False):
+            try:       
+                dataInMetaData = objectMetaData.ReadMetadata(metaname)
+                isCompleted = True
+            except:
+                print('Except Meta', self.nameMetadata)
+                time.sleep(0.1)
+                pass
+        return dataInMetaData
+
     def run(self):
-        for GeneID, UpdateAt in self.listDataUnCheck[:5]:
+
+        objectMapSnpWithNcbi = MetaData()
+        objectThread = MetaData()
+        
+        dataMetaThread = self.TryFetchDataOnMetaData(objectThread, self.nameMetadata)
+
+        startAt = dataMetaThread['count']
+        if ( startAt == 0): startAt = 0
+        else: startAt = startAt - 1
+
+        for GeneID, UpdateAt in self.listDataUnCheck[ startAt : 10 ]:
             
+            dataMetaThread['currentNumberOfGene'] = GeneID
+
             response = self.SendRequestToNcbi( GeneID )
+            if response == False: continue
+
             updatedOn_Website = self.FetchUpdateOn(response)
             updatedOn_OldData = self.ConvertUpdateAtToTimeStamp(UpdateAt)
 
@@ -182,7 +211,6 @@ class UpdateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
 
             if ( updatedOn_OldData == updatedOn_Website):
                 print('GeneID :', GeneID, 'last updated')
-                continue
             else:
                 resSummaryDl = response.find('dl', {"id": "summaryDl"}) # fetch all detail of website
                 
@@ -198,6 +226,20 @@ class UpdateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
                 
                 listNcbiUpdated.append(new_row)
                 print('GeneID :', GeneID, 'updated ||', new_row)
+
+            dataMetaThread['count'] = dataMetaThread['count'] + 1
+
+            dataInMapSnpWithNcbi = self.TryFetchDataOnMetaData(objectMapSnpWithNcbi, 'MapSnpWithNcbi')
+            print(dataInMapSnpWithNcbi)
+            dataInMapSnpWithNcbi['technical']['meta']['amountOfFinished'] = dataInMapSnpWithNcbi['technical']['meta']['amountOfFinished'] + 1
+
+            if dataInMapSnpWithNcbi['technical']['meta']['status'] != 1:
+                return
+            else:
+                objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
+                objectThread.SaveManualUpdateMetadata(dataMetaThread)
+
+        
         
         return
 
@@ -206,6 +248,7 @@ class Ncbi(Database, MetaData, FilePath):
     numberOfThread = 1
 
     def __init__(self, _NumberOfThread):
+        FilePath.__init__(self)
         self.numberOfThread = _NumberOfThread
         return
     
@@ -294,26 +337,48 @@ class Ncbi(Database, MetaData, FilePath):
         """
         ncbiData = database.CreateTask(conn, mysqlCommand, ())
 
+        objectMetaData = MetaData()
+        dataInMetaData = objectMetaData.ReadMetadata("MapSnpWithNcbi")
+
         lengthNcbiData = len( ncbiData )
+        dataInMetaData['technical']['meta']['amountUniqueGene'] = lengthNcbiData
         lengthEachRound = lengthNcbiData // self.numberOfThread
         startIndex = 0
         threadArray = []
 
         for count in range( self.numberOfThread ):
-            
+            nameMetadata = 'NCBI_thread_' + str(count)
+
+            if (dataInMetaData['technical']['meta']['status'] == 1):
+                json_obj = {
+                    "currentNumberOfGene" : 0,
+                    "count": 0
+                }
+
+                #Write the object to file.
+                with open( self.GetPathToMetadata() + '/' + nameMetadata + '.json','w') as jsonFile:
+                    json.dump(json_obj, jsonFile)
+
+            elif (dataInMetaData['technical']['meta']['status'] == 2):
+                dataInMetaData['technical']['meta']['status'] = 1
+
             if ( count != ( self.numberOfThread - 1) ):
                 updateNcbi = UpdateNcbi(
+                    count,
                     ListDataUnCheck = ncbiData[lengthEachRound * count : ( lengthEachRound * count ) + lengthEachRound],
                     StartIndex = startIndex
                 )
             else:
                 updateNcbi = UpdateNcbi(
+                    count,
                     ListDataUnCheck = ncbiData[lengthEachRound * count : lengthNcbiData],
                     StartIndex = startIndex
                 )
                 
             threadArray.append(updateNcbi)
             startIndex = startIndex + lengthEachRound
+
+        objectMetaData.SaveManualUpdateMetadata(dataInMetaData)
                 
         for eachThread in threadArray:
             eachThread.start()
@@ -360,9 +425,10 @@ class Ncbi(Database, MetaData, FilePath):
             
             
         database.CloseDatabase(conn)
+        dataInMetaData = objectMetaData.ReadMetadata("MapSnpWithNcbi")
 
         return
 
 if __name__ == "__main__":
-    ncbi = Ncbi(5)
+    ncbi = Ncbi(1)
     ncbi.UpdateNcbiInformation()
