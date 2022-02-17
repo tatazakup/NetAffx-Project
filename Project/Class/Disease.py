@@ -158,13 +158,13 @@ class HugeInfo_TestNewScrpit_1_Selenium():
         pageSource = soup(driver.page_source, 'html.parser')
         allGenes = pageSource.find_all('tbody')
         for eachGene in allGenes[len(allGenes) - 1].find_all('tr'):
-            gene = " ".join(re.findall("[a-zA-Z1-9_@-]+", (eachGene.find_all('td'))[0].get_text() ))
-            if (len(gene) != 0): 
-                listGeneTest.append(gene)
+            geneSymbol = " ".join(re.findall("[a-zA-Z0-9_@-]+", (eachGene.find_all('td'))[0].get_text() ))
+            if (len(geneSymbol) != 0):
+                listGeneTest.append(geneSymbol)
                 listGene.append({
                     'DISEASE_ID': diseaseID,
                     'GENE_ID' : "Not found",
-                    'GENE_SYMBOL' : gene,
+                    'GENE_SYMBOL' : geneSymbol,
                     'SOURCE_WEBSITE' : 'huge'
                 })
 
@@ -216,7 +216,7 @@ class KeggInfo():
             return []
         else:
             allGene = self.GetAllGene(res)
-            for eachGene in allGene[:5]:
+            for eachGene in allGene[:]:
                 separateWord = eachGene.split('[')
                 geneSymbol = ( separateWord[0].split() )[0]
                 ganeID = ( ( separateWord[1].split(':')[1] ).split() )[0].replace(']', '')
@@ -341,10 +341,10 @@ class Disease(MetaData):
         metaData = MetaData()
         diseaseInfo = metaData.ReadMetadata('Disease')
 
-        for eachDisease in diseaseInfo['technical']['diseases']:                       
+        for eachDisease in diseaseInfo['technical']['diseases']:                 
             diseaseID = self.CheckDiseaseID(eachDisease['Abbreviation'])
 
-            if (diseaseID != 5):
+            if (diseaseID != 2):
                 continue
 
             linkHuge = eachDisease['HugeNew']['Link']
@@ -355,7 +355,6 @@ class Disease(MetaData):
             print('Disease ID :', diseaseID)
             
             keggInfo = KeggInfo(eachDisease['kege'])
-            hugeDataset = HugeInfo(eachDisease['huge'])
             hugeDatasetNew = HugeInfo_TestNewScrpit_1_Selenium(
                 searchHuge,
                 linkHuge,
@@ -364,59 +363,44 @@ class Disease(MetaData):
             )
 
             listGeneFromKegg = keggInfo.KeggDataset(diseaseID)
-            listGeneFromHuge, listTestFromHuge_OLD = hugeDataset.HugeDataset(diseaseID)
-            listGeneFromHugeNew, listTestFromHuge_NEW = hugeDatasetNew.SeleniumProcess(diseaseID)
-
-            listContainBTWHugeNewAndHuge = []
-            listNotContainBTWHugeNewAndHuge = []
-
-            for GeneOld in listTestFromHuge_OLD:
-                if(GeneOld in listTestFromHuge_NEW):
-                    listContainBTWHugeNewAndHuge.append(GeneOld)
-                else:
-                    listNotContainBTWHugeNewAndHuge.append(GeneOld)
+            listGeneFromHuge, listTestGeneFromHuge = hugeDatasetNew.SeleniumProcess(diseaseID)
             
-            print(listTestFromHuge_NEW)
-            # print("List found :", listContainBTWHugeNewAndHuge, "\n")
-            print("Total Number Gene on new link :", str(len(listTestFromHuge_NEW)), "Total Number Gene on old link :", str(len(listTestFromHuge_OLD)), ", Matching with old link", str(len(listContainBTWHugeNewAndHuge)), "\n")
-            # print("List not found :", listNotContainBTWHugeNewAndHuge, "\n")
-            
-            # listGeneEachDisease = listGeneFromKegg + listGeneFromHuge
-            # listGene = self.CheckGeneWithMap(listGeneEachDisease, listGeneFromKegg)
+            listGeneEachDisease = listGeneFromKegg + listGeneFromHuge
+            listGene = self.CheckGeneWithMap(listGeneEachDisease, listGeneFromKegg)
 
-            # database = Database()
-            # conn = database.ConnectDatabase()
+            database = Database()
+            conn = database.ConnectDatabase()
 
-            # for row in listGene:
-            #     geneID = str(row['GENE_ID'])
-            #     geneSymbol = str(row['GENE_SYMBOL']) 
-            #     sources = row['SOURCE_WEBSITE'].split('; ')
+            for row in listGene:
+                geneID = str(row['GENE_ID'])
+                geneSymbol = str(row['GENE_SYMBOL'])
+                sources = row['SOURCE_WEBSITE'].split('; ')
 
-            #     if ( str(row['GENE_ID']) == 'Not found' ):
-            #         sqlCommand = """
-            #             INSERT IGNORE INTO gene_disease ( GENE_SYMBOL, DISEASE_ID ) 
-            #             VALUES ( %s, %s ) 
-            #         """
+                if ( str(row['GENE_ID']) == 'Not found' ):
+                    sqlCommand = """
+                        INSERT IGNORE INTO gene_disease ( GENE_SYMBOL, DISEASE_ID ) 
+                        VALUES ( %s, %s ) 
+                    """
 
-            #         database.CreateTask(conn, sqlCommand, (geneSymbol, diseaseID))
+                    database.CreateTask(conn, sqlCommand, (geneSymbol, diseaseID))
 
-            #     else:                    
-            #         sqlCommand = """
-            #             INSERT IGNORE INTO gene_disease ( GENE_SYMBOL, DISEASE_ID, GENE_ID ) 
-            #             VALUES ( %s, %s, %s )
-            #         """
+                else:                    
+                    sqlCommand = """
+                        INSERT IGNORE INTO gene_disease ( GENE_SYMBOL, DISEASE_ID, GENE_ID ) 
+                        VALUES ( %s, %s, %s )
+                    """
 
-            #         database.CreateTask(conn, sqlCommand, (geneSymbol, diseaseID, geneID))
+                    database.CreateTask(conn, sqlCommand, (geneSymbol, diseaseID, geneID))
                 
-            #     for source in sources:                
-            #         sqlCommand = """
-            #             INSERT IGNORE INTO gene_disease_source ( GENE_SYMBOL, SOURCE_WEBSITE ) 
-            #             VALUES ( %s, %s ) 
-            #         """
+                for source in sources:                
+                    sqlCommand = """
+                        INSERT IGNORE INTO gene_disease_source ( GENE_SYMBOL, SOURCE_WEBSITE ) 
+                        VALUES ( %s, %s ) 
+                    """
                     
-            #         database.CreateTask(conn, sqlCommand, (geneSymbol, source))
+                    database.CreateTask(conn, sqlCommand, (geneSymbol, source))
             
-            # database.CloseDatabase(conn)            
+            database.CloseDatabase(conn)            
         return
 
     def UpdateDiseaseDataset(self):
@@ -491,7 +475,3 @@ if __name__ == "__main__":
     disease = Disease()
     disease.CreateDiseaseDataset()
     # disease.UpdateDiseaseDataset()
-
-    # testList = ['HLA-DRB1', 'HLA-DQB1', 'HLA-DQA1', 'INS', 'CTLA-4', 'PTPN22', 'IL-2RA', 'PTPN2', 'ERBB3', 'IL2', 'IFIH1', 'CLEC16A', 'BACH2', 'PRKCQ', 'CTSH', 'C1QTNF6', 'SH2B3', 'C12orf30', 'CD226', 'ITPR3', 'CYP27B1', 'ACE']
-    # testString = 'HLA-DQB1'
-    # print( testString in testList )
