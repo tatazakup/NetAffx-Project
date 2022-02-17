@@ -1,5 +1,15 @@
 from Initialization import Database, FilePath
 import pandas as pd
+import enum
+
+class DiseaseEnum(enum.Enum):
+    T1D = 1
+    T2D = 2
+    BD = 3
+    CAD = 4
+    CD = 5
+    HT = 6
+    RA = 7
 
 class Search(Database):
     def __init__(self):
@@ -38,6 +48,10 @@ class Search(Database):
         # intron
         self.Relationship = []
 
+        # 0 stand alone
+        # 1 Group
+        self.StatusRelationship = 0
+
         # All
         # T1D
         # T2D
@@ -45,10 +59,18 @@ class Search(Database):
         # RA
         self.Disease = []
 
+        # 0 stand alone
+        # 1 Group
+        self.StatusDisease = 0
+
         # 0 All 
         # 1 Huge
         # 2 Kegg
         # 3 Pathway
+        # 4 Huge and kegg
+        # 5 Huge and pathway
+        # 6 kegg and pathway
+        # 7 kegg and kegg and pathway
         self.source_website = 0
 
         return
@@ -95,15 +117,21 @@ class Search(Database):
         self.Relationship = newData
         return
 
+    def ChangeStatus_Relationship(self, newData):
+        self.StatusRelationship = newData
+        return
+
     def Add_Disease(self, newData):
         self.Disease = newData
+        return
+
+    def ChangeStatus_Disease(self, newData):
+        self.StatusDisease = newData
         return
 
     def Add_source_website(self, newData):
         self.source_website = newData
         return
-
-
 
     def CreateFormatStrings_RSID_ProbeSetID(self):
         FormatStrings_RSID_ProbeSetID = ''
@@ -272,15 +300,23 @@ class Search(Database):
            return FormatStrings_Relationship
 
         else:
-            if 0 in self.Relationship:
-                return FormatStrings_Relationship
+            if (self.StatusRelationship == 0):            
 
-            elif len(self.Relationship) > 1:
-                listRelationship = ", ".join( [ ( "'" + str(Each_Relationship) + "'" ) for Each_Relationship in self.Relationship])
-                FormatStrings_Relationship = 'and gene_detail.RELATIONSHIP IN (' + listRelationship + ')'
+                if len(self.Relationship) > 1:
+                    listRelationship = ", ".join( [ ( "'" + str(Each_Relationship) + "'" ) for Each_Relationship in self.Relationship])
+                    FormatStrings_Relationship = 'and gene_detail.RELATIONSHIP IN (' + listRelationship + ')'
 
-            elif len(self.Relationship) == 1:
-                FormatStrings_Relationship = "and gene_detail.RELATIONSHIP = '" + str(self.Relationship[0]) + "'"
+                elif len(self.Relationship) == 1:
+                    FormatStrings_Relationship = "and gene_detail.RELATIONSHIP = '" + str(self.Relationship[0]) + "'"
+
+            elif (self.StatusRelationship == 1):
+                listFormatString = []
+
+                for Each_Group in self.Relationship:
+                    listRelationship = ", ".join( [ ( "'" + str(Each_Relationship) + "'" ) for Each_Relationship in Each_Group])
+                    listFormatString.append( 'gene_detail.RS_ID IN ( SELECT RS_ID FROM gene_detail WHERE RS_ID IN ( SELECT RS_ID FROM demo_automap3.gene_detail GROUP BY RS_ID HAVING COUNT(*) = ' + str(len(Each_Group)) + ' ) AND RELATIONSHIP IN (' + str(listRelationship) + ') GROUP BY RS_ID HAVING COUNT(distinct RELATIONSHIP) = ' + str(len(Each_Group)) + ')' )
+
+                FormatStrings_Relationship = " and ( " + ( " OR ".join( [ ( str(Each_String) ) for Each_String in listFormatString]) ) + " ) "
 
         return FormatStrings_Relationship
 
@@ -291,15 +327,24 @@ class Search(Database):
            return FormatStrings_Disease
 
         else:
-            if 0 in self.Disease:
-                return FormatStrings_Disease
+            if (self.StatusDisease == 0):
 
-            elif len(self.Disease) > 1:
-                listDisease = ", ".join( [("'" + str(Each_Disease) + "'") for Each_Disease in self.Disease])
-                FormatStrings_Disease = 'and disease.DISEASE_ABBREVIATION IN (' + listDisease + ')'
+                if len(self.Disease) > 1:
+                    listDisease = ", ".join( [("'" + str(Each_Disease) + "'") for Each_Disease in self.Disease])
+                    FormatStrings_Disease = 'and disease.DISEASE_ABBREVIATION IN (' + listDisease + ')'
 
-            elif len(self.Disease) == 1:
-                FormatStrings_Disease = "and disease.DISEASE_ABBREVIATION = '" + str(self.Disease[0]) + "'"
+                elif len(self.Disease) == 1:
+                    FormatStrings_Disease = "and disease.DISEASE_ABBREVIATION = '" + str(self.Disease[0]) + "'"
+
+            elif (self.StatusDisease == 1):
+                listFormatString = []
+
+                for Each_Group in self.Disease:
+                    listDisease = ", ".join( [ ( str( DiseaseEnum[str(Each_Disease)].value ) ) for Each_Disease in Each_Group] )
+                    listFormatString.append( 'matching_snp_disease.RS_ID IN ( SELECT RS_ID FROM matching_snp_disease WHERE RS_ID IN ( SELECT RS_ID FROM demo_automap3.matching_snp_disease GROUP BY RS_ID HAVING COUNT(*) = ' + str(len(Each_Group)) + ' ) AND DISEASE_ID IN (' + str(listDisease) + ') GROUP BY RS_ID HAVING COUNT(distinct DISEASE_ID) = ' + str(len(Each_Group)) + ')' )
+
+                FormatStrings_Disease = " and ( " + ( " OR ".join( [ ( str(Each_String) ) for Each_String in listFormatString]) ) + " ) "
+                
 
         return FormatStrings_Disease
 
@@ -312,6 +357,12 @@ class Search(Database):
             return 'and matching_snp_disease.MatchBy = "kegg"'
         elif self.source_website == 3:
             return 'and matching_snp_disease.MatchBy = "pathway"'
+        elif self.source_website == 4:
+            return 'and matching_snp_disease.MatchBy IN ("huge", "kegg")'
+        elif self.source_website == 5:
+            return 'and matching_snp_disease.MatchBy IN ("huge", "pathway")'
+        elif self.source_website == 6:
+            return 'and matching_snp_disease.MatchBy IN ("kegg", "pathway")'
 
     def SearchData(self):
         database = Database()
@@ -437,7 +488,7 @@ class Search(Database):
         print('mysqlCommand_NFD :', mysqlCommand_NotFoundDisease)
 
         results_FD = set( database.CreateTask(conn, mysqlCommand_FoundDisease, ()) )
-        results_NFD = set( database.CreateTask(conn, mysqlCommand_NotFoundDisease, ()) )
+        # results_NFD = set( database.CreateTask(conn, mysqlCommand_NotFoundDisease, ()) )
         listResult_FD = []
         listResult_NFD = []
         if ( results_FD != [] ):
@@ -475,37 +526,37 @@ class Search(Database):
                 Index = Index + 1
                 listResult_FD.append(each_result)
 
-        if ( results_NFD != [] ):
-            print('\n List gene has not found on disease \n')
+        # if ( results_NFD != [] ):
+        #     print('\n List gene has not found on disease \n')
 
-            Index = 0
-            for result in results_NFD:
-                mysqlCommand = """ 
-                    SELECT
-                        OTHER_SYMBOL
-                    FROM other_symbol
-                    WHERE GENE_ID = %s
-                """
+        #     Index = 0
+        #     for result in results_NFD:
+        #         mysqlCommand = """ 
+        #             SELECT
+        #                 OTHER_SYMBOL
+        #             FROM other_symbol
+        #             WHERE GENE_ID = %s
+        #         """
 
-                other_symbol = database.CreateTask(conn, mysqlCommand, (result[8], ))
+        #         other_symbol = database.CreateTask(conn, mysqlCommand, (result[8], ))
 
-                print(
-                    '               INDEX :', Index, '\n'
-                    '                RSID :', result[0], '\n'
-                    '         PROBESET_ID :', result[1], '\n'
-                    '          CHROMOSOME :', result[2], '\n'
-                    '            POSITION :', result[3], '\n'
-                    '     SOURCE_GENESHIP :', result[4], '\n'
-                    '        RELATIONSHIP :', result[5], '\n'
-                    '            DISTANCE :', result[6], '\n'
-                    '         GENE_SYMBOL :', result[7], '\n'
-                    '             GENE_ID :', result[8], '\n'
-                    '        OTHER_SYMBOL :', ', '.join([str(elem)[2:-3] for elem in other_symbol]), '\n'
-                )
+        #         print(
+        #             '               INDEX :', Index, '\n'
+        #             '                RSID :', result[0], '\n'
+        #             '         PROBESET_ID :', result[1], '\n'
+        #             '          CHROMOSOME :', result[2], '\n'
+        #             '            POSITION :', result[3], '\n'
+        #             '     SOURCE_GENESHIP :', result[4], '\n'
+        #             '        RELATIONSHIP :', result[5], '\n'
+        #             '            DISTANCE :', result[6], '\n'
+        #             '         GENE_SYMBOL :', result[7], '\n'
+        #             '             GENE_ID :', result[8], '\n'
+        #             '        OTHER_SYMBOL :', ', '.join([str(elem)[2:-3] for elem in other_symbol]), '\n'
+        #         )
 
-                each_result = [result[0],result[1],int(result[2]),result[3],result[4],result[5],result[6],result[7],result[8],', '.join([str(elem)[2:-3] for elem in other_symbol])]
-                Index = Index + 1
-                listResult_NFD.append(each_result)
+        #         each_result = [result[0],result[1],int(result[2]),result[3],result[4],result[5],result[6],result[7],result[8],', '.join([str(elem)[2:-3] for elem in other_symbol])]
+        #         Index = Index + 1
+        #         listResult_NFD.append(each_result)
 
         database.CloseDatabase(conn)
 
