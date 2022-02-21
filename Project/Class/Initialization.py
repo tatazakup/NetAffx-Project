@@ -8,6 +8,7 @@ from mysql.connector import Error
 class Database():
     # host = 'localhost'
     host = '192.168.1.128'
+    # database = 'test_automap1'
     database = 'demo_automap3'
     user = 'root'
     password = 'password'
@@ -78,11 +79,13 @@ class FilePath():
     pathToDataSet = os.getcwd() + "/Project/Dataset"
     pathToMetaData = os.getcwd() + "/Project/MetaData"
     pathToTestCase = os.getcwd() + "/Project/TestCase"
+    pathToNCBILogs = os.getcwd() + "/Project/NCBILogs"
 
     def __init__(self):
         Path( os.getcwd() + "/Project/Dataset" ).mkdir(parents=True, exist_ok=True)
         Path( os.getcwd() + "/Project/Dataset/NCBI" ).mkdir(parents=True, exist_ok=True)
         Path( os.getcwd() + "/Project/TestCase" ).mkdir(parents=True, exist_ok=True)
+        Path( os.getcwd() + "/Project/NCBILogs" ).mkdir(parents=True, exist_ok=True)
         return
 
     def GetPathToNCBI(self):        
@@ -96,6 +99,9 @@ class FilePath():
 
     def GetPathToMetadata(self):
         return self.pathToMetaData
+    
+    def GetPathToNCBILogs(self):
+        return self.pathToNCBILogs
 
 class LinkDataAndHeader():
     sourceWebsite = {
@@ -106,8 +112,6 @@ class LinkDataAndHeader():
             'second': r'&typeSubmit=GO&check=y&which=2&pubOrderType=pubD'
         }
     }
-
-    ncbiHeader = ['GeneID', 'GeneSymbol', 'AlsoKnowAs', 'UpdatedAt']
 
     def __init__(self):
         return
@@ -149,8 +153,10 @@ class MetaData(FilePath):
 Model of GeneWithMap
 """
 class GeneWithMap():
-    def __init__(self, GeneID, GeneSymbol, AlsoKnowAs, UpdatedAt):
-        self.GeneID = GeneID
+    ncbiHeader = ['CurrentGeneID', 'OldGeneID', 'GeneSymbol', 'AlsoKnowAs', 'UpdatedAt']
+    def __init__(self, CurrentGeneID, OldGeneID, GeneSymbol, AlsoKnowAs, UpdatedAt):
+        self.CurrentGeneID = CurrentGeneID
+        self.OldGeneID = OldGeneID
         self.GeneSymbol = GeneSymbol
         self.AlsoKnowAs = AlsoKnowAs
         self.UpdatedAt = UpdatedAt
