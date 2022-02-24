@@ -337,6 +337,19 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
         self.numberOfThread = _NumberOfThread
         return
 
+    def CreateCSVFile(self, FileName):
+        ncbiPandas = pd.DataFrame( data=[], columns=[self.ncbiHeader] ) # set Initialize of csv file
+        ncbiPandas.to_csv( FileName, index = False ) # create csv file for each multi thread
+        return
+    
+    def CreateThreadMetadataFile(self, FileName):
+        json_obj = {"currentNumberOfGene" : 0, "count": 0}
+
+        #Write the object to file.
+        with open(FileName,'w') as jsonFile:
+            json.dump(json_obj, jsonFile)
+        return
+
     def CombineDataNcbi(self):
         database = Database()
         conn = database.ConnectDatabase()
@@ -439,7 +452,7 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
                 )
             else:
                 # IndexStop = lengthUniqueGeneID
-                IndexStop = 1
+                IndexStop = 0
 
                 # eachThread = CreateNcbi(
                 #     ThreadNumber = threadNumber,
@@ -450,32 +463,25 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
 
                 eachThread = CreateNcbi(
                     ThreadNumber = threadNumber,
-                    ListGenesID = [1996],
+                    ListGenesID = [313],
                     IndexStart = IndexStart,
                     IndexStop = IndexStop
                 )
 
             # Running Status
             if (dataInMapSnpWithNcbi['technical']['createMeta']['status'] == 1):
-                json_obj = { "currentNumberOfGene" : 0, "count": 0 }
-
-                #Write the object to file.
-                with open( self.GetPathToMetadata() + '/' + nameMetadata + '.json','w') as jsonFile:
-                    json.dump(json_obj, jsonFile)
+                # Create Thread Metadata File
+                self.CreateThreadMetadataFile(self.GetPathToMetadata() + '/' + nameMetadata + '.json')
             
                 # Create CSV File
-                csvName = self.GetPathToNCBI() + '/NCBI_CREATE_' + str(IndexStart + 1) + "_" + str(IndexStop + 1) + ".csv"
-                ncbiPandas = pd.DataFrame( data=[], columns=[self.ncbiHeader] ) # set Initialize of csv file
-                ncbiPandas.to_csv( csvName, index = False ) # create csv file for each multi thread
+                self.CreateCSVFile(FileName=self.GetPathToNCBI() + '/NCBI_CREATE_' + str(IndexStart + 1) + "_" + str(IndexStop + 1) + ".csv")
 
             threadArray.append(eachThread)
 
         # Change Status Before Start Thread
-        if ( dataInMapSnpWithNcbi['technical']['createMeta']['status'] == 2 
-        or dataInMapSnpWithNcbi['technical']['createMeta']['status'] == 3):
+        if (dataInMapSnpWithNcbi['technical']['createMeta']['status'] == 2 or dataInMapSnpWithNcbi['technical']['createMeta']['status'] == 3):
             dataInMapSnpWithNcbi['technical']['createMeta']['status'] = 1
-
-        objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
+            objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
         
         # Start Thread
         for eachThread in threadArray: 
@@ -484,8 +490,6 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
         # Waitting Thread finish  
         for eachThread in threadArray: 
             eachThread.join()
-
-        if (dataInMetaData['technical']['createMeta']['status'] == 2): return
 
         dataInMetaData = objectMapSnpWithNcbi.ReadMetadata("MapSnpWithNcbi")
         if (dataInMetaData['technical']['createMeta']['status'] != 2):
@@ -496,7 +500,7 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
             # Clear Metadata
             dataInMetaData['technical']['createMeta']['amountUniqueGene'] = 0
             dataInMetaData['technical']['createMeta']['amountOfFinished'] = 0
-            dataInMetaData['technical']['createMeta']['status'] = 1
+            dataInMetaData['technical']['createMeta']['status'] = 0
             objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMetaData)
 
             # Delete Thread Metadata file
@@ -504,12 +508,6 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
                 for fileName in file:
                     if 'NCBI_CREATE_THREAD_' in fileName:
                         os.remove(self.GetPathToMetadata() + "/" + fileName)
-
-            # Delete Thread CSV Folder
-            for (root, dirs, file) in os.walk(self.GetPathToNCBI()):
-                for fileName in file:
-                    if 'NCBI_CREATE_' in fileName:
-                        os.remove(self.GetPathToNCBI() + "/" + fileName)
             
             # Delete Thread Log Folder
             for (root, dirs, file) in os.walk(self.GetPathToNCBILogs()):
@@ -521,58 +519,67 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
 
     def UpdateNcbiInformation(self):
         database = Database()
+        objectMapSnpWithNcbi = MetaData()
 
-        conn = database.ConnectDatabase()
-        mysqlCommand = """
-            SELECT * FROM ncbi;
-        """
-        ncbiData = database.CreateTask(conn, mysqlCommand, ())
+        threadArray = []
+        IndexStart = 0
 
-        objectMetaData = MetaData()
-        dataInMetaData = objectMetaData.ReadMetadata("MapSnpWithNcbi")
+        dataInMapSnpWithNcbi = objectMapSnpWithNcbi.ReadMetadata("MapSnpWithNcbi")
+
+        # Try to connect database
+        try: 
+            conn = database.ConnectDatabase()
+            mysqlCommand = """
+                SELECT * FROM ncbi;
+            """
+            ncbiData = database.CreateTask(conn, mysqlCommand, ())
+            database.CloseDatabase(conn)
+        except:
+            dataInMapSnpWithNcbi['technical']['updateMeta']['amountUniqueGene'] == 0
+            dataInMapSnpWithNcbi['technical']['updateMeta']['amountOfFinished'] == 0
+            dataInMapSnpWithNcbi['technical']['updateMeta']['status'] == 0
+            objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
+            return
 
         lengthNcbiData = len( ncbiData )
-        dataInMetaData['technical']['updateMeta']['amountUniqueGene'] = lengthNcbiData
+        dataInMapSnpWithNcbi['technical']['updateMeta']['amountUniqueGene'] = lengthNcbiData
         lengthEachRound = lengthNcbiData // self.numberOfThread
-        startIndex = 0
-        threadArray = []
 
-        for count in range( self.numberOfThread ):
-            nameMetadata = 'NCBI_thread_' + str(count)
+        for threadNumber in range( self.numberOfThread ):
+            nameMetadata = 'NCBI_UPDATE_THREAD_' + str(threadNumber)
 
-            if (dataInMetaData['technical']['updateMeta']['status'] == 1):
-                json_obj = {
-                    "currentNumberOfGene" : 0,
-                    "count": 0
-                }
+            if (dataInMapSnpWithNcbi['technical']['updateMeta']['status'] == 1):
+                json_obj = {"currentNumberOfGene" : 0, "count": 0}
 
                 #Write the object to file.
                 with open( self.GetPathToMetadata() + '/' + nameMetadata + '.json','w') as jsonFile:
                     json.dump(json_obj, jsonFile)
 
-            if ( count != ( self.numberOfThread - 1) ):
+                # Create CSV File
+                csvName = self.GetPathToNCBI() + '/NCBI_UPDATE_' + str(IndexStart + 1) + ".csv"
+                ncbiPandas = pd.DataFrame( data=[], columns=[self.ncbiHeader] ) # set Initialize of csv file
+                ncbiPandas.to_csv( csvName, index = False ) # create csv file for each multi thread
+
+            # Create Thread
+            if ( threadNumber != ( self.numberOfThread - 1) ):
                 updateNcbi = UpdateNcbi(
-                    count,
-                    ListDataUnCheck = ncbiData[lengthEachRound * count : ( lengthEachRound * count ) + lengthEachRound],
-                    StartIndex = startIndex
+                    threadNumber,
+                    ListDataUnCheck = ncbiData[lengthEachRound * threadNumber : ( lengthEachRound * threadNumber ) + lengthEachRound],
+                    StartIndex = IndexStart
                 )
             else:
                 updateNcbi = UpdateNcbi(
-                    count,
-                    ListDataUnCheck = ncbiData[lengthEachRound * count : lengthNcbiData],
-                    StartIndex = startIndex
+                    threadNumber,
+                    ListDataUnCheck = ncbiData[lengthEachRound * threadNumber : lengthNcbiData],
+                    StartIndex = IndexStart
                 )
                 
             threadArray.append(updateNcbi)
-            startIndex = startIndex + lengthEachRound
+            IndexStart = IndexStart + lengthEachRound
 
-        if (dataInMetaData['technical']['meta']['status'] == 2):
-            dataInMetaData['technical']['meta']['status'] = 1
-
-        elif (dataInMetaData['technical']['meta']['status'] == 3):
-            dataInMetaData['technical']['meta']['status'] = 1
-
-        objectMetaData.SaveManualUpdateMetadata(dataInMetaData)
+        if (dataInMapSnpWithNcbi['technical']['updateMeta']['status'] == 2 or dataInMapSnpWithNcbi['technical']['updateMeta']['status'] == 3):
+            dataInMapSnpWithNcbi['technical']['updateMeta']['status'] = 1
+            objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
                 
         for eachThread in threadArray:
             eachThread.start()
@@ -580,50 +587,51 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
         for eachThread in threadArray:
             eachThread.join()
 
-        for ncbiData in listNcbiUpdated:
+        # for ncbiData in listNcbiUpdated:
 
-            GeneID = ncbiData[0]
-            UpdateAt = datetime.fromtimestamp(ncbiData[3]).strftime('%Y-%m-%d %H:%M:%S')
+        #     GeneID = ncbiData[0]
+        #     UpdateAt = datetime.fromtimestamp(ncbiData[3]).strftime('%Y-%m-%d %H:%M:%S')
 
-            # Update Update_at field on database
-            sqlCommand = """
-                UPDATE ncbi SET
-                UPDATE_AT = %s WHERE
-                GENE_ID = %s
-            """
-            database.CreateTask( conn, sqlCommand, (UpdateAt, GeneID) )
+        #     # Update Update_at field on database
+        #     conn = database.ConnectDatabase()
+        #     sqlCommand = """
+        #         UPDATE ncbi SET
+        #         UPDATE_AT = %s WHERE
+        #         GENE_ID = %s
+        #     """
+        #     database.CreateTask( conn, sqlCommand, (UpdateAt, GeneID) )
 
-            if ( ncbiData[2] != None ):
+        #     if ( ncbiData[2] != None ):
                 
-                ListOtherSymbol = ( list(map(str, (ncbiData[2][0]).split('; '))) )
-                Records = [GeneID] + ListOtherSymbol
-                FormatStrings = ', '.join(['%s'] * len(str(ncbiData[2]).split('; ')))
+        #         ListOtherSymbol = ( list(map(str, (ncbiData[2][0]).split('; '))) )
+        #         Records = [GeneID] + ListOtherSymbol
+        #         FormatStrings = ', '.join(['%s'] * len(str(ncbiData[2]).split('; ')))
                 
-                # Delete the other symbol if new other symbol list not match with old other symbol field
-                sqlCommand = """
-                    DELETE FROM other_symbol
-                    WHERE other_symbol.GENE_ID = %%s
-                    AND other_symbol.OTHER_SYMBOL NOT IN (%s);
-                """ % FormatStrings
+        #         # Delete the other symbol if new other symbol list not match with old other symbol field
+        #         sqlCommand = """
+        #             DELETE FROM other_symbol
+        #             WHERE other_symbol.GENE_ID = %%s
+        #             AND other_symbol.OTHER_SYMBOL NOT IN (%s);
+        #         """ % FormatStrings
                 
-                database.CreateTask(conn, sqlCommand, Records )
+        #         database.CreateTask(conn, sqlCommand, Records )
                 
-                # insert new data if other symbol not exist
-                sqlCommand = """
-                    INSERT IGNORE INTO other_symbol ( GENE_ID, OTHER_SYMBOL )
-                    VALUE (%s, %s)
-                """
+        #         # insert new data if other symbol not exist
+        #         sqlCommand = """
+        #             INSERT IGNORE INTO other_symbol ( GENE_ID, OTHER_SYMBOL )
+        #             VALUE (%s, %s)
+        #         """
                 
-                for OtherSymbol in ListOtherSymbol:
-                    database.CreateTask(conn, sqlCommand, (GeneID, OtherSymbol, ) )
-            
-            
-        database.CloseDatabase(conn)
-        dataInMetaData = objectMetaData.ReadMetadata("MapSnpWithNcbi")
-        if (dataInMetaData['technical']['meta']['status'] != 2):
-            dataInMetaData['technical']['meta']['amountUniqueGene'] = 0
-            dataInMetaData['technical']['meta']['amountOfFinished'] = 0
-            dataInMetaData['technical']['meta']['status'] = 0
+        #         for OtherSymbol in ListOtherSymbol:
+        #             database.CreateTask(conn, sqlCommand, (GeneID, OtherSymbol, ) )
+              
+        #     database.CloseDatabase(conn)
+
+        # dataInMetaData = objectMapSnpWithNcbi.ReadMetadata("MapSnpWithNcbi")
+        # if (dataInMetaData['technical']['meta']['status'] != 2):
+        #     dataInMetaData['technical']['meta']['amountUniqueGene'] = 0
+        #     dataInMetaData['technical']['meta']['amountOfFinished'] = 0
+        #     dataInMetaData['technical']['meta']['status'] = 0
 
         return
 
