@@ -303,7 +303,7 @@ class UpdateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
                     if ( len( resSummaryDl.find_all(text = 'Also known as') ) >= 1 ):
                         alsoKnownAs = self.FetchAlsoKnowAs(resSummaryDl)
                     else:
-                        alsoKnownAs = None
+                        alsoKnownAs = ['']
                     
                     data = GeneWithMap(CurrentGeneID = CurrentGeneID, OldGeneID = OldGeneID, GeneSymbol = officialSymbol, AlsoKnowAs = alsoKnownAs, UpdatedAt = updatedOn_Website)
                     dataFromWeb = pd.DataFrame(data.__dict__)
@@ -598,6 +598,7 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
 
         lengthNcbiData = len( ncbiData )
         dataInMapSnpWithNcbi['technical']['updateMeta']['amountUniqueGene'] = lengthNcbiData
+        objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
         lengthEachRound = lengthNcbiData // self.numberOfThread
 
         for threadNumber in range( self.numberOfThread ):
@@ -632,9 +633,10 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
             IndexStart = IndexStart + lengthEachRound
 
         if (dataInMapSnpWithNcbi['technical']['updateMeta']['status'] == 2 or dataInMapSnpWithNcbi['technical']['updateMeta']['status'] == 3):
+            dataInMapSnpWithNcbi = objectMapSnpWithNcbi.ReadMetadata("MapSnpWithNcbi")
             dataInMapSnpWithNcbi['technical']['updateMeta']['status'] = 1
             objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
-                
+               
         for eachThread in threadArray:
             eachThread.start()
             
