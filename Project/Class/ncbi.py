@@ -12,7 +12,6 @@ import re
 """
 Global variable
 """
-listNcbiUpdated = []
 
 class CreateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
     # initialize value
@@ -150,13 +149,7 @@ class CreateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
                     self.textFile.write("%s \n%s \n\r" % ("Status Gene " + str(CurrentGeneID) + " : Error", "Description : Website Structure may change from origin") )
                     continue
 
-                data = GeneWithMap(
-                    CurrentGeneID = CurrentGeneID,
-                    OldGeneID = OldGeneID,
-                    GeneSymbol = officialSymbol,
-                    AlsoKnowAs = alsoKnownAs,
-                    UpdatedAt = UpdateOn
-                )
+                data = GeneWithMap(CurrentGeneID = CurrentGeneID, OldGeneID = OldGeneID, GeneSymbol = officialSymbol, AlsoKnowAs = alsoKnownAs, UpdatedAt = UpdateOn)
                 dataFromWeb = pd.DataFrame(data.__dict__)
                 dataFromWeb.to_csv( self.pathGeneWithMap , mode='a', index = False, header=False)
 
@@ -181,12 +174,16 @@ class UpdateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
     listDataUnCheck = []
     startIndex = 0
     
-    def __init__(self, Index, ListDataUnCheck, StartIndex):
+    def __init__(self, ThreadNumber, ListDataUnCheck, IndexStart):
         Thread.__init__(self)
         FilePath.__init__(self)
-        self.nameMetadata = "NCBI_thread_" + str(Index)
+        self.nameMetadata = "NCBI_UPDATE_THREAD_" + str(ThreadNumber)
         self.listDataUnCheck = ListDataUnCheck
-        self.startIndex = StartIndex
+        self.startIndex = IndexStart
+        self.CSVPath = self.GetPathToNCBI() + '/NCBI_UPDATE_' + str(IndexStart + 1) + ".csv"
+
+        # Create NCBI Log
+        self.logFile = open(self.GetPathToNCBILogs() + "/NCBI_UPDATE_THREAD_" + str(ThreadNumber) + ".txt","w+")
     
     def SendRequestToNcbi(self, geneID):
         isCompleted = False
@@ -194,6 +191,7 @@ class UpdateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
 
         while ( isCompleted == False):
             if ( count == 5 ):
+                self.logFile.write("%s \r\n" % ("Status Gene " + str(geneID) + " : Request Fail") )
                 return False
             try:       
                 urlNcbi = self.sourceWebsite['ncbi'] + '/' + str(geneID)            
@@ -238,14 +236,14 @@ class UpdateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
         timeOutput = datetime.timestamp(timeOutput)
         return timeOutput
 
-    def TryFetchDataOnMetaData(self, objectMetaData, metaname):
+    def FetchDataOnMetaData(self, objectMetaData, metaname):
         isCompleted = False
         while ( isCompleted == False):
-            try:       
+            try:
                 dataInMetaData = objectMetaData.ReadMetadata(metaname)
                 isCompleted = True
             except:
-                print('Except Meta', self.nameMetadata)
+                print('Except Metadata')
                 time.sleep(0.1)
                 pass
         return dataInMetaData
@@ -253,12 +251,13 @@ class UpdateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
     def CheckDiscontinue(self, GeneID):
         response = self.SendRequestToNcbi(GeneID)
         if ( response == False ):
+            self.logFile.write("%s \n%s \n\r" % ("Status Gene " + str(GeneID) + " : Error", "Description : Data retrieved fails") )
             return False, []
         else:
             try:
                 resHeader = response.find('span', {"class": "geneid"})
                 if "discontinued" in str(resHeader.text):
-
+                    self.logFile.write("%s \n%s \n\r" % ("Status Gene " + str(GeneID) + " : Alert", "Description : Data discontinue update") )
                     resDiscontinue = response.find('ul', {"class": "gene-record-status"})
                     GeneID = (re.findall(r'(?<=\s)\d+', resDiscontinue.text))[0]
 
@@ -266,38 +265,36 @@ class UpdateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
 
                 return str(GeneID), response
             except:
+                self.logFile.write("%s \n%s \n\r" % ("Status Gene " + str(GeneID) + " : Error", "Description : Website Structure may change from origin") )
                 return False, []
 
     def run(self):
         objectMapSnpWithNcbi = MetaData()
         objectThread = MetaData()
         
-        dataMetaThread = self.TryFetchDataOnMetaData(objectThread, self.nameMetadata)
+        dataMetaThread = self.FetchDataOnMetaData(objectThread, self.nameMetadata)
 
         startAt = dataMetaThread['count']
         if ( startAt == 0): startAt = 0
         else: startAt = startAt - 1
 
-        for CurrentGeneID, UpdateAt in self.listDataUnCheck[ startAt : 10 ]:
+        for CurrentGeneID, UpdateAt in self.listDataUnCheck[ startAt : 5 ]:
 
             OldGeneID = CurrentGeneID
             dataMetaThread['currentNumberOfGene'] = CurrentGeneID
 
             newGeneID, response = self.CheckDiscontinue(CurrentGeneID)
             if (int(newGeneID) != int(CurrentGeneID)):
-                print('Old GeneID :', OldGeneID, '=>', 'New GeneID :', CurrentGeneID)
                 CurrentGeneID = newGeneID
 
-            if response == False: continue
+            if response == False:
+                self.logFile.write("%s \n%s \n\r" % ("Status Gene " + str(CurrentGeneID) + " : Error", "Description : Data retrieved fails") )
+                continue
             else:
                 updatedOn_Website = self.FetchUpdateOn(response)
                 updatedOn_OldData = self.ConvertUpdateAtToTimeStamp(UpdateAt)
 
-                print('CurrentGeneID :', CurrentGeneID, ':', updatedOn_Website, updatedOn_OldData)
-
-                if ( updatedOn_OldData == updatedOn_Website):
-                    print('CurrentGeneID :', CurrentGeneID, 'last updated')
-                else:
+                if ( updatedOn_OldData != updatedOn_Website):
                     resSummaryDl = response.find('dl', {"id": "summaryDl"}) # fetch all detail of website
                     
                     officialSymbol = self.FetchOfficialSymbol(resSummaryDl)
@@ -308,17 +305,16 @@ class UpdateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
                     else:
                         alsoKnownAs = None
                     
-                    new_row = ( CurrentGeneID, officialSymbol, alsoKnownAs, updatedOn_Website )
-                    
-                    listNcbiUpdated.append(new_row)
-                    print('CurrentGeneID :', CurrentGeneID, 'updated ||', new_row)
+                    data = GeneWithMap(CurrentGeneID = CurrentGeneID, OldGeneID = OldGeneID, GeneSymbol = officialSymbol, AlsoKnowAs = alsoKnownAs, UpdatedAt = updatedOn_Website)
+                    dataFromWeb = pd.DataFrame(data.__dict__)
+                    dataFromWeb.to_csv( self.CSVPath , mode='a', index = False, header=False)
 
-            dataMetaThread = self.TryFetchDataOnMetaData(objectThread, self.nameMetadata)
+            dataMetaThread = self.FetchDataOnMetaData(objectThread, self.nameMetadata)
             dataMetaThread['count'] = dataMetaThread['count'] + 1
 
-            dataInMapSnpWithNcbi = self.TryFetchDataOnMetaData(objectMapSnpWithNcbi, 'MapSnpWithNcbi')
-            print(dataInMapSnpWithNcbi)
+            dataInMapSnpWithNcbi = self.FetchDataOnMetaData(objectMapSnpWithNcbi, 'MapSnpWithNcbi')
             dataInMapSnpWithNcbi['technical']['updateMeta']['amountOfFinished'] = dataInMapSnpWithNcbi['technical']['updateMeta']['amountOfFinished'] + 1
+            self.logFile.write("%s \n%s \n\r" % ("Status Gene " + str(CurrentGeneID) + " : successful", "Description : Data retrieved successfully") )
 
             if dataInMapSnpWithNcbi['technical']['updateMeta']['status'] != 1:
                 return
@@ -341,6 +337,10 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
         ncbiPandas = pd.DataFrame( data=[], columns=[self.ncbiHeader] ) # set Initialize of csv file
         ncbiPandas.to_csv( FileName, index = False ) # create csv file for each multi thread
         return
+
+    def CreateLogFile(self, FileName):
+        open(FileName,"w+")
+        return
     
     def CreateThreadMetadataFile(self, FileName):
         json_obj = {"currentNumberOfGene" : 0, "count": 0}
@@ -350,7 +350,7 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
             json.dump(json_obj, jsonFile)
         return
 
-    def CombineDataNcbi(self):
+    def CombineCreateDataNcbi(self):
         database = Database()
         conn = database.ConnectDatabase()
         
@@ -403,7 +403,76 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
                 os.remove(self.GetPathToNCBI() + '/' + filename)
         
         database.CloseDatabase(conn)
+        return
+
+    def CombineUpdateDataNcbi(self):
+        database = Database()
+        conn = database.ConnectDatabase()
         
+        for filename in os.listdir(self.GetPathToNCBI()):
+            if ( filename == ".DS_Store"):
+                continue
+            elif 'NCBI_UPDATE_' in filename:
+                data = pd.read_csv(self.GetPathToNCBI() + '/' + filename)
+
+                for row_index, row in data.iterrows():
+
+                    CurrentGeneID = row['CurrentGeneID']
+                    OldGeneID = row['OldGeneID']
+                    GeneSymbol = row['GeneSymbol']
+                    UpdatedAt = row['UpdatedAt']
+
+                    if row['CurrentGeneID'] != row['OldGeneID']:
+                        print("Gene has discontinue", str(CurrentGeneID), "=>", str(OldGeneID))
+
+                        sqlCommand = """
+                            UPDATE gene_snp
+                            SET GENE_ID = %s
+                            WHERE GENE_ID = %s
+                        """
+                        database.CreateTask(conn, sqlCommand, (CurrentGeneID, OldGeneID))
+
+                        sqlCommand = """
+                            UPDATE gene_snp
+                            SET GENE_SYMBOL = %s
+                            WHERE GENE_ID = %s
+                        """
+                        database.CreateTask(conn, sqlCommand, (GeneSymbol, CurrentGeneID))
+
+                    timestamp = datetime.fromtimestamp(UpdatedAt).strftime('%Y-%m-%d %H:%M:%S')
+                    sqlCommand = """
+                        UPDATE ncbi SET
+                        UPDATE_AT = %s
+                        WHERE GENE_ID = %s
+                    """
+                    database.CreateTask(conn, sqlCommand, (timestamp, CurrentGeneID))
+
+                    if ( str(row['AlsoKnowAs']) != 'nan' ):
+                        ListOtherSymbol = ( list(map(str, (row['AlsoKnowAs']).split('; '))) )
+                        Records = [CurrentGeneID] + ListOtherSymbol
+                        FormatStrings = ', '.join(['%s'] * len(str(row['AlsoKnowAs']).split('; ')))
+
+                        # Delete the other symbol if new other symbol list not match with old other symbol field
+                        sqlCommand = """
+                            DELETE FROM other_symbol
+                            WHERE other_symbol.GENE_ID = %%s
+                            AND other_symbol.OTHER_SYMBOL NOT IN (%s);
+                        """ % FormatStrings
+                        
+                        database.CreateTask(conn, sqlCommand, Records )
+                        
+                        # insert new data if other symbol not exist
+                        sqlCommand = """
+                            INSERT IGNORE INTO other_symbol ( GENE_ID, OTHER_SYMBOL )
+                            VALUE (%s, %s)
+                        """
+                        
+                        for OtherSymbol in ListOtherSymbol:
+                            database.CreateTask(conn, sqlCommand, (CurrentGeneID, OtherSymbol, ) )
+                    
+                os.remove(self.GetPathToNCBI() + '/' + filename)
+
+        database.CloseDatabase(conn)
         return
 
     def CreateNcbiInformation(self):
@@ -431,7 +500,7 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
 
         lengthUniqueGeneID = len( listUniqueGeneID ) - 1
         dataInMapSnpWithNcbi['technical']['createMeta']['amountUniqueGene'] = lengthUniqueGeneID
-        lengthEachRound = lengthUniqueGeneID // self.numberOfThread        
+        lengthEachRound = lengthUniqueGeneID // self.numberOfThread
 
         # Number of Thread CPU
         for threadNumber in range(self.numberOfThread):
@@ -441,35 +510,15 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
             
             # Create Thread
             if ( threadNumber != ( self.numberOfThread - 1) ): 
-                # IndexStop = ( ( lengthEachRound * threadNumber ) + lengthEachRound ) - 1
-                IndexStop = 1
-
-                eachThread = CreateNcbi(
-                    ThreadNumber = threadNumber,
-                    ListGenesID = listUniqueGeneID,
-                    IndexStart = IndexStart,
-                    IndexStop = IndexStop
-                )
+                IndexStop = ( ( lengthEachRound * threadNumber ) + lengthEachRound ) - 1
+                eachThread = CreateNcbi(ThreadNumber = threadNumber, ListGenesID = listUniqueGeneID, IndexStart = IndexStart, IndexStop = IndexStop)
             else:
-                # IndexStop = lengthUniqueGeneID
-                IndexStop = 0
-
-                # eachThread = CreateNcbi(
-                #     ThreadNumber = threadNumber,
-                #     ListGenesID = listUniqueGeneID,
-                #     IndexStart = IndexStart,
-                #     IndexStop = IndexStop
-                # )
-
-                eachThread = CreateNcbi(
-                    ThreadNumber = threadNumber,
-                    ListGenesID = [313],
-                    IndexStart = IndexStart,
-                    IndexStop = IndexStop
-                )
+                IndexStop = lengthUniqueGeneID
+                eachThread = CreateNcbi(ThreadNumber = threadNumber, ListGenesID = listUniqueGeneID, IndexStart = IndexStart, IndexStop = IndexStop)
 
             # Running Status
             if (dataInMapSnpWithNcbi['technical']['createMeta']['status'] == 1):
+
                 # Create Thread Metadata File
                 self.CreateThreadMetadataFile(self.GetPathToMetadata() + '/' + nameMetadata + '.json')
             
@@ -492,16 +541,22 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
             eachThread.join()
 
         dataInMetaData = objectMapSnpWithNcbi.ReadMetadata("MapSnpWithNcbi")
-        if (dataInMetaData['technical']['createMeta']['status'] != 2):
 
+        if (dataInMetaData['technical']['createMeta']['status'] != 2):
             # Wait all mutithread has successfully process before start combine all data
-            self.CombineDataNcbi()
+            self.CombineCreateDataNcbi()
 
             # Clear Metadata
             dataInMetaData['technical']['createMeta']['amountUniqueGene'] = 0
             dataInMetaData['technical']['createMeta']['amountOfFinished'] = 0
             dataInMetaData['technical']['createMeta']['status'] = 0
             objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMetaData)
+
+            # Delete Thread CSV file
+            for (root, dirs, file) in os.walk(self.GetPathToMetadata()):
+                for fileName in file:
+                    if 'NCBI_CREATE_' in fileName:
+                        os.remove(self.GetPathToMetadata() + "/" + fileName)
 
             # Delete Thread Metadata file
             for (root, dirs, file) in os.walk(self.GetPathToMetadata()):
@@ -510,10 +565,10 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
                         os.remove(self.GetPathToMetadata() + "/" + fileName)
             
             # Delete Thread Log Folder
-            for (root, dirs, file) in os.walk(self.GetPathToNCBILogs()):
-                for fileName in file:
-                    if 'NCBI_CREATE_THREAD_' in fileName:
-                        os.remove(self.GetPathToNCBILogs() + "/" + fileName)
+            # for (root, dirs, file) in os.walk(self.GetPathToNCBILogs()):
+            #     for fileName in file:
+            #         if 'NCBI_CREATE_THREAD_' in fileName:
+            #             os.remove(self.GetPathToNCBILogs() + "/" + fileName)
 
         return
 
@@ -548,31 +603,30 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
         for threadNumber in range( self.numberOfThread ):
             nameMetadata = 'NCBI_UPDATE_THREAD_' + str(threadNumber)
 
-            if (dataInMapSnpWithNcbi['technical']['updateMeta']['status'] == 1):
-                json_obj = {"currentNumberOfGene" : 0, "count": 0}
-
-                #Write the object to file.
-                with open( self.GetPathToMetadata() + '/' + nameMetadata + '.json','w') as jsonFile:
-                    json.dump(json_obj, jsonFile)
-
-                # Create CSV File
-                csvName = self.GetPathToNCBI() + '/NCBI_UPDATE_' + str(IndexStart + 1) + ".csv"
-                ncbiPandas = pd.DataFrame( data=[], columns=[self.ncbiHeader] ) # set Initialize of csv file
-                ncbiPandas.to_csv( csvName, index = False ) # create csv file for each multi thread
-
             # Create Thread
             if ( threadNumber != ( self.numberOfThread - 1) ):
                 updateNcbi = UpdateNcbi(
                     threadNumber,
                     ListDataUnCheck = ncbiData[lengthEachRound * threadNumber : ( lengthEachRound * threadNumber ) + lengthEachRound],
-                    StartIndex = IndexStart
+                    IndexStart = IndexStart
                 )
             else:
                 updateNcbi = UpdateNcbi(
                     threadNumber,
                     ListDataUnCheck = ncbiData[lengthEachRound * threadNumber : lengthNcbiData],
-                    StartIndex = IndexStart
+                    IndexStart = IndexStart
                 )
+
+            if (dataInMapSnpWithNcbi['technical']['updateMeta']['status'] == 1):
+
+                # Create Thread Metadata File
+                self.CreateThreadMetadataFile(self.GetPathToMetadata() + '/' + nameMetadata + '.json')
+
+                # Create CSV File
+                self.CreateCSVFile(FileName=self.GetPathToNCBI() + '/NCBI_UPDATE_' + str(IndexStart + 1) + ".csv")
+
+                # Create Log File
+                self.CreateLogFile(self.GetPathToNCBILogs() + "/NCBI_UPDATE_THREAD_" + str(threadNumber) + ".txt")
                 
             threadArray.append(updateNcbi)
             IndexStart = IndexStart + lengthEachRound
@@ -587,54 +641,37 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
         for eachThread in threadArray:
             eachThread.join()
 
-        # for ncbiData in listNcbiUpdated:
+        dataInMetaData = objectMapSnpWithNcbi.ReadMetadata("MapSnpWithNcbi")
+        if (dataInMetaData['technical']['updateMeta']['status'] != 2):
+            # Wait all mutithread has successfully process before start combine all data
+            self.CombineUpdateDataNcbi()
 
-        #     GeneID = ncbiData[0]
-        #     UpdateAt = datetime.fromtimestamp(ncbiData[3]).strftime('%Y-%m-%d %H:%M:%S')
+            # Clear Metadata
+            dataInMetaData['technical']['updateMeta']['amountUniqueGene'] = 0
+            dataInMetaData['technical']['updateMeta']['amountOfFinished'] = 0
+            dataInMetaData['technical']['updateMeta']['status'] = 0
+            objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMetaData)
 
-        #     # Update Update_at field on database
-        #     conn = database.ConnectDatabase()
-        #     sqlCommand = """
-        #         UPDATE ncbi SET
-        #         UPDATE_AT = %s WHERE
-        #         GENE_ID = %s
-        #     """
-        #     database.CreateTask( conn, sqlCommand, (UpdateAt, GeneID) )
+            # Delete Thread CSV file
+            for (root, dirs, file) in os.walk(self.GetPathToMetadata()):
+                for fileName in file:
+                    if 'NCBI_UPDATE_' in fileName:
+                        os.remove(self.GetPathToMetadata() + "/" + fileName)
 
-        #     if ( ncbiData[2] != None ):
-                
-        #         ListOtherSymbol = ( list(map(str, (ncbiData[2][0]).split('; '))) )
-        #         Records = [GeneID] + ListOtherSymbol
-        #         FormatStrings = ', '.join(['%s'] * len(str(ncbiData[2]).split('; ')))
-                
-        #         # Delete the other symbol if new other symbol list not match with old other symbol field
-        #         sqlCommand = """
-        #             DELETE FROM other_symbol
-        #             WHERE other_symbol.GENE_ID = %%s
-        #             AND other_symbol.OTHER_SYMBOL NOT IN (%s);
-        #         """ % FormatStrings
-                
-        #         database.CreateTask(conn, sqlCommand, Records )
-                
-        #         # insert new data if other symbol not exist
-        #         sqlCommand = """
-        #             INSERT IGNORE INTO other_symbol ( GENE_ID, OTHER_SYMBOL )
-        #             VALUE (%s, %s)
-        #         """
-                
-        #         for OtherSymbol in ListOtherSymbol:
-        #             database.CreateTask(conn, sqlCommand, (GeneID, OtherSymbol, ) )
-              
-        #     database.CloseDatabase(conn)
-
-        # dataInMetaData = objectMapSnpWithNcbi.ReadMetadata("MapSnpWithNcbi")
-        # if (dataInMetaData['technical']['meta']['status'] != 2):
-        #     dataInMetaData['technical']['meta']['amountUniqueGene'] = 0
-        #     dataInMetaData['technical']['meta']['amountOfFinished'] = 0
-        #     dataInMetaData['technical']['meta']['status'] = 0
+            # Delete Thread Metadata file
+            for (root, dirs, file) in os.walk(self.GetPathToMetadata()):
+                for fileName in file:
+                    if 'NCBI_UPDATE_THREAD_' in fileName:
+                        os.remove(self.GetPathToMetadata() + "/" + fileName)
+            
+            # Delete Thread Log Folder
+            # for (root, dirs, file) in os.walk(self.GetPathToNCBILogs()):
+            #     for fileName in file:
+            #         if 'NCBI_UPDATE_THREAD_' in fileName:
+            #             os.remove(self.GetPathToNCBILogs() + "/" + fileName)
 
         return
 
 if __name__ == "__main__":
     ncbi = Ncbi(1)
-    ncbi.CreateNcbiInformation()
+    ncbi.UpdateNcbiInformation()
