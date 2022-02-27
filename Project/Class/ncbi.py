@@ -278,7 +278,7 @@ class UpdateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
         if ( startAt == 0): startAt = 0
         else: startAt = startAt - 1
 
-        for CurrentGeneID, UpdateAt in self.listDataUnCheck[ startAt : 5 ]:
+        for CurrentGeneID, UpdateAt in self.listDataUnCheck[ startAt : ]:
 
             OldGeneID = CurrentGeneID
             dataMetaThread['currentNumberOfGene'] = CurrentGeneID
@@ -348,6 +348,52 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
         #Write the object to file.
         with open(FileName,'w') as jsonFile:
             json.dump(json_obj, jsonFile)
+        return
+
+    def DeleteAllRelateFile(self, type):
+        if (type == 'createMeta'):
+            typeFile = 'CREATE'
+        elif (type == 'updateMeta'):
+            typeFile = 'UPDATE'
+
+        csvFileName = 'NCBI_' + typeFile + '_'
+        ThreadMetadataFileName = 'NCBI_' + typeFile + '_THREAD_'
+        LogFileName = 'NCBI_' + typeFile + '_THREAD_'
+
+        # Delete Thread CSV file
+        for (root, dirs, file) in os.walk(self.GetPathToMetadata()):
+            for fileName in file:
+                if csvFileName in fileName:
+                    os.remove(self.GetPathToMetadata() + "/" + fileName)
+
+        # Delete Thread Metadata file
+        for (root, dirs, file) in os.walk(self.GetPathToMetadata()):
+            for fileName in file:
+                if ThreadMetadataFileName in fileName:
+                    os.remove(self.GetPathToMetadata() + "/" + fileName)
+        
+        # Delete Thread Log Folder
+        # for (root, dirs, file) in os.walk(self.GetPathToNCBILogs()):
+        #     for fileName in file:
+        #         if LogFileName in fileName:
+        #             os.remove(self.GetPathToNCBILogs() + "/" + fileName)
+        
+        return
+
+    def SetZeroOnMetadata(self, type):
+        objectMapSnpWithNcbi = MetaData()
+        dataInMapSnpWithNcbi = objectMapSnpWithNcbi.ReadMetadata("MapSnpWithNcbi")
+
+        if type == "createMeta":
+            dataInMapSnpWithNcbi['technical']['createMeta']['amountUniqueGene'] == 0
+            dataInMapSnpWithNcbi['technical']['createMeta']['amountOfFinished'] == 0
+            dataInMapSnpWithNcbi['technical']['createMeta']['status'] == 0
+        elif type == "updateMeta":
+            dataInMapSnpWithNcbi['technical']['updateMeta']['amountUniqueGene'] == 0
+            dataInMapSnpWithNcbi['technical']['updateMeta']['amountOfFinished'] == 0
+            dataInMapSnpWithNcbi['technical']['updateMeta']['status'] == 0
+            
+        objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
         return
 
     def CombineCreateDataNcbi(self):
@@ -481,8 +527,6 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
 
         threadArray = []
 
-        dataInMapSnpWithNcbi = objectMapSnpWithNcbi.ReadMetadata("MapSnpWithNcbi")
-
         # Try to connect database
         try: 
             conn = database.ConnectDatabase()
@@ -492,20 +536,17 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
             listUniqueGeneID = database.CreateTask(conn, mysqlCommand, ())
             database.CloseDatabase(conn)
         except:
-            dataInMapSnpWithNcbi['technical']['createMeta']['amountUniqueGene'] == 0
-            dataInMapSnpWithNcbi['technical']['createMeta']['amountOfFinished'] == 0
-            dataInMapSnpWithNcbi['technical']['createMeta']['status'] == 0
-            objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
+            self.SetZeroOnMetadata("createMeta")
             return
 
         lengthUniqueGeneID = len( listUniqueGeneID ) - 1
+        dataInMapSnpWithNcbi = objectMapSnpWithNcbi.ReadMetadata("MapSnpWithNcbi")
         dataInMapSnpWithNcbi['technical']['createMeta']['amountUniqueGene'] = lengthUniqueGeneID
         lengthEachRound = lengthUniqueGeneID // self.numberOfThread
 
         # Number of Thread CPU
         for threadNumber in range(self.numberOfThread):
 
-            nameMetadata = 'NCBI_CREATE_THREAD_' + str(threadNumber)
             IndexStart = lengthEachRound * threadNumber
             
             # Create Thread
@@ -516,14 +557,20 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
                 IndexStop = lengthUniqueGeneID
                 eachThread = CreateNcbi(ThreadNumber = threadNumber, ListGenesID = listUniqueGeneID, IndexStart = IndexStart, IndexStop = IndexStop)
 
-            # Running Status
+            # Create thread metadata, csv and log file
             if (dataInMapSnpWithNcbi['technical']['createMeta']['status'] == 1):
+                nameThreadMetadata = 'NCBI_CREATE_THREAD_' + str(threadNumber) + '.json'
+                nameCSVFile = 'NCBI_CREATE_' + str(IndexStart + 1) + "_" + str(IndexStop + 1) + ".csv"
+                nameLogFile = 'NCBI_CREATE_THREAD_' + str(threadNumber) + ".txt"
 
                 # Create Thread Metadata File
-                self.CreateThreadMetadataFile(self.GetPathToMetadata() + '/' + nameMetadata + '.json')
+                self.CreateThreadMetadataFile(self.GetPathToMetadata() + '/' + nameThreadMetadata)
             
                 # Create CSV File
-                self.CreateCSVFile(FileName=self.GetPathToNCBI() + '/NCBI_CREATE_' + str(IndexStart + 1) + "_" + str(IndexStop + 1) + ".csv")
+                self.CreateCSVFile(FileName=self.GetPathToNCBI() + '/' + nameCSVFile)
+
+                # Create Log File
+                self.CreateLogFile(self.GetPathToNCBILogs() + "/" + nameLogFile)
 
             threadArray.append(eachThread)
 
@@ -543,32 +590,15 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
         dataInMetaData = objectMapSnpWithNcbi.ReadMetadata("MapSnpWithNcbi")
 
         if (dataInMetaData['technical']['createMeta']['status'] != 2):
+
             # Wait all mutithread has successfully process before start combine all data
             self.CombineCreateDataNcbi()
 
             # Clear Metadata
-            dataInMetaData['technical']['createMeta']['amountUniqueGene'] = 0
-            dataInMetaData['technical']['createMeta']['amountOfFinished'] = 0
-            dataInMetaData['technical']['createMeta']['status'] = 0
-            objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMetaData)
+            self.SetZeroOnMetadata("createMeta")
 
-            # Delete Thread CSV file
-            for (root, dirs, file) in os.walk(self.GetPathToMetadata()):
-                for fileName in file:
-                    if 'NCBI_CREATE_' in fileName:
-                        os.remove(self.GetPathToMetadata() + "/" + fileName)
-
-            # Delete Thread Metadata file
-            for (root, dirs, file) in os.walk(self.GetPathToMetadata()):
-                for fileName in file:
-                    if 'NCBI_CREATE_THREAD_' in fileName:
-                        os.remove(self.GetPathToMetadata() + "/" + fileName)
-            
-            # Delete Thread Log Folder
-            # for (root, dirs, file) in os.walk(self.GetPathToNCBILogs()):
-            #     for fileName in file:
-            #         if 'NCBI_CREATE_THREAD_' in fileName:
-            #             os.remove(self.GetPathToNCBILogs() + "/" + fileName)
+            # Clear all related files
+            self.DeleteAllRelateFile("createMeta")
 
         return
 
@@ -579,8 +609,6 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
         threadArray = []
         IndexStart = 0
 
-        dataInMapSnpWithNcbi = objectMapSnpWithNcbi.ReadMetadata("MapSnpWithNcbi")
-
         # Try to connect database
         try: 
             conn = database.ConnectDatabase()
@@ -590,19 +618,16 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
             ncbiData = database.CreateTask(conn, mysqlCommand, ())
             database.CloseDatabase(conn)
         except:
-            dataInMapSnpWithNcbi['technical']['updateMeta']['amountUniqueGene'] == 0
-            dataInMapSnpWithNcbi['technical']['updateMeta']['amountOfFinished'] == 0
-            dataInMapSnpWithNcbi['technical']['updateMeta']['status'] == 0
-            objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
+            self.SetZeroOnMetadata("updateMeta")
             return
 
         lengthNcbiData = len( ncbiData )
+
+        dataInMapSnpWithNcbi = objectMapSnpWithNcbi.ReadMetadata("MapSnpWithNcbi")
         dataInMapSnpWithNcbi['technical']['updateMeta']['amountUniqueGene'] = lengthNcbiData
-        objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
         lengthEachRound = lengthNcbiData // self.numberOfThread
 
         for threadNumber in range( self.numberOfThread ):
-            nameMetadata = 'NCBI_UPDATE_THREAD_' + str(threadNumber)
 
             # Create Thread
             if ( threadNumber != ( self.numberOfThread - 1) ):
@@ -619,21 +644,24 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
                 )
 
             if (dataInMapSnpWithNcbi['technical']['updateMeta']['status'] == 1):
+                nameThreadMetadata = 'NCBI_UPDATE_THREAD_' + str(threadNumber) + '.json'
+                nameCSVFile = 'NCBI_UPDATE_' + str(IndexStart + 1) + ".csv"
+                nameLogFile = 'NCBI_UPDATE_THREAD_' + str(threadNumber) + ".txt"
 
                 # Create Thread Metadata File
-                self.CreateThreadMetadataFile(self.GetPathToMetadata() + '/' + nameMetadata + '.json')
-
+                self.CreateThreadMetadataFile(self.GetPathToMetadata() + '/' + nameThreadMetadata)
+            
                 # Create CSV File
-                self.CreateCSVFile(FileName=self.GetPathToNCBI() + '/NCBI_UPDATE_' + str(IndexStart + 1) + ".csv")
+                self.CreateCSVFile(FileName=self.GetPathToNCBI() + '/' + nameCSVFile)
 
                 # Create Log File
-                self.CreateLogFile(self.GetPathToNCBILogs() + "/NCBI_UPDATE_THREAD_" + str(threadNumber) + ".txt")
+                self.CreateLogFile(self.GetPathToNCBILogs() + "/" + nameLogFile)
                 
             threadArray.append(updateNcbi)
             IndexStart = IndexStart + lengthEachRound
 
+        # Change Status Before Start Thread
         if (dataInMapSnpWithNcbi['technical']['updateMeta']['status'] == 2 or dataInMapSnpWithNcbi['technical']['updateMeta']['status'] == 3):
-            dataInMapSnpWithNcbi = objectMapSnpWithNcbi.ReadMetadata("MapSnpWithNcbi")
             dataInMapSnpWithNcbi['technical']['updateMeta']['status'] = 1
             objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
                
@@ -644,36 +672,19 @@ class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
             eachThread.join()
 
         dataInMetaData = objectMapSnpWithNcbi.ReadMetadata("MapSnpWithNcbi")
+
         if (dataInMetaData['technical']['updateMeta']['status'] != 2):
+
             # Wait all mutithread has successfully process before start combine all data
             self.CombineUpdateDataNcbi()
 
             # Clear Metadata
-            dataInMetaData['technical']['updateMeta']['amountUniqueGene'] = 0
-            dataInMetaData['technical']['updateMeta']['amountOfFinished'] = 0
-            dataInMetaData['technical']['updateMeta']['status'] = 0
-            objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMetaData)
+            self.SetZeroOnMetadata("updateMeta")
 
-            # Delete Thread CSV file
-            for (root, dirs, file) in os.walk(self.GetPathToMetadata()):
-                for fileName in file:
-                    if 'NCBI_UPDATE_' in fileName:
-                        os.remove(self.GetPathToMetadata() + "/" + fileName)
-
-            # Delete Thread Metadata file
-            for (root, dirs, file) in os.walk(self.GetPathToMetadata()):
-                for fileName in file:
-                    if 'NCBI_UPDATE_THREAD_' in fileName:
-                        os.remove(self.GetPathToMetadata() + "/" + fileName)
-            
-            # Delete Thread Log Folder
-            # for (root, dirs, file) in os.walk(self.GetPathToNCBILogs()):
-            #     for fileName in file:
-            #         if 'NCBI_UPDATE_THREAD_' in fileName:
-            #             os.remove(self.GetPathToNCBILogs() + "/" + fileName)
+            # Clear all related files
+            self.DeleteAllRelateFile("updateMeta")
 
         return
 
 if __name__ == "__main__":
     ncbi = Ncbi(1)
-    ncbi.UpdateNcbiInformation()
