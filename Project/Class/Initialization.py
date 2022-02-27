@@ -34,11 +34,11 @@ class Database():
                 user = self.user,
                 password = self.password
             )
+            return connection
 
         except Error as e:
             print("Error while connecting to MySQL", e)
-            
-        return connection
+            return
     
     def CloseDatabase(self, conn):
         try:
@@ -80,12 +80,14 @@ class FilePath():
     pathToMetaData = os.getcwd() + "/Project/MetaData"
     pathToTestCase = os.getcwd() + "/Project/TestCase"
     pathToNCBILogs = os.getcwd() + "/Project/NCBILogs"
+    pathToDiseaseLogs = os.getcwd() + "/Project/DiseaseLogs"
 
     def __init__(self):
         Path( os.getcwd() + "/Project/Dataset" ).mkdir(parents=True, exist_ok=True)
         Path( os.getcwd() + "/Project/Dataset/NCBI" ).mkdir(parents=True, exist_ok=True)
         Path( os.getcwd() + "/Project/TestCase" ).mkdir(parents=True, exist_ok=True)
         Path( os.getcwd() + "/Project/NCBILogs" ).mkdir(parents=True, exist_ok=True)
+        Path( os.getcwd() + "/Project/DiseaseLogs" ).mkdir(parents=True, exist_ok=True)
         return
 
     def GetPathToNCBI(self):        
@@ -103,18 +105,8 @@ class FilePath():
     def GetPathToNCBILogs(self):
         return self.pathToNCBILogs
 
-class LinkDataAndHeader():
-    sourceWebsite = {
-        'ncbi' : r'https://www.ncbi.nlm.nih.gov/gene',
-        'kegg' : r'https://www.kegg.jp/entry',
-        'huge' : {
-            'first' : r'https://phgkb.cdc.gov/PHGKB/phenoPedia.action?firstQuery=Diabetes%20Mellitus,%20Type%202&cuiID=',
-            'second': r'&typeSubmit=GO&check=y&which=2&pubOrderType=pubD'
-        }
-    }
-
-    def __init__(self):
-        return
+    def GetPathToDiseaseLogs(self):
+        return self.pathToDiseaseLogs
 
 class MetaData(FilePath):
     jsonData = None
