@@ -5,7 +5,7 @@ import urllib.request
 from threading import Thread
 from datetime import datetime
 from bs4 import BeautifulSoup as soup
-from Initialization import Database, FilePath, LinkDataAndHeader, MetaData, GeneWithMap
+from Initialization import Database, FilePath, MetaData, GeneWithMap
 import json
 import re
 
@@ -13,7 +13,7 @@ import re
 Global variable
 """
 
-class CreateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
+class CreateNcbi(Thread, Database, FilePath):
     # initialize value
     nameMetadata = ""
     listGenesID = []
@@ -169,7 +169,7 @@ class CreateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
         self.textFile.close()
         return
 
-class UpdateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
+class UpdateNcbi(Thread, Database, FilePath):
     nameMetadata = ""
     listDataUnCheck = []
     startIndex = 0
@@ -324,7 +324,7 @@ class UpdateNcbi(Thread, Database, FilePath, LinkDataAndHeader):
         
         return
 
-class Ncbi(Database, MetaData, FilePath, LinkDataAndHeader, GeneWithMap):
+class Ncbi(Database, MetaData, FilePath, GeneWithMap):
     numberOfRow = None
     numberOfThread = 1
 

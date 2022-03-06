@@ -128,8 +128,8 @@
       }
     ],
     "diseaseStatus": {
-      "updateMeta": { "status": 0 },
-      "createMeta": { "status": 1 }
+      "updateMeta": { "status": 0, "diseaseID": 0, "diseaseName": "" },
+      "createMeta": { "status": 1, "diseaseID": 0, "diseaseName": "" }
     },
     "records": 1
   }

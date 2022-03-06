@@ -372,6 +372,8 @@ class Disease(MetaData):
 
             # If the status is 1, the process has just started
             elif ( diseaseInfo['technical']['diseaseStatus']['createMeta']['status'] == 1):
+                diseaseInfo['technical']['diseaseStatus']['createMeta']['diseaseID'] = diseaseID
+                diseaseInfo['technical']['diseaseStatus']['createMeta']['diseaseName'] = eachInfo['name']
                 self.CreateLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile) # Create Log File
 
             # If the status is 2, the process has paused
@@ -401,6 +403,8 @@ class Disease(MetaData):
             listGene = self.CheckGeneWithMap(self.GetPathToDiseaseLogs() + "/" + nameLogFile, listGeneEachDisease, listGeneFromKegg)
 
             ( (diseaseInfo['technical']['diseases'] )[diseaseID - 1] )['createMeta']['amountDisease'] = len(listGene)
+            if ( diseaseInfo['technical']['diseaseStatus']['createMeta']['status'] == 3):
+                diseaseInfo['technical']['diseaseStatus']['createMeta']['status'] = 1
             objectDisease.SaveManualUpdateMetadata(diseaseInfo)
 
             # Connect database
