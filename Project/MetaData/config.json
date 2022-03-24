@@ -1,0 +1,7 @@
+{
+  "database": {
+    "hostIP": "192.168.1.128",
+    "database": "test_create_1",
+    "authentication": { "user": "root", "password": "password" }
+  }
+}

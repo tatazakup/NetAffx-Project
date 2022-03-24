@@ -14,6 +14,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 
 class HugeInfo():
+    searchName = ""
+    urlLink = ""
+    hugeID = 0
+    step = 0
 
     def __init__(self, searchName, urlLink, hugeID, step):
         self.searchName = searchName
@@ -25,6 +29,7 @@ class HugeInfo():
     def InitializeChrome(self):
         filePath = FilePath()
         chrome_options = Options()
+        
         ChromeDriverPath = (filePath.GetPathToChromeDriver()).replace("\\", "/")
 
         chrome_options.add_argument("--window-size=1920x1080")
@@ -41,36 +46,9 @@ class HugeInfo():
         # chrome_options.add_argument('--disable-gpu')
         # chrome_options.add_argument('--disable-software-rasterizer')
 
-        driver = Chrome(ChromeDriverPath + '/chromedriver.exe',
-                        options=chrome_options)
-        return driver
+        driver = Chrome(ChromeDriverPath + '/chromedriver.exe', options=chrome_options)
 
-    def SendRequestToWebsite(self):
-        isCompleted = False
-        count = 0
-        while ( isCompleted == False):
-            if ( count == 5 ):
-                return False
-            try:
-                query_args = {
-                    'query': 'Bipolar Disorder[original query]', 
-                    'firstQuery': 'Bipolar Disorder',
-                    'Mysubmit': 'filter',
-                    'dbTypeChoice': 'All',
-                    'gwas': '',
-                    'sortTypeChoice': 'Gene',
-                }
-                encoded_args = parse.urlencode(query_args).encode('utf-8')
-                urlNcbi = "https://phgkb.cdc.gov/PHGKB/startPagePubLit.action"
-                UrlHuge = urllib.request.urlopen( urlNcbi, encoded_args )
-                print('UrlHuge :', UrlHuge)
-                res = soup(urllib.request.urlopen( urlNcbi, encoded_args ), 'html.parser')
-                isCompleted = True
-            except:
-                count = count + 1
-                pass
-        
-        return res
+        return driver
     
     def SeleniumProcess(self, diseaseID):
         listGene = []
@@ -126,10 +104,10 @@ class HugeInfo():
         return listGene, listGeneTest
 
 class KeggInfo():
-    LinkData = None
+    urlLink = None
     
     def __init__(self, linkData):
-        self.LinkData = linkData
+        self.urlLink = linkData
         return
 
     def SendRequestToWebsite(self):
@@ -139,7 +117,7 @@ class KeggInfo():
             if ( count == 5 ):
                 return False
             try:
-                urlNcbi = self.LinkData
+                urlNcbi = self.urlLink
                 res = soup(urllib.request.urlopen( urlNcbi ), 'html.parser')
                 isCompleted = True
             except:
@@ -186,30 +164,21 @@ class KeggInfo():
             return listGene
 
 class Disease(MetaData):
-    listNcbiData = []
-    pathDisease = ''
     
     def __init__(self):
-        database = Database()
-        conn = database.ConnectDatabase()
-        mysqlCommand = """
-            SELECT DISTINCT GENE_ID FROM gene_snp;
-        """
-        self.listNcbiData = database.CreateTask(conn, mysqlCommand, ())
-        database.CloseDatabase(conn)
         return
 
-    def CreateLogFile(self, FileName):
-        textFile = open(FileName,"w+")
+    def CreateLogFile(self, filename):
+        textFile = open(filename,"w+")
         textFile.close()
         return
 
-    def WriteToLogFile(self, FileName, GeneSymbol, Status, Description):
-        textFile = open(FileName,"a")
-        if (GeneSymbol == None):
-            textFile.write("%s \n%s \n\r" % ("Status : " + str(Status), "Description : " + str(Description)) )
+    def WriteToLogFile(self, filename, geneSymbol, status, description):
+        textFile = open(filename,"a")
+        if (geneSymbol == None):
+            textFile.write("%s \n%s \n\r" % ("Status : " + str(status), "Description : " + str(description)) )
         else:    
-            textFile.write("%s \n%s \n\r" % ("Status Gene " + str(GeneSymbol) + " : " + str(Status), "Description : " + str(Description)) )
+            textFile.write("%s \n%s \n\r" % ("Status Gene " + str(geneSymbol) + " : " + str(status), "Description : " + str(description)) )
         textFile.close()
         return
 
@@ -230,7 +199,7 @@ class Disease(MetaData):
         except:
             return 'Not found'
 
-    def FetchGeneID(self, GeneSymbol):
+    def FetchGeneID(self, geneSymbol):
         database = Database()
         conn = database.ConnectDatabase()
         sqlCommand = """
@@ -239,14 +208,14 @@ class Disease(MetaData):
             WHERE gene_snp.GENE_SYMBOL = %s LIMIT 1;
         """
         
-        result = database.CreateTask(conn, sqlCommand, (GeneSymbol, ))
+        result = database.CreateTask(conn, sqlCommand, (geneSymbol, ))
         if ( result == [] ):
             sqlCommand = """
                 SELECT other_symbol.GENE_ID
                 FROM other_symbol
                 WHERE other_symbol.OTHER_SYMBOL = %s LIMIT 1;
             """
-            result = database.CreateTask(conn, sqlCommand, (GeneSymbol, ))
+            result = database.CreateTask(conn, sqlCommand, (geneSymbol, ))
 
         database.CloseDatabase(conn)
         try:
@@ -254,41 +223,43 @@ class Disease(MetaData):
         except:
             return 'Not found'
 
-    def SetZeroOnMetadata(self, type):
+    def SetZeroOnMetadata(self, typeMetadata):
         objectDisease = MetaData()
         diseaseInfo = objectDisease.ReadMetadata('Disease')
 
-        if ( diseaseInfo['technical']['diseaseStatus']['createMeta']['status'] != 2 ):
+        if ( diseaseInfo['technical']['diseaseStatus'][typeMetadata]['status'] != 2  ):
             index = 0
-            if type == "createMeta":
-                for eachInfo in diseaseInfo['technical']['diseases']:
-                    ( (diseaseInfo['technical']['diseases'] )[index] )['createMeta']['amountDisease'] = 0
-                    ( (diseaseInfo['technical']['diseases'] )[index] )['createMeta']['amountOfFinished'] = 0
-                    index = index + 1
 
-                if ( diseaseInfo['technical']['diseaseStatus']['createMeta']['status'] == 1 or diseaseInfo['technical']['diseaseStatus']['createMeta']['status'] == 3 ):
-                    diseaseInfo['technical']['diseaseStatus']['createMeta']['status'] = 0
+            for eachInfo in diseaseInfo['technical']['diseases']:
+                ( (diseaseInfo['technical']['diseases'] )[index] )[typeMetadata]['amountDisease'] = 0
+                ( (diseaseInfo['technical']['diseases'] )[index] )[typeMetadata]['amountOfFinished'] = 0
+                index = index + 1
 
-            elif type == "updateMeta":
-                diseaseInfo = objectDisease.ReadMetadata('Disease')
-                for eachInfo in diseaseInfo['technical']['diseases']:
-                    ( (diseaseInfo['technical']['diseases'] )[index] )['updateMeta']['amountDisease'] = 0
-                    ( (diseaseInfo['technical']['diseases'] )[index] )['updateMeta']['amountOfFinished'] = 0
+            if ( diseaseInfo['technical']['diseaseStatus'][typeMetadata]['status'] == 1 or diseaseInfo['technical']['diseaseStatus'][typeMetadata]['status'] == 3 ):
+                diseaseInfo['technical']['diseaseStatus'][typeMetadata]['status'] = 0
+                diseaseInfo['technical']['diseaseStatus'][typeMetadata]['diseaseID'] = 0
+                diseaseInfo['technical']['diseaseStatus'][typeMetadata]['diseaseName'] = ""
 
-                    index = index + 1
+            objectDisease.SaveManualUpdateMetadata(diseaseInfo)
 
-                if ( diseaseInfo['technical']['diseaseStatus']['updateMeta']['status'] == 1 or diseaseInfo['technical']['diseaseStatus']['updateMeta']['status'] == 3 ):
-                    diseaseInfo['technical']['diseaseStatus']['updateMeta']['status'] = 0
-
-        objectDisease.SaveManualUpdateMetadata(diseaseInfo)
-
-    def CheckGeneWithMap(self, nameLogFile, diseaseList, keggList ):
-        
+    def CheckGeneWithMap(self, typeMetadata, indexDisease, nameLogFile, diseaseList, keggList ):
+        objectDisease = MetaData()
         listGeneDisease = []
         UniqueList = [] # uses for check unique geneID
         ExcludeList = [eachGene['GENE_SYMBOL'] for eachGene in keggList] # List of gene, Don't have to find gene id
+
+        diseaseInfo = objectDisease.ReadMetadata('Disease')
+        diseaseStatus = int(diseaseInfo['technical']['diseaseStatus'][typeMetadata]['status'])
+
+        if ( diseaseStatus == 0 or diseaseStatus == 2):
+            return
+        else:
+            ( (diseaseInfo['technical']['diseases'] )[indexDisease] )[typeMetadata]['amountOfFinished'] = 0
+            ( (diseaseInfo['technical']['diseases'] )[indexDisease] )[typeMetadata]['amountDisease'] = len(diseaseList)
+            diseaseInfo['technical']['diseaseStatus'][typeMetadata]['diseaseName'] = "Checking " + diseaseInfo['technical']['diseaseStatus'][typeMetadata]['diseaseName']
+            objectDisease.SaveManualUpdateMetadata(diseaseInfo)
         
-        for diseaseGene in diseaseList[:10]:
+        for diseaseGene in diseaseList[:]:
             Sources = ""
             GeneSymbol = diseaseGene['GENE_SYMBOL'].strip()
             SourceWebsite = diseaseGene['SOURCE_WEBSITE']
@@ -299,13 +270,10 @@ class Disease(MetaData):
 
             if IsFoundUniqueList:                
                 self.WriteToLogFile(nameLogFile, GeneSymbol, "condition 1", "")
-                print( 'condition 1 |', GeneSymbol, SourceWebsite)
-                continue
 
             # Condition for What Gene not have gene id on website and must have to find gene id on database ( Huge )
             elif not(IsFoundUniqueList) and not(IsFoundExcludeList):
                 self.WriteToLogFile(nameLogFile, GeneSymbol, "condition 2", "Condition for What Gene not have gene id on website and must have to find gene id on database ( Huge )")
-                print( 'condition 2 |', GeneSymbol, SourceWebsite)
                 
                 GeneID = self.FetchGeneID(GeneSymbol)
                 
@@ -319,8 +287,7 @@ class Disease(MetaData):
 
             # Condition for what gene have gene id on website and don't have to find gene id on database ( Kegg )
             elif not(IsFoundUniqueList) and IsFoundExcludeList:
-                self.WriteToLogFile(nameLogFile, GeneSymbol, "condition 2", "Condition for what gene have gene id on website and don't have to find gene id on database ( Kegg )")
-                print( 'condition 3 |', GeneSymbol, SourceWebsite)
+                self.WriteToLogFile(nameLogFile, GeneSymbol, "condition 3", "Condition for what gene have gene id on website and don't have to find gene id on database ( Kegg )")
                 
                 Matches = (detailDisease for detailDisease in (diseaseList) if detailDisease['GENE_SYMBOL'] == GeneSymbol)
                 for Match in Matches: Sources = Sources + Match['SOURCE_WEBSITE'] + "; "
@@ -333,8 +300,15 @@ class Disease(MetaData):
                 })
                 
                 UniqueList.append(GeneSymbol)
-            
-        print('\n')
+
+            diseaseInfo = objectDisease.ReadMetadata('Disease')
+            diseaseStatus = int(diseaseInfo['technical']['diseaseStatus'][typeMetadata]['status'])
+
+            # If the status is 0, the process has stopped and If the status is 2, the process has paused
+            if ( diseaseStatus == 0 or diseaseStatus == 2): return
+            else:
+                ( (diseaseInfo['technical']['diseases'] )[indexDisease] )[typeMetadata]['amountOfFinished'] = ( (diseaseInfo['technical']['diseases'] )[indexDisease] )[typeMetadata]['amountOfFinished'] + 1
+                objectDisease.SaveManualUpdateMetadata(diseaseInfo)
         
         return listGeneDisease
 
@@ -342,10 +316,22 @@ class Disease(MetaData):
         objectDisease = MetaData()
         objectMapDisease = MetaData()
 
+        typeMetadata = "createMeta"
+
         listDisease = objectMapDisease.ReadMetadata('Disease')
 
         for eachInfo in listDisease['technical']['diseases']:
+
+            try: diseaseID = self.CheckDiseaseID(eachInfo['abbreviation'])
+            except: continue
+
             listGene = []
+            isKeggCompleted = False
+            isHugeCompleted = False
+
+            indexDisease = int(diseaseID) - 1
+            nameLogFile = 'DISEASE_CREATE_DISEASE_ID_' + str(diseaseID) + ".txt"
+            pathToLogFile = self.GetPathToDiseaseLogs() + "/" + nameLogFile
 
             # Kegg variable
             linkKegg = eachInfo['kege']
@@ -354,57 +340,72 @@ class Disease(MetaData):
             linkHuge = eachInfo['huge']['link']
             searchHuge = eachInfo['huge']['nameTextBox']
             IDHuge = eachInfo['huge']['idCheckBox']
-            StepHuge = eachInfo['huge']['step']
-
-            try: diseaseID = self.CheckDiseaseID(eachInfo['abbreviation'])
-            except: continue
-
-            if (diseaseID != 1):
-                continue
+            StepHuge = eachInfo['huge']['step']            
 
             diseaseInfo = objectDisease.ReadMetadata('Disease')
+            diseaseStatus = int(diseaseInfo['technical']['diseaseStatus'][typeMetadata]['status'])
 
-            nameLogFile = 'DISEASE_CREATE_DISEASE_ID_' + str(diseaseID) + ".txt"
-
-            # If the status is 0, the process has stopped
-            if ( diseaseInfo['technical']['diseaseStatus']['createMeta']['status'] == 0):
-                continue
-
-            # If the status is 1, the process has just started
-            elif ( diseaseInfo['technical']['diseaseStatus']['createMeta']['status'] == 1):
-                diseaseInfo['technical']['diseaseStatus']['createMeta']['diseaseID'] = diseaseID
-                diseaseInfo['technical']['diseaseStatus']['createMeta']['diseaseName'] = eachInfo['name']
-                self.CreateLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile) # Create Log File
-
-            # If the status is 2, the process has paused
-            elif ( diseaseInfo['technical']['diseaseStatus']['createMeta']['status'] == 2):
+            if ( diseaseStatus == 0):
+                self.SetZeroOnMetadata(typeMetadata)
                 return
+            elif ( diseaseStatus == 1):
+                diseaseInfo['technical']['diseaseStatus'][typeMetadata]['diseaseID'] = diseaseID
+                diseaseInfo['technical']['diseaseStatus'][typeMetadata]['diseaseName'] = "Searching " + eachInfo['name']
+                objectDisease.SaveManualUpdateMetadata(diseaseInfo)
+                self.CreateLogFile(pathToLogFile)
+            elif ( diseaseStatus == 2): return
 
             # Fetch data from kegg website
             try:
                 keggInfo = KeggInfo(linkKegg)
                 listGeneFromKegg = keggInfo.KeggDataset(diseaseID)
-                self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, None, "Successful", "Already been fetched a kegg information")
+                self.WriteToLogFile(pathToLogFile, None, "Successful", "Already been fetched a kegg information")
+                isKeggCompleted = True
             except Exception as e:
                 keggInfo = []
-                self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, None, "Error", str(e))
+                listGeneFromKegg = []
+                self.WriteToLogFile(pathToLogFile, None, "Error", str(e))
 
             # Fetch data from huge website
             try:
                 hugeInfo = HugeInfo(searchHuge, linkHuge, IDHuge, StepHuge)
                 listGeneFromHuge, listTestGeneFromHuge = hugeInfo.SeleniumProcess(diseaseID)
-                self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, None, "successful", "Already been fetched a huge information")
+                self.WriteToLogFile(pathToLogFile, None, "successful", "Already been fetched a huge information")
+                isHugeCompleted = True
             except Exception as e:
                 hugeInfo = []
-                self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, None, "Error", str(e))
+                listGeneFromHuge = []
+                self.WriteToLogFile(pathToLogFile, None, "Error", str(e))
+
+            diseaseInfo = objectDisease.ReadMetadata('Disease')
+            diseaseStatus = int(diseaseInfo['technical']['diseaseStatus'][typeMetadata]['status'])
+
+            if (diseaseStatus == 0):
+                self.SetZeroOnMetadata(typeMetadata)
+                return
+            elif (diseaseStatus == 2): return
+
+            # If both kegg and huge are not response
+            if ( ( isKeggCompleted == False) and (isHugeCompleted == False) ):
+                self.WriteToLogFile(pathToLogFile, None, "Error", "Both kegg and huge navigator website are not response")
+                continue
             
             listGeneEachDisease = listGeneFromKegg + listGeneFromHuge
 
-            listGene = self.CheckGeneWithMap(self.GetPathToDiseaseLogs() + "/" + nameLogFile, listGeneEachDisease, listGeneFromKegg)
+            listGene = self.CheckGeneWithMap(typeMetadata, indexDisease, pathToLogFile, listGeneEachDisease, listGeneFromKegg)
 
-            ( (diseaseInfo['technical']['diseases'] )[diseaseID - 1] )['createMeta']['amountDisease'] = len(listGene)
-            if ( diseaseInfo['technical']['diseaseStatus']['createMeta']['status'] == 3):
-                diseaseInfo['technical']['diseaseStatus']['createMeta']['status'] = 1
+            diseaseInfo = objectDisease.ReadMetadata('Disease')
+            diseaseStatus = int(diseaseInfo['technical']['diseaseStatus'][typeMetadata]['status'])
+
+            if ( diseaseStatus == 0):
+                self.SetZeroOnMetadata(typeMetadata)
+                return
+            elif ( diseaseStatus == 2): return
+            elif ( diseaseStatus == 3): diseaseInfo['technical']['diseaseStatus'][typeMetadata]['status'] = 1
+
+            diseaseInfo['technical']['diseaseStatus'][typeMetadata]['diseaseName'] = "Storing " + eachInfo['name']
+            ( (diseaseInfo['technical']['diseases'] )[indexDisease] )[typeMetadata]['amountDisease'] = len(listGene)
+            ( (diseaseInfo['technical']['diseases'] )[indexDisease] )[typeMetadata]['amountOfFinished'] = 0
             objectDisease.SaveManualUpdateMetadata(diseaseInfo)
 
             # Connect database
@@ -412,7 +413,7 @@ class Disease(MetaData):
                 database = Database()
                 conn = database.ConnectDatabase()
             except Exception as e:
-                self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, None, "Error", str(e))
+                self.WriteToLogFile(pathToLogFile, None, "Error", str(e))
                 continue
 
             for row in listGene:
@@ -440,7 +441,7 @@ class Disease(MetaData):
 
                         database.CreateTask(conn, sqlCommand, (geneSymbol, diseaseID, geneID))
                 except Exception as e:
-                    self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, geneSymbol, "Error", str(e))
+                    self.WriteToLogFile(pathToLogFile, geneSymbol, "Error", str(e))
                     continue
                 
                 # Update a new website source each gene
@@ -453,16 +454,16 @@ class Disease(MetaData):
                         
                         database.CreateTask(conn, sqlCommand, (geneSymbol, source))
                 except Exception as e:
-                    self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, geneSymbol, "Error", str(e))
+                    self.WriteToLogFile(pathToLogFile, geneSymbol, "Error", str(e))
                     continue
 
-                ( (diseaseInfo['technical']['diseases'] )[diseaseID - 1] )['createMeta']['amountOfFinished'] = ( (diseaseInfo['technical']['diseases'] )[diseaseID - 1] )['createMeta']['amountOfFinished'] + 1
+                ( (diseaseInfo['technical']['diseases'] )[indexDisease] )['createMeta']['amountOfFinished'] = ( (diseaseInfo['technical']['diseases'] )[indexDisease] )['createMeta']['amountOfFinished'] + 1
                 objectDisease.SaveManualUpdateMetadata(diseaseInfo)
-                self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, geneSymbol, "Successful", "Already updated new a related gene")
+                self.WriteToLogFile(pathToLogFile, geneSymbol, "Successful", "Already updated new a related gene")
             
             database.CloseDatabase(conn) 
 
-        self.SetZeroOnMetadata('updateMeta')
+        self.SetZeroOnMetadata('createMeta')
 
         return
 
@@ -470,10 +471,22 @@ class Disease(MetaData):
         objectDisease = MetaData()
         objectMapDisease = MetaData()
 
+        typeMetadata = "updateMeta"
+
         listDisease = objectMapDisease.ReadMetadata('Disease')
         
         for eachInfo in listDisease['technical']['diseases']:
+            
+            try: diseaseID = self.CheckDiseaseID(eachInfo['abbreviation'])
+            except: continue
+
             listGene = []
+            isKeggCompleted = False
+            isHugeCompleted = False
+
+            indexDisease = int(diseaseID) - 1
+            nameLogFile = 'DISEASE_UPDATE_DISEASE_ID_' + str(diseaseID) + ".txt"
+            pathToLogFile = self.GetPathToDiseaseLogs() + "/" + nameLogFile
 
             # Kegg variable
             linkKegg = eachInfo['kege']
@@ -484,58 +497,74 @@ class Disease(MetaData):
             IDHuge = eachInfo['huge']['idCheckBox']
             StepHuge = eachInfo['huge']['step']
 
-            try: diseaseID = self.CheckDiseaseID(eachInfo['abbreviation'])
-            except: continue
-
-            if (diseaseID != 1):
-                continue
-
             diseaseInfo = objectDisease.ReadMetadata('Disease')
+            diseaseStatus = int(diseaseInfo['technical']['diseaseStatus'][typeMetadata]['status'])
 
-            nameLogFile = 'DISEASE_UPDATE_DISEASE_ID_' + str(diseaseID) + ".txt"
-
-            # If the status is 0, the process has stopped
-            if ( diseaseInfo['technical']['diseaseStatus']['updateMeta']['status'] == 0):
+            if (diseaseStatus == 0): 
+                self.SetZeroOnMetadata(typeMetadata)
                 continue
-
-            # If the status is 1, the process has just started
-            elif ( diseaseInfo['technical']['diseaseStatus']['updateMeta']['status'] == 1):
-                self.CreateLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile) # Create Log File
-
-            # If the status is 2, the process has paused
-            elif ( diseaseInfo['technical']['diseaseStatus']['updateMeta']['status'] == 2):
-                return
+            elif ( diseaseStatus == 1):
+                diseaseInfo['technical']['diseaseStatus'][typeMetadata]['diseaseID'] = diseaseID
+                diseaseInfo['technical']['diseaseStatus'][typeMetadata]['diseaseName'] = "Searching " + eachInfo['name']
+                objectDisease.SaveManualUpdateMetadata(diseaseInfo)
+                self.CreateLogFile(pathToLogFile)
+            elif ( diseaseStatus == 2): return
 
             # Fetch data from kegg website
             try:
                 keggInfo = KeggInfo(linkKegg)
                 listGeneFromKegg = keggInfo.KeggDataset(diseaseID)
-                self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, None, "Successful", "Already been fetched a kegg information")
+                self.WriteToLogFile(pathToLogFile, None, "Successful", "Already been fetched a kegg information")
+                isKeggCompleted = True
             except Exception as e:
                 keggInfo = []
-                self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, None, "Error", str(e))
+                listGeneFromKegg = []
+                self.WriteToLogFile(pathToLogFile, None, "Error", str(e))
 
             # Fetch data from huge website
             try:
                 hugeInfo = HugeInfo(searchHuge, linkHuge, IDHuge, StepHuge)
                 listGeneFromHuge, listTestGeneFromHuge = hugeInfo.SeleniumProcess(diseaseID)
-                self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, None, "successful", "Already been fetched a huge information")
+                self.WriteToLogFile(pathToLogFile, None, "successful", "Already been fetched a huge information")
+                isHugeCompleted = True
             except Exception as e:
                 hugeInfo = []
-                self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, None, "Error", str(e))
+                listGeneFromHuge = []
+                self.WriteToLogFile(pathToLogFile, None, "Error", str(e))
+
+            diseaseInfo = objectDisease.ReadMetadata('Disease')
+            diseaseStatus = int(diseaseInfo['technical']['diseaseStatus'][typeMetadata]['status'])
+
+            if ( diseaseStatus == 0): continue
+            elif ( diseaseStatus == 2): return
+
+            # If both kegg and huge are not response
+            if ( ( isKeggCompleted == False) and (isHugeCompleted == False) ):
+                self.WriteToLogFile(pathToLogFile, None, "Error", "Both kegg and huge navigator website are not response")
+                continue
 
             listGeneEachDisease = listGeneFromKegg + listGeneFromHuge
 
-            listGene = self.CheckGeneWithMap(self.GetPathToDiseaseLogs() + "/" + nameLogFile, listGeneEachDisease, listGeneFromKegg)
-            ( (diseaseInfo['technical']['diseases'] )[int(diseaseID) - 1] )['updateMeta']['amountDisease'] = len(listGene)
+            listGene = self.CheckGeneWithMap(typeMetadata, indexDisease, pathToLogFile, listGeneEachDisease, listGeneFromKegg)
+
+            diseaseInfo = objectDisease.ReadMetadata('Disease')
+            diseaseStatus = int(diseaseInfo['technical']['diseaseStatus'][typeMetadata]['status'])
+            
+            if ( diseaseStatus == 0): continue
+            elif ( diseaseStatus == 2): return
+            elif ( diseaseStatus == 3): diseaseInfo['technical']['diseaseStatus'][typeMetadata]['status'] = 1
+
+            diseaseInfo['technical']['diseaseStatus'][typeMetadata]['diseaseName'] = "Storing " + eachInfo['name']
+            ( (diseaseInfo['technical']['diseases'] )[indexDisease] )[typeMetadata]['amountDisease'] = len(listGene)
+            ( (diseaseInfo['technical']['diseases'] )[indexDisease] )[typeMetadata]['amountOfFinished'] = 0
             objectDisease.SaveManualUpdateMetadata(diseaseInfo)
 
             # Connect database
             try:
                 database = Database()
                 conn = database.ConnectDatabase()
-            except:
-                self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, None, "Error", "Database lost connected")
+            except Exception as e:
+                self.WriteToLogFile(pathToLogFile, None, "Error", str(e))
                 continue
 
             # Delete all Gene not related with disease
@@ -549,14 +578,14 @@ class Disease(MetaData):
                 ''' % FormatStrings   
                 Records = [diseaseID] + listGeneSymbolOnDisease            
                 database.CreateTask(conn, sqlCommand, Records)
-                self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, None, "Successful", "Delete all Gene not related with disease ID : " + str(diseaseID))
-            except:
-                self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, None, "Error", "Something is wrong with the database")
+                self.WriteToLogFile(pathToLogFile, None, "Successful", "Delete all Gene not related with disease ID : " + str(diseaseID))
+            except Exception as e:
+                self.WriteToLogFile(pathToLogFile, None, "Error", str(e))
                 continue
 
             for row in listGene:
                 diseaseInfo = objectDisease.ReadMetadata('Disease')
-
+                
                 geneID = str(row['GENE_ID'])
                 geneSymbol = str(row['GENE_SYMBOL']) 
                 sources = row['SOURCE_WEBSITE'].split('; ')
@@ -578,7 +607,7 @@ class Disease(MetaData):
 
                         database.CreateTask(conn, sqlCommand, (geneSymbol, diseaseID, geneID))
                 except Exception as e:
-                    self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, geneSymbol, "Error", str(e))
+                    self.WriteToLogFile(pathToLogFile, geneSymbol, "Error", str(e))
                     continue
 
                 # Update a new website source each gene
@@ -591,16 +620,16 @@ class Disease(MetaData):
                         
                         database.CreateTask(conn, sqlCommand, (geneSymbol, source))
                 except Exception as e:
-                    self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, geneSymbol, "Error", str(e))
+                    self.WriteToLogFile(pathToLogFile, geneSymbol, "Error", str(e))
                     continue
                 
-                ( (diseaseInfo['technical']['diseases'] )[diseaseID - 1] )['updateMeta']['amountOfFinished'] = ( (diseaseInfo['technical']['diseases'] )[diseaseID - 1] )['updateMeta']['amountOfFinished'] + 1
+                ( (diseaseInfo['technical']['diseases'] )[indexDisease] )[typeMetadata]['amountOfFinished'] = ( (diseaseInfo['technical']['diseases'] )[indexDisease] )[typeMetadata]['amountOfFinished'] + 1
                 objectDisease.SaveManualUpdateMetadata(diseaseInfo)
-                self.WriteToLogFile(self.GetPathToDiseaseLogs() + "/" + nameLogFile, geneSymbol, "Successful", "Already updated new a related gene")
+                self.WriteToLogFile(pathToLogFile, geneSymbol, "Successful", "Already updated new a related gene")
 
             database.CloseDatabase(conn)
         
-        self.SetZeroOnMetadata('updateMeta')
+        self.SetZeroOnMetadata(typeMetadata)
 
         return
 
