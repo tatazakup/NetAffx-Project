@@ -1,0 +1,10 @@
+{
+  "Coronary Artery Disease": [],
+  "Crohn Disease": [],
+  "Hypertension": [],
+  "Rheumatoid Arthritis": [],
+  "Type 1 Diabetes Mellitus": [],
+  "Type 2 Diabetes Mellitus": [],
+  "Bipolar disorder": [],
+  "Status": { "textStatus": "", "amountDisease": 0, "amountOfFinished": 0 }
+}

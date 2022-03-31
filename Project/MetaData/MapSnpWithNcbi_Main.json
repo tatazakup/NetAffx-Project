@@ -1,0 +1,28 @@
+{
+  "technical": {
+    "category": "",
+    "type": "table",
+    "system": "",
+    "tableType": "",
+    "createionTime": 0,
+    "lastMedoficationTime": 0,
+    "ExpirationTime": "",
+    "location": "",
+    "resource": "https://www.ncbi.nlm.nih.gov/gene",
+    "labels": "",
+    "description": "This data uses for know another symbol each geneID",
+    "tags": {
+      "geneID": "int64",
+      "geneSymbol": "string",
+      "alsoKnowAs": "list",
+      "updatedAt": "float"
+    },
+    "updateMeta": {
+      "amountUniqueGene": 0,
+      "amountOfFinished": 0,
+      "status": 0
+    },
+    "createMeta": { "amountUniqueGene": 0, "amountOfFinished": 0, "status": 0 },
+    "records": 0
+  }
+}

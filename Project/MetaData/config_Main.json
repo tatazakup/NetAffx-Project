@@ -1,0 +1,7 @@
+{
+  "database": {
+    "hostIP": "",
+    "database": "",
+    "authentication": { "user": "", "password": "" }
+  }
+}
