@@ -305,6 +305,7 @@ class FilePath():
     pathToNCBILogs = os.getcwd() + "/Project/NCBILogs"
     pathToDiseaseLogs = os.getcwd() + "/Project/DiseaseLogs"
     pathToAnnotationFile = os.getcwd() + "/Project/AnnotationFile"
+    pathToUI = os.getcwd() + "/Project/ui"
 
     def __init__(self):
         Path( os.getcwd() + "/Project/Dataset" ).mkdir(parents=True, exist_ok=True)
@@ -314,26 +315,14 @@ class FilePath():
         Path( os.getcwd() + "/Project/DiseaseLogs" ).mkdir(parents=True, exist_ok=True)
         return
 
-    def GetPathToNCBI(self):        
-        return self.pathToDataSet + "/NCBI"
-
-    def GetPathToTestCase(self):
-        return self.pathToTestCase
-
-    def GetPathToChromeDriver(self):
-        return self.pathToChrome
-
-    def GetPathToMetadata(self):
-        return self.pathToMetaData
-    
-    def GetPathToNCBILogs(self):
-        return self.pathToNCBILogs
-
-    def GetPathToDiseaseLogs(self):
-        return self.pathToDiseaseLogs
-
-    def GetPathToAnnotationFile(self):
-        return self.pathToAnnotationFile
+    def GetPathToNCBI(self): return self.pathToDataSet + "/NCBI"
+    def GetPathToTestCase(self): return self.pathToTestCase
+    def GetPathToChromeDriver(self): return self.pathToChrome
+    def GetPathToMetadata(self): return self.pathToMetaData
+    def GetPathToNCBILogs(self): return self.pathToNCBILogs
+    def GetPathToDiseaseLogs(self): return self.pathToDiseaseLogs
+    def GetPathToAnnotationFile(self): return self.pathToAnnotationFile
+    def GetPathToUI(self): return self.pathToUI
 
 class MetaData(FilePath):
     jsonData = None

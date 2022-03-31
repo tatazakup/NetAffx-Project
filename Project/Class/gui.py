@@ -27,10 +27,10 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationTool
 from matplotlib.figure import Figure
 
 
-class ChromosomeFilter(QDialog):
+class ChromosomeFilter(QDialog, FilePath):
     def __init__(self, oldCondition):
         super(ChromosomeFilter, self).__init__()
-        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\chromosomefilter.ui",self)
+        loadUi(self.GetPathToUI() + "/chromosomefilter.ui",self)
         self.Listcheckbox = [self.ch_all, self.ch_1, self.ch_2, self.ch_3, self.ch_4, self.ch_5, self.ch_6, self.ch_7, self.ch_8, self.ch_9, self.ch_10, self.ch_11, self.ch_12, self.ch_13
         , self.ch_14, self.ch_15, self.ch_16, self.ch_17, self.ch_18, self.ch_19, self.ch_20, self.ch_21, self.ch_22, self.ch_X]
         
@@ -72,10 +72,10 @@ class ChromosomeFilter(QDialog):
                     self.list_condition.append(i)
         self.close()
 
-class PositionFilter(QDialog):
+class PositionFilter(QDialog, FilePath):
     def __init__(self):
         super(PositionFilter, self).__init__()
-        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\PositionFilter.ui",self)
+        loadUi(self.GetPathToUI() + "/PositionFilter.ui",self)
         self.display = []
 
         self.Add_btn_layout = QHBoxLayout()
@@ -158,10 +158,67 @@ class PositionFilter(QDialog):
     def PosFillDisplay(self):
         self.reject()
 
-class DiseaseFilter(QDialog):
+class RelationshipFilter(QDialog, FilePath):
+    def __init__(self):
+        super(RelationshipFilter, self).__init__()
+        loadUi(self.GetPathToUI() + "/RelationshipFilter3.ui",self)
+        self.Listcheckbox = [self.checkBox_upstream, self.checkBox_downstream, self.checkBox_intron,
+                            self.checkBox_exon, self.checkBox_synon,self.checkBox_CDS, 
+                            self.checkBox_missense, self.checkBox_nonsense,
+                            self.checkBox_UTR3, self.checkBox_UTR5, self.checkBox_spicesite]
+        self.Condition_RelDist = []
+        
+        # Set Function of each button
+        self.buttonBox.accepted.connect(self.Confirm)
+        self.buttonBox.rejected.connect(self.Cancle)
+        self.checkBox_upstream.stateChanged.connect(self.ClickUpstream)
+        self.checkBox_downstream.stateChanged.connect(self.ClickDownstream)
+    
+    def ClickUpstream(self, state):
+        if state == QtCore.Qt.Checked:
+            self.Input_upstream.setEnabled(True)
+        else:
+            self.Input_upstream.clear()
+            self.Input_upstream.setEnabled(False)
+
+    def ClickDownstream(self, state):
+        if state == QtCore.Qt.Checked:
+            self.Input_downstream.setEnabled(True)
+        else:
+            self.Input_downstream.clear()
+            self.Input_downstream.setEnabled(False)
+
+    def Confirm(self):
+        for i in range(len(self.Listcheckbox)):
+            if self.Listcheckbox[i].isChecked():
+                relationship_name = self.Listcheckbox[i].objectName()[9:]
+                if relationship_name == 'upstream'  :
+                    condition_group = []
+                    distance_value = self.Input_upstream.text()
+                    if distance_value == '':
+                        QMessageBox.about(self, 'ERROR', "Please add distance of upstream!")
+                        return
+                    condition_group.extend([relationship_name, float(distance_value)])
+                    self.Condition_RelDist.append(condition_group)
+                elif relationship_name == 'downstream':
+                    condition_group = []
+                    distance_value = self.Input_downstream.text()
+                    if distance_value == '':
+                        QMessageBox.about(self, 'ERROR', "Please add distance of downstream!")
+                        return
+                    condition_group.extend([relationship_name, float(distance_value)])
+                    self.Condition_RelDist.append(condition_group)
+                else:
+                    self.Condition_RelDist.append(relationship_name)
+        print(self.Condition_RelDist)
+
+    def Cancle(self):
+        self.close()
+
+class DiseaseFilter(QDialog, FilePath):
     def __init__(self):
         super(DiseaseFilter, self).__init__()
-        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\DiseaseFilter4.ui",self)
+        loadUi(self.GetPathToUI() + "/DiseaseFilter4.ui",self)
         self.Listcheckbox = [self.BD, self.CAD, self.CD, self.HT, self.RA, self.T1D, self.T2D]
         self.Condition_Distance = []
         
@@ -265,10 +322,10 @@ class NCBI_Thread(QThread, FilePath):
         ncbi = Ncbi(1)
         ncbi.UpdateNcbiInformation()
     
-class UpdateNCBI(QWidget):
+class UpdateNCBI(QWidget, FilePath):
     def __init__(self):
         super().__init__()
-        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\WindowNCBI.ui",self)
+        loadUi(self.GetPathToUI() + "/WindowNCBI.ui",self)
         self.start_btn.clicked.connect(self.doStart)
         self.pause_btn.clicked.connect(self.doPause)
         self.cancel_btn.clicked.connect(self.doCancel)
@@ -379,10 +436,10 @@ class DIS_Thread(QThread):
         disease = Disease()
         disease.UpdateDiseaseDataset()
 
-class UpdateDisease(QWidget):
+class UpdateDisease(QWidget, FilePath):
     def __init__(self):
         super().__init__()
-        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\WindowDISEASE.ui",self)
+        loadUi(self.GetPathToUI() + "/WindowDISEASE.ui",self)
         self.start_btn.clicked.connect(self.doStart)
         self.pause_btn.clicked.connect(self.doPause)
         self.cancel_btn.clicked.connect(self.doCancel)
@@ -478,10 +535,10 @@ class Pathway_Thread(QThread):
     def stop(self):
         self.terminate()
 
-class UpdatePathway(QWidget):
+class UpdatePathway(QWidget, FilePath):
     def __init__(self):
         super().__init__()
-        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\WindowPathway.ui",self)
+        loadUi(self.GetPathToUI() + "/WindowPathway.ui",self)
         self.start_btn.clicked.connect(self.doStart)
         self.cancel_btn.clicked.connect(self.doCancel)
     
@@ -514,7 +571,7 @@ class UpdatePathway(QWidget):
 class SQLdialog(QDialog):
     def __init__(self):
         super(SQLdialog, self).__init__()
-        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\SQLCommand.ui",self)
+        loadUi(self.GetPathToUI() + "/SQLCommand.ui",self)
         self.searchsql_Button.clicked.connect(self.getCommand)
         self.command = ''
     
@@ -522,10 +579,10 @@ class SQLdialog(QDialog):
         # self.command = self.textSQL.toPlainText()
         pass
 
-class SelectSearch(QDialog):
+class SelectSearch(QDialog, FilePath):
     def __init__(self):
         super(SelectSearch, self).__init__()
-        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\SelectSearch.ui",self)
+        loadUi(self.GetPathToUI() + "/SelectSearch.ui",self)
         self.buttonBox.accepted.connect(self.OpenResult)
         self.All.stateChanged.connect(self.clickboxall)
         self.Listcheckbox = [self.All, self.CHROMOSOME, self.DISEASE_ABBREVIATION, self.DISEASE_NAME, 
@@ -550,10 +607,10 @@ class SelectSearch(QDialog):
                 SelectedAttr = self.Listcheckbox[i].objectName()
                 self.selected.append(SelectedAttr)
 
-class ShowSNP(QDialog):
+class ShowSNP(QDialog, FilePath):
     def __init__(self, dataframe):
         super(ShowSNP, self).__init__()
-        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\ShowSNP.ui",self)
+        loadUi(self.GetPathToUI() + "/ShowSNP.ui",self)
         self.df = dataframe
         self.showSNP_model = pandasModel( self.df)
         self.tableView.setModel(self.showSNP_model)
@@ -621,10 +678,10 @@ class MplCanvas(FigureCanvasQTAgg):
         self.axes = fig.add_subplot(111)
         super(MplCanvas, self).__init__(fig)
 
-class MainWindow(QMainWindow):
+class MainWindow(QMainWindow, FilePath):
     def __init__(self):
         super(MainWindow,self).__init__()
-        loadUi("D:\\SNP_Project\\NetAffx-Project\\Project\\ui\\maingui.ui",self)
+        loadUi(self.GetPathToUI() + "/maingui.ui",self)
 
         # Connect Cliked to Function
         # self.clear_btn.clicked.connect(self.clear)
@@ -636,9 +693,9 @@ class MainWindow(QMainWindow):
         self.toolrelationship.clicked.connect(self.filterrelationship)
         self.tooldisease.clicked.connect(self.filterdisease)
 
-        self.update_ncbi_btn.clicked.connect(self.clickUpdateNcbi)
-        self.update_dis_btn.clicked.connect(self.clickUpdateDis)
-        self.update_pathway_btn.clicked.connect(self.clickUpdatePathway)
+        # self.update_ncbi_btn.clicked.connect(self.clickUpdateNcbi)
+        # self.update_dis_btn.clicked.connect(self.clickUpdateDis)
+        # self.update_pathway_btn.clicked.connect(self.clickUpdatePathway)
         self.actionUpdate_NCBI.triggered.connect(self.clickUpdateNcbi)
         self.actionUpdate_Disease.triggered.connect(self.clickUpdateDis)
         self.actionUpdate_Pathway.triggered.connect(self.clickUpdatePathway)
