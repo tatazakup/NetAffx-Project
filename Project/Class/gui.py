@@ -47,11 +47,31 @@ class ConfigDatabase(QDialog, FilePath):
     def __init__(self):
         super(ConfigDatabase, self).__init__()
         loadUi(self.GetPathToUI() + "/configdatabase.ui",self)
-        self.HostIP = ''
-        self.SchemaName = ''
-        self.Username = ''
-        self.Password = '' 
+
+        objectConfig = MetaData()
+        dataInConfig = self.TryFetchDataOnMetaData(objectConfig, 'config')
+
+        self.HostIP = dataInConfig['database']['hostIP']
+        self.SchemaName = dataInConfig['database']['database']
+        self.Username = dataInConfig['database']['authentication']['user']
+        self.Password = dataInConfig['database']['authentication']['password']
+        self.HostInput.setText(self.HostIP)
+        self.SchemaInput.setText(self.SchemaName)
+        self.UserInput.setText(self.Username)
+        self.PassInput.setText(self.Password)
+
         self.confirm_button.clicked.connect(self.clickconfirm)
+
+    def TryFetchDataOnMetaData(self, objectMetaData, metaname):
+        isCompleted = False
+        while ( isCompleted == False):
+            try:       
+                dataInMetaData = objectMetaData.ReadMetadata(metaname)
+                isCompleted = True
+            except:
+                time.sleep(0.1)
+                pass
+        return dataInMetaData
 
     def closeEvent(self, event):
         self.reject()
@@ -788,44 +808,51 @@ class MainWindow(QMainWindow, FilePath):
         self.CallCreate = CreateInitailDatabase()
         self.CallCreate.exec_()
 
-        # database = Database()
-        # database.InitialDatabase(self.CallCreate.SchemaName)
+        database = Database()
+        database.InitialDatabase(self.CallCreate.SchemaName)
 
-        # manage_AnnotationFile = Manage_AnnotationFile()
-        # listAnnotation = manage_AnnotationFile.SeparateGene()
-        # manage_AnnotationFile.SaveSNP(listAnnotation)
+        manage_AnnotationFile = Manage_AnnotationFile()
+        listAnnotation = manage_AnnotationFile.SeparateGene()
+        manage_AnnotationFile.SaveSNP(listAnnotation)
 
-        # objectMapSnpWithNcbi = MetaData()
-        # dataInMapSnpWithNcbi = self.TryFetchDataOnMetaData(objectMapSnpWithNcbi, 'MapSnpWithNcbi')
-        # dataInMapSnpWithNcbi['technical']['createMeta']['status'] = 1
-        # objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
+        objectMapSnpWithNcbi = MetaData()
+        dataInMapSnpWithNcbi = self.TryFetchDataOnMetaData(objectMapSnpWithNcbi, 'MapSnpWithNcbi')
+        dataInMapSnpWithNcbi['technical']['createMeta']['status'] = 1
+        objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
 
-        # ncbi = Ncbi(1)
-        # ncbi.CreateNcbiInformation()
+        ncbi = Ncbi(1)
+        ncbi.CreateNcbiInformation()
 
-        # objectDisease = MetaData()
-        # dataInDisease = self.TryFetchDataOnMetaData(objectDisease, 'Disease')
-        # dataInDisease['technical']['diseaseStatus']['createMeta']['status'] = 1
-        # objectDisease.SaveManualUpdateMetadata(dataInDisease)
+        objectDisease = MetaData()
+        dataInDisease = self.TryFetchDataOnMetaData(objectDisease, 'Disease')
+        dataInDisease['technical']['diseaseStatus']['createMeta']['status'] = 1
+        objectDisease.SaveManualUpdateMetadata(dataInDisease)
 
-        # disease = Disease()
-        # disease.CreateDiseaseDataset()
+        disease = Disease()
+        disease.CreateDiseaseDataset()
 
-        # Data_Pathway = PathwayDataFromKEGG()
-        # Data_Pathway.GetGenePathway()
-        # Pathway_Dis = PathwayOfDis()
-        # Pathway_Dis.FetchPathwayEachDisease()
-        # Pathway_Dis.Find_GeneInPathwayOfDisease(Data_Pathway.listpathway)
-        # Pathway_Dis.SaveGenePathway2db()
+        Data_Pathway = PathwayDataFromKEGG()
+        Data_Pathway.GetGenePathway()
+        Pathway_Dis = PathwayOfDis()
+        Pathway_Dis.FetchPathwayEachDisease()
+        Pathway_Dis.Find_GeneInPathwayOfDisease(Data_Pathway.listpathway)
+        Pathway_Dis.SaveGenePathway2db()
 
-        # matching = mapSNP_Disease()
-        # matching.MapBoth()
-        print('initailData To Schema :', self.CallCreate.SchemaName)
+        matching = mapSNP_Disease()
+        matching.MapBoth()
 
     def ConfigDatabase(self):
         # Call Dialog GUI
         self.CallConfig = ConfigDatabase()
         self.CallConfig.exec_()
+
+        objectConfig = MetaData()
+        dataInConfig = self.TryFetchDataOnMetaData(objectConfig, 'config')
+        dataInConfig['database']['hostIP'] = self.CallConfig.HostIP
+        dataInConfig['database']['database'] = self.CallConfig.SchemaName
+        dataInConfig['database']['authentication']['user'] = self.CallConfig.Username
+        dataInConfig['database']['authentication']['password'] = self.CallConfig.Password
+        objectConfig.SaveManualUpdateMetadata(dataInConfig)
 
         print(self.CallConfig.HostIP)
         print(self.CallConfig.SchemaName)
