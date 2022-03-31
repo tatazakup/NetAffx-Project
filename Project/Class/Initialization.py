@@ -308,11 +308,13 @@ class FilePath():
     pathToUI = os.getcwd() + "/Project/ui"
 
     def __init__(self):
+        Path( os.getcwd() + "/Project/ChromeDriver" ).mkdir(parents=True, exist_ok=True)
         Path( os.getcwd() + "/Project/Dataset" ).mkdir(parents=True, exist_ok=True)
         Path( os.getcwd() + "/Project/Dataset/NCBI" ).mkdir(parents=True, exist_ok=True)
         Path( os.getcwd() + "/Project/TestCase" ).mkdir(parents=True, exist_ok=True)
         Path( os.getcwd() + "/Project/NCBILogs" ).mkdir(parents=True, exist_ok=True)
         Path( os.getcwd() + "/Project/DiseaseLogs" ).mkdir(parents=True, exist_ok=True)
+        Path( os.getcwd() + "/Project/AnnotationFile" ).mkdir(parents=True, exist_ok=True)
         return
 
     def GetPathToNCBI(self): return self.pathToDataSet + "/NCBI"
