@@ -1,6 +1,7 @@
 from ast import Return
 from calendar import c
 from cgi import test
+from msilib.schema import File
 from re import S
 import re
 import string
@@ -26,6 +27,44 @@ import time
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg, NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 
+
+class CreateInitailDatabase(QDialog, FilePath):
+    def __init__(self):
+        super(CreateInitailDatabase, self).__init__()
+        loadUi(self.GetPathToUI() + "/createinitial.ui",self)
+        self.SchemaName = ''
+        self.confirm_button.clicked.connect(self.clickconfirm)
+
+    def closeEvent(self, event):
+        self.reject()
+
+    def clickconfirm(self):
+        self.SchemaName = self.SchemaInput.text()
+        self.close()
+
+
+class ConfigDatabase(QDialog, FilePath):
+    def __init__(self):
+        super(ConfigDatabase, self).__init__()
+        loadUi(self.GetPathToUI() + "/configdatabase.ui",self)
+        self.HostIP = ''
+        self.SchemaName = ''
+        self.Username = ''
+        self.Password = '' 
+        self.confirm_button.clicked.connect(self.clickconfirm)
+
+    def closeEvent(self, event):
+        self.reject()
+
+    def clickconfirm(self):
+        self.HostIP = self.HostInput.text()
+        self.SchemaName = self.SchemaInput.text()
+        self.Username = self.UserInput.text()
+        self.Password = self.PassInput.text()
+        if self.HostIP == '' or self.SchemaName == '' or self.Username == '' or self.Password == '' :
+            QMessageBox.about(self, 'ERROR', "กรุณากรอกข้อมูลให้ครบทุกช่อง")
+            return
+        self.close()
 
 class ChromosomeFilter(QDialog, FilePath):
     def __init__(self, oldCondition):
@@ -684,23 +723,20 @@ class MainWindow(QMainWindow, FilePath):
         loadUi(self.GetPathToUI() + "/maingui.ui",self)
 
         # Connect Cliked to Function
-        # self.clear_btn.clicked.connect(self.clear)
-        self.browse.clicked.connect(self.browsefiles)
-        self.search.clicked.connect(self.searchsnp)
         self.actionCreate.triggered.connect(self.createInitial)
+        self.actionUpdate_NCBI.triggered.connect(self.clickUpdateNcbi)
+        self.actionUpdate_Disease.triggered.connect(self.clickUpdateDis)
+        self.actionUpdate_Pathway.triggered.connect(self.clickUpdatePathway)
+        self.actionDatabase.triggered.connect(self.ConfigDatabase)
+
+        self.browse.clicked.connect(self.browsefiles)
         self.toolchromosome.clicked.connect(self.filterchromosome)
         self.toolposition.clicked.connect(self.filterposition)
         self.toolrelationship.clicked.connect(self.filterrelationship)
         self.tooldisease.clicked.connect(self.filterdisease)
-
-        # self.update_ncbi_btn.clicked.connect(self.clickUpdateNcbi)
-        # self.update_dis_btn.clicked.connect(self.clickUpdateDis)
-        # self.update_pathway_btn.clicked.connect(self.clickUpdatePathway)
-        self.actionUpdate_NCBI.triggered.connect(self.clickUpdateNcbi)
-        self.actionUpdate_Disease.triggered.connect(self.clickUpdateDis)
-        self.actionUpdate_Pathway.triggered.connect(self.clickUpdatePathway)
-
+        
         self.searchSQL_btn.clicked.connect(self.SearchSQL)
+        self.search.clicked.connect(self.searchsnp)
 
         self.filecsvname = ''
         self.SearchFunction = Search()
@@ -748,40 +784,53 @@ class MainWindow(QMainWindow, FilePath):
         return dataInMetaData
 
     def createInitial(self):
-        print("clicked create initial")        
+        # Call Dialog GUI
+        self.CallCreate = CreateInitailDatabase()
+        self.CallCreate.exec_()
 
-        database = Database()
-        database.InitialDatabase('Test_Create_new5')
+        # database = Database()
+        # database.InitialDatabase(self.CallCreate.SchemaName)
 
-        manage_AnnotationFile = Manage_AnnotationFile()
-        listAnnotation = manage_AnnotationFile.SeparateGene()
-        manage_AnnotationFile.SaveSNP(listAnnotation)
+        # manage_AnnotationFile = Manage_AnnotationFile()
+        # listAnnotation = manage_AnnotationFile.SeparateGene()
+        # manage_AnnotationFile.SaveSNP(listAnnotation)
 
-        objectMapSnpWithNcbi = MetaData()
-        dataInMapSnpWithNcbi = self.TryFetchDataOnMetaData(objectMapSnpWithNcbi, 'MapSnpWithNcbi')
-        dataInMapSnpWithNcbi['technical']['createMeta']['status'] = 1
-        objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
+        # objectMapSnpWithNcbi = MetaData()
+        # dataInMapSnpWithNcbi = self.TryFetchDataOnMetaData(objectMapSnpWithNcbi, 'MapSnpWithNcbi')
+        # dataInMapSnpWithNcbi['technical']['createMeta']['status'] = 1
+        # objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
 
-        ncbi = Ncbi(1)
-        ncbi.CreateNcbiInformation()
+        # ncbi = Ncbi(1)
+        # ncbi.CreateNcbiInformation()
 
-        objectDisease = MetaData()
-        dataInDisease = self.TryFetchDataOnMetaData(objectDisease, 'Disease')
-        dataInDisease['technical']['diseaseStatus']['createMeta']['status'] = 1
-        objectDisease.SaveManualUpdateMetadata(dataInDisease)
+        # objectDisease = MetaData()
+        # dataInDisease = self.TryFetchDataOnMetaData(objectDisease, 'Disease')
+        # dataInDisease['technical']['diseaseStatus']['createMeta']['status'] = 1
+        # objectDisease.SaveManualUpdateMetadata(dataInDisease)
 
-        disease = Disease()
-        disease.CreateDiseaseDataset()
+        # disease = Disease()
+        # disease.CreateDiseaseDataset()
 
-        Data_Pathway = PathwayDataFromKEGG()
-        Data_Pathway.GetGenePathway()
-        Pathway_Dis = PathwayOfDis()
-        Pathway_Dis.FetchPathwayEachDisease()
-        Pathway_Dis.Find_GeneInPathwayOfDisease(Data_Pathway.listpathway)
-        Pathway_Dis.SaveGenePathway2db()
+        # Data_Pathway = PathwayDataFromKEGG()
+        # Data_Pathway.GetGenePathway()
+        # Pathway_Dis = PathwayOfDis()
+        # Pathway_Dis.FetchPathwayEachDisease()
+        # Pathway_Dis.Find_GeneInPathwayOfDisease(Data_Pathway.listpathway)
+        # Pathway_Dis.SaveGenePathway2db()
 
-        matching = mapSNP_Disease()
-        matching.MapBoth()
+        # matching = mapSNP_Disease()
+        # matching.MapBoth()
+        print('initailData To Schema :', self.CallCreate.SchemaName)
+
+    def ConfigDatabase(self):
+        # Call Dialog GUI
+        self.CallConfig = ConfigDatabase()
+        self.CallConfig.exec_()
+
+        print(self.CallConfig.HostIP)
+        print(self.CallConfig.SchemaName)
+        print(self.CallConfig.Username)
+        print(self.CallConfig.Password)
 
     def filterchromosome(self):
         # Get old value
