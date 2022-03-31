@@ -333,6 +333,9 @@ class Disease(MetaData):
             nameLogFile = 'DISEASE_CREATE_DISEASE_ID_' + str(diseaseID) + ".txt"
             pathToLogFile = self.GetPathToDiseaseLogs() + "/" + nameLogFile
 
+            # if diseaseID != 1:
+            #     continue
+
             # Kegg variable
             linkKegg = eachInfo['kege']
 
@@ -354,6 +357,10 @@ class Disease(MetaData):
                 objectDisease.SaveManualUpdateMetadata(diseaseInfo)
                 self.CreateLogFile(pathToLogFile)
             elif ( diseaseStatus == 2): return
+
+            diseaseInfo = objectDisease.ReadMetadata('Disease')
+            isKeggCompleted = False
+            isHugeCompleted = False
 
             # Fetch data from kegg website
             try:
@@ -635,5 +642,5 @@ class Disease(MetaData):
 
 if __name__ == "__main__":
     disease = Disease()
-    # disease.CreateDiseaseDataset()
+    disease.CreateDiseaseDataset()
     # disease.UpdateDiseaseDataset()

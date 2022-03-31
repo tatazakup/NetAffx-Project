@@ -7,12 +7,13 @@ from pathlib import Path
 from mysql.connector import Error
 
 class Database():
-    # host = 'localhost'
-    host = '192.168.1.128'
+    host = 'localhost'
+    # host = '192.168.1.128'
     database = ''
-    # database = 'test_automap1'
+    database = 'test_automap1'
     user = 'root'
-    password = 'password'
+    # password = 'password'
+    password = '1234'
 
     listDisease = [
         ("Type 1 Diabete", "T1D"),
@@ -154,8 +155,9 @@ class Database():
             (
                 RS_ID      VARCHAR(25)  NOT NULL,
                 DISEASE_ID INT          NOT NULL,
-                MatchBy    VARCHAR(255) NOT NULL,
-                PRIMARY KEY (RS_ID, DISEASE_ID, MatchBy)
+                MatchBy    VARCHAR(100) NOT NULL,
+                GENE_ID    INT          NOT NULL,
+                PRIMARY KEY (RS_ID, DISEASE_ID, MatchBy, GENE_ID)
             );
         """
         self.CreateTask(conn, sqlCommand, ())
@@ -302,6 +304,7 @@ class FilePath():
     pathToTestCase = os.getcwd() + "/Project/TestCase"
     pathToNCBILogs = os.getcwd() + "/Project/NCBILogs"
     pathToDiseaseLogs = os.getcwd() + "/Project/DiseaseLogs"
+    pathToAnnotationFile = os.getcwd() + "/Project/AnnotationFile"
 
     def __init__(self):
         Path( os.getcwd() + "/Project/Dataset" ).mkdir(parents=True, exist_ok=True)
@@ -328,6 +331,9 @@ class FilePath():
 
     def GetPathToDiseaseLogs(self):
         return self.pathToDiseaseLogs
+
+    def GetPathToAnnotationFile(self):
+        return self.pathToAnnotationFile
 
 class MetaData(FilePath):
     jsonData = None

@@ -1,10 +1,13 @@
+from tkinter import E
+from matplotlib.font_manager import json_load
 import pandas as pd
-from Initialization import Database
+from Initialization import Database, MetaData, FilePath
 import requests
 from bs4 import BeautifulSoup
+import json
 
 
-class GenePathway:
+class PathwayDataFromKEGG:
     def __init__(self):
         self.URL = 'http://rest.kegg.jp/link/hsa/pathway'
         self.listpathway = []
@@ -25,38 +28,63 @@ class GenePathway:
     
 class PathwayOfDis:
     def __init__(self):
-        self.ListDisease =  ['Bipolar Disorder', 
-                            'Coronary Artery Disease', 
+        self.ListDisease =  ['Coronary Artery Disease', 
                             "Crohn Disease", 
                             'Hypertension', 
                             'Rheumatoid Arthritis', 
                             'Type 1 Diabetes Mellitus', 
-                            'Type 2 Diabetes Mellitus']
-        self.ListUrlDisease =   ['https://www.kegg.jp/entry/H01653', 
-                                'https://www.kegg.jp/entry/H01742', 
+                            'Type 2 Diabetes Mellitus',             	
+                            'Bipolar disorder']
+        self.ListUrlDisease =   ['https://www.kegg.jp/entry/H01742', 
                                 'https://www.kegg.jp/entry/H00286', 
                                 'https://www.kegg.jp/entry/H01633', 
                                 'https://www.kegg.jp/entry/H00630', 
                                 'https://www.kegg.jp/entry/H00408', 
-                                'https://www.kegg.jp/entry/H00409']
+                                'https://www.kegg.jp/entry/H00409',
+                                'https://www.kegg.jp/entry/H01653']
+
         self.ListGenePathwayOfDisease = []
     
-    def GetGeneInPathwayOfDisease(self, ListPathway):
-        pathway = pd.DataFrame(ListPathway,columns = ['pathway', 'GeneID'])
+    def FetchPathwayEachDisease(self):
         index = 0
-        for URL in self.ListUrlDisease[1:]:
-            index += 1
+        
+        # Call metadata
+        objectPathway = MetaData()
+        objectPathway.ReadMetadata('pathway')
+
+        for URL in self.ListUrlDisease:
             print(self.ListDisease[index])
-            page = requests.get(URL)
-            soup = BeautifulSoup(page.content, "html.parser")
-            finda = soup.find_all('a')
+            reqpage_kegg = requests.get(URL)
+            gethtml_kegg = BeautifulSoup(reqpage_kegg.content, "html.parser")
+            finda = gethtml_kegg.find_all('a')
             for i in finda:
                 if i.text[:3] == "hsa":
-                    findpath = pathway.loc[pathway['pathway'] == i.text]['GeneID']
-                    listgene_pathway = findpath.values.tolist()
-                    for gene in listgene_pathway:
+                    print('  ', i.text, end = '' )
+                    if i.text not in objectPathway.dataOnMetadata[self.ListDisease[index]] :
+                        objectPathway.dataOnMetadata[self.ListDisease[index]].append(i.text)
+                        print(' New Pathway')
+                    else:
+                        print(' exist Pathway')
+
+            index += 1
+        
+        # Update Metadata
+        objectPathway.SaveUpdateMetadata()
+    
+    def Find_GeneInPathwayOfDisease(self, DataPathway):
+        df_pathway = pd.DataFrame(DataPathway,columns = ['pathway', 'GeneID'])
+        
+        # Read Pathway From metadata
+        objectPathway = MetaData()
+        Dict_pathway = objectPathway.ReadMetadata('pathway')
+        for DisName in Dict_pathway:
+            if DisName != "Status":
+                for pathwayid in Dict_pathway[DisName]:
+                    FindGeneEachPathway = df_pathway.loc[df_pathway['pathway'] == pathwayid]['GeneID']
+                    ListResult_FindGene = FindGeneEachPathway.values.tolist()
+                    for gene in ListResult_FindGene:
                         col = []
-                        col.extend([self.ListDisease[index], i.text, gene])
+                        col.extend([DisName, pathwayid, gene])
                         print(col)
                         self.ListGenePathwayOfDisease.append(col)
     
@@ -79,17 +107,20 @@ class PathwayOfDis:
             elif GenePathwayDis[0] == "Rheumatoid Arthritis":
                 DISEASE_ID = 7
 
-            sql = "INSERT INTO pathway (DISEASE_ID, PATHWAY_ID, GENE_ID) VALUES (%s, %s, %s)"
+            sql = "REPLACE INTO pathway (DISEASE_ID, PATHWAY_ID, GENE_ID) VALUES (%s, %s, %s)"
             val = (DISEASE_ID, GenePathwayDis[1], GenePathwayDis[2])
             database.CreateTask(conn, sql, val)
-            print("save success")
+            # print(val, end='')
+        print("save success")
         database.CloseDatabase(conn)
 
 
 if __name__ == "__main__":
-    List_Pathway = GenePathway()
-    List_Pathway.GetGenePathway()
+    Data_Pathway = PathwayDataFromKEGG()
+    Data_Pathway.GetGenePathway()
     Pathway_Dis = PathwayOfDis()
-    Pathway_Dis.GetGeneInPathwayOfDisease(List_Pathway.listpathway)
+    Pathway_Dis.FetchPathwayEachDisease()
+    Pathway_Dis.Find_GeneInPathwayOfDisease(Data_Pathway.listpathway)
     Pathway_Dis.SaveGenePathway2db()
+
     print("---run success---")

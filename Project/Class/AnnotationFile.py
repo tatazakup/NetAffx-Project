@@ -1,7 +1,8 @@
 from numpy import add
 import pandas as pd
 import os
-from Initialization import Database
+from Initialization import Database, FilePath
+import time
 
 class SNP:
     def __init__(self, RS_ID, ProbeSet_ID, Chromosome, Position, Source_Geneship):
@@ -39,11 +40,18 @@ class AssociatedGene:
         print('Distance :', self.Distance)
         print('Relationship :', self.Relationship)
 
-class Manage_AnnotationFile:
+class Manage_AnnotationFile(FilePath):
     def __init__(self):
-        self.Data_Nsp = pd.read_csv("D:\\SNP_Project\\NetAffx-Project\\Project\\AnnotationFile\\Mapping250K_Nsp.na32.annot.csv")
-        self.Data_Sty = pd.read_csv("D:\\SNP_Project\\NetAffx-Project\\Project\\AnnotationFile\\Mapping250K_Sty.na32.annot.csv")
-        self.list_DataSet = [self.Data_Nsp, self.Data_Sty]
+        FilePath.__init__(self)
+        # # self.Data_Nsp = pd.read_csv("D:\\SNP_Project\\NetAffx-Project\\Project\\AnnotationFile\\Mapping250K_Nsp.na32.annot.csv")
+        # self.Data_Sty = pd.read_csv("D:\\SNP_Project\\NetAffx-Project\\Project\\AnnotationFile\\Mapping250K_Sty.na32.annot.csv")
+        path_dir = self.GetPathToAnnotationFile()
+        self.list_DataSet = []
+        for (root, dirs, file) in os.walk(path_dir):
+            for fileName in file:
+                csvFile = pd.read_csv(path_dir + "/" + fileName)
+                print(csvFile)
+                self.list_DataSet.append(csvFile)
         self.list_Geneship = ["Nsp", "Sty"]
 
     def Manage_SNP(self, dataset, index, Geneship):
@@ -69,33 +77,38 @@ class Manage_AnnotationFile:
         List_SNP = []
         number = 0
         for dataset in self.list_DataSet:
-            for row_index in range(10): #dataset.shape[0]
+            for row_index in range(dataset.shape[0]): #dataset.shape[0] #range(50)
                 Geneship = self.list_Geneship[number]
                 SNP = self.Manage_SNP(dataset, row_index, Geneship)
                 List_AssoGene = self.Split_AssociatedGene(dataset, row_index)
                 memory_Gene = []
-                for Gene in List_AssoGene:
-                    Gene_detail = Gene.split(' // ')
-                    Relationship = Gene_detail[1]
-                    Distance = Gene_detail[2]
-                    GeneSymbol = Gene_detail[4]
-                    Gene_ID = Gene_detail[5]
-                    if Gene_ID != '---':
-                        Asso_Gene = self.Manage_AssociatedGene(Gene_detail)
-                        if GeneSymbol in memory_Gene:
-                            for mem_gene in SNP.Associated_Gene:
-                                if mem_gene.GeneSymbol == GeneSymbol:
-                                    if mem_gene.Relationship and int(mem_gene.Distance) > int(Distance):
-                                        mem_gene.Relationship = Distance
-                                    elif mem_gene.Relationship != Relationship:
-                                        SNP.Add_AssociatedGene(Asso_Gene)
-                                        # Asso_Gene.show()
-                        else:
-                            memory_Gene.append(GeneSymbol)
-                            SNP.Add_AssociatedGene(Asso_Gene)
-                            # Asso_Gene.show()
+                if SNP.RS_ID and SNP.ProbeSet_ID and dataset["Associated Gene"][row_index] != '---':
+                    for Gene in List_AssoGene:
+                        Gene_detail = Gene.split(' // ')
+                        Relationship = Gene_detail[1]
+                        Distance = Gene_detail[2]
+                        GeneSymbol = Gene_detail[4]
+                        Gene_ID = Gene_detail[5]
+                        if Gene_ID != '---':
+                            Asso_Gene = self.Manage_AssociatedGene(Gene_detail)
+                            if GeneSymbol in memory_Gene:
+                                for mem_gene in SNP.Associated_Gene:
+                                    if mem_gene.GeneSymbol == GeneSymbol:
+                                        if mem_gene.Relationship and int(mem_gene.Distance) > int(Distance):
+                                            mem_gene.Distance = Distance
+                                        elif mem_gene.Relationship != Relationship:
+                                            SNP.Add_AssociatedGene(Asso_Gene)
+                                            # Asso_Gene.show()
+                            else:
+                                memory_Gene.append(GeneSymbol)
+                                SNP.Add_AssociatedGene(Asso_Gene)
+                                # Asso_Gene.show()
                 SNP.show()
-                List_SNP.append(SNP)
+                if SNP.RS_ID == "---" or SNP.ProbeSet_ID == "---":
+                    pass
+                    print("pass SNP", SNP.RS_ID, SNP.ProbeSet_ID)
+                else:
+                    List_SNP.append(SNP)
             number += 1
         return List_SNP
     
@@ -107,20 +120,30 @@ class Manage_AnnotationFile:
             INSERT INTO snp VALUES (%s, %s, %s, %s, %s)
             """
             val = (SNP.RS_ID, SNP.ProbeSet_ID, SNP.Chromosome, SNP.Position, SNP.Soure_Geneship)
+            print("sql1:", val)
             database.CreateTask(conn, sql, val)
 
             for gene in SNP.Associated_Gene:
-                sql2 = """
-                INSERT INTO gene_snp VALUES (%s, %s, %s)
+                sqlcheck =  """
+                SELECT * FROM gene_snp WHERE GENE_ID = %s AND RS_ID = %s
                 """
-                val2 = (gene.Gene_ID, SNP.RS_ID, gene.GeneSymbol)
-                database.CreateTask(conn, sql2, val2)
-                print("sql2success")
-
+                valcheck = (gene.Gene_ID, SNP.RS_ID)
+                resultcheck = database.CreateTask(conn, sqlcheck, valcheck)
+                if len(resultcheck) == 0:
+                    sql2 = """
+                            INSERT INTO gene_snp VALUES (%s, %s, %s)
+                            """
+                    val2 = (gene.Gene_ID, SNP.RS_ID, gene.GeneSymbol)
+                    print("sql2:", val2)
+                    database.CreateTask(conn, sql2, val2)
+                    print("sql2success")
+                else:
+                    print("gene was in db :", valcheck)
                 sql3 = """
                 INSERT INTO gene_detail (GENE_ID, RS_ID, DISTANCE, RELATIONSHIP) VALUES (%s, %s, %s, %s)
                 """
                 val3 = (gene.Gene_ID, SNP.RS_ID, gene.Distance, gene.Relationship)
+                print("sql3:", val3)
                 database.CreateTask(conn, sql3, val3)
                 print("sql3success")
 
@@ -146,15 +169,10 @@ class Manage_AnnotationFile:
 if __name__ == "__main__":
     AF = Manage_AnnotationFile()
     ListS = AF.SeparateGene()
-    AF.SaveSNP(ListS)
-    # AF.DropSNP()
-    print("---run success---")
-    
-
-
-    
-        
-    
+    print(ListS)
+    # AF.SaveSNP(ListS)
+    # # AF.DropSNP()
+    # print("---run success---")
 
 
 

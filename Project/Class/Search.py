@@ -13,7 +13,7 @@ class DiseaseEnum(enum.Enum):
 
 class Search(Database):
     def __init__(self):
-        self.RS_ID = []
+        self.RS_ID = [] # 'rs10000325', 'rs10001829', 'rs10001899', 'rs10005037', 'rs10006267', 'rs10011961'
         # self.RS_ID = [
         #     'rs1748035', 'rs4920334', 'rs4912122', 'rs12117895', 'rs215773', 'rs3103778', 'rs736861', 'rs869988', 'rs207190', 'rs4276942', 'rs10889189', 'rs2989476', 'rs11207909', 'rs6691577', 'rs7546928', 'rs2132999', 'rs1896250', 'rs1782127', 'rs4658112', 'rs396954', 'rs1361461', 'rs11185337', 'rs12759387', 'rs4378202', 'rs12125340', 'rs10793652', 'rs11240054', 'rs4845390', 'rs4845690', 'rs7534239', 'rs12129036', 'rs2840584', 'rs285482', 'rs7519141', 'rs4657694', 'rs2213736', 'rs1385542', 'rs12401659', 'rs6425425', 'rs4113814', 'rs680638', 'rs951366', 'rs926576', 'rs4628571', 'rs6665548', 'rs6604643', 'rs6679942', 'rs6741819', 'rs4027132', 'rs12472797', 'rs737565', 'rs7562696', 'rs10187657', 'rs3755221', 'rs848531', 'rs11676056', 'rs11687654', 'rs6705537', 'rs7571842', 'rs6730095', 
         #     'rs2678381', 'rs7573844', 'rs7570682', 'rs920217', 'rs11123306', 'rs1375144', 'rs2418876', 'rs6750543', 'rs10928826', 'rs787433', 'rs4641882', 'rs17328734', 'rs6755520', 'rs2592941', 'rs10166245', 'rs1840111', 'rs1344706', 'rs4666691', 'rs11686149', 'rs16834896', 'rs11889699', 'rs2697306', 'rs4673905', 'rs17248501', 'rs1836729', 'rs4673821', 'rs284531', 'rs10188509', 'rs10191097', 'rs887829', 'rs4332874', 'rs6739594', 'rs2953146', 'rs2953145', 'rs459980', 'rs2129895', 'rs951557', 'rs9815582', 'rs6795255', 'rs1667739', 'rs4858594', 'rs6549906', 'rs4955204', 'rs4276227', 'rs4627791', 'rs906482', 'rs2251219', 'rs2071508', 'rs9881216', 'rs1390245', 'rs1541855', 'rs934841', 'rs9857344', 'rs9826629', 'rs1918399', 'rs12632233', 'rs9850669', 'rs2713694', 'rs2683780', 'rs11918028', 
@@ -234,11 +234,11 @@ class Search(Database):
 
         else:
             if len(self.Chromosome) > 1:
-                listChromosome = ", ".join([str(Each_Chromosome) for Each_Chromosome in self.Chromosome])
+                listChromosome = ", ".join([ ( "'" + str(Each_Chromosome) + "'" ) for Each_Chromosome in self.Chromosome])
                 FormatStrings_Chromosome = 'and snp.CHROMOSOME IN (' + listChromosome + ')'
 
             elif len(self.Chromosome) == 1:
-                FormatStrings_Chromosome = 'and snp.CHROMOSOME = ' + str(self.Chromosome[0])
+                FormatStrings_Chromosome = "and snp.CHROMOSOME = '" + str(self.Chromosome[0]) + "'"
 
         return FormatStrings_Chromosome
 
@@ -446,7 +446,7 @@ class Search(Database):
 
         for eachDisease in self.Disease:
             diseaseID = DiseaseEnum[str(eachDisease)].value
-            listSqlCommandDisease.append(" ( matching_snp_disease.RS_ID in ( select RS_ID FROM matching_snp_disease WHERE ( " + str(searchWhere) + " and DISEASE_ID = " + str(diseaseID) + " ) GROUP BY RS_ID HAVING COUNT(MatchBy) = " + countMatch + " ) AND matching_snp_disease.RS_ID in ( select RS_ID FROM matching_snp_disease WHERE ( DISEASE_ID = " + str(diseaseID) + " ) GROUP BY RS_ID HAVING COUNT(MatchBy) = " + str(countMatch) + " ) ) ")
+            listSqlCommandDisease.append(" ( matching_snp_disease.RS_ID in ( select RS_ID FROM matching_snp_disease WHERE ( " + str(searchWhere) + " and DISEASE_ID = " + str(diseaseID) + " ) GROUP BY RS_ID HAVING COUNT(MatchBy) = " + countMatch + " ) AND matching_snp_disease.RS_ID in ( select RS_ID FROM matching_snp_disease WHERE ( DISEASE_ID = " + str(diseaseID) + " ) GROUP BY RS_ID HAVING COUNT(MatchBy) = " + str(countMatch) + " ) AND matching_snp_disease.DISEASE_ID = " + str(diseaseID) + " ) ")
 
         FormatStrings_Source_Website = " and ( " + (" or ".join( [ eachCommand for eachCommand in listSqlCommandDisease] )) + " ) "
         return FormatStrings_Source_Website
@@ -475,8 +475,8 @@ class Search(Database):
             INNER JOIN gene_detail ON gene_detail.RS_ID = gene_snp.RS_ID AND gene_detail.GENE_ID = gene_snp.GENE_ID)
             INNER JOIN ncbi ON ncbi.GENE_ID = gene_snp.GENE_ID )
             LEFT JOIN other_symbol ON other_symbol.GENE_ID = ncbi.GENE_ID )
-            INNER JOIN matching_snp_disease ON matching_snp_disease.RS_ID = snp.RS_ID )
-            INNER JOIN disease ON disease.DISEASE_ID = matching_snp_disease.DISEASE_ID )
+            INNER JOIN matching_snp_disease ON matching_snp_disease.RS_ID = snp.RS_ID AND matching_snp_disease.GENE_ID = gene_snp.GENE_ID )
+            INNER JOIN disease ON disease.DISEASE_ID = matching_snp_disease.DISEASE_ID  )
             WHERE %s
             %s
             %s
@@ -520,7 +520,7 @@ class Search(Database):
             INNER JOIN gene_detail ON gene_detail.RS_ID = gene_snp.RS_ID AND gene_detail.GENE_ID = gene_snp.GENE_ID)
             INNER JOIN ncbi ON ncbi.GENE_ID = gene_snp.GENE_ID )
             LEFT JOIN other_symbol ON other_symbol.GENE_ID = ncbi.GENE_ID )
-            LEFT JOIN matching_snp_disease ON matching_snp_disease.RS_ID = snp.RS_ID )
+            LEFT JOIN matching_snp_disease ON matching_snp_disease.RS_ID = snp.RS_ID AND matching_snp_disease.GENE_ID = gene_snp.GENE_ID )
             WHERE matching_snp_disease.RS_ID IS NULL
             and %s
             %s
@@ -659,12 +659,12 @@ class Search(Database):
         # ------------------------------ Step 1 ------------------------------
 
         SQLCommand_Relate_InDisease = self.SQLCommand_Relate_InDisease(FormatStrings_RSID_ProbeSetID, FormatStrings_GeneID, FormatStrings_GeneSymbol, FormatStrings_Chromosome, FormatStrings_Position, FormatStrings_Relationship_Distance, FormatStrings_Disease, FormatStrings_GeneShip, FormatStrings_Source_Website)
-        print('SQLCommand_Relate_InDisease :', SQLCommand_Relate_InDisease)
+        # print('SQLCommand_Relate_InDisease :', SQLCommand_Relate_InDisease)
 
         results_Relate_InDisease = set( database.CreateTask(conn, SQLCommand_Relate_InDisease, ()) )
         
         if ( results_Relate_InDisease != [] ):
-            print('\n List gene has found on disease \n')
+            # print('\n List gene has found on disease \n')
 
             Index = 0
             for result in results_Relate_InDisease:
@@ -677,22 +677,22 @@ class Search(Database):
 
                 other_symbol = database.CreateTask(conn, mysqlCommand, (result[8], ))
 
-                print(
-                    '               INDEX :', Index, '\n'
-                    '                RSID :', result[0], '\n'
-                    '         PROBESET_ID :', result[1], '\n'
-                    '          CHROMOSOME :', result[2], '\n'
-                    '            POSITION :', result[3], '\n'
-                    '     SOURCE_GENESHIP :', result[4], '\n'
-                    '        RELATIONSHIP :', result[5], '\n'
-                    '            DISTANCE :', result[6], '\n'
-                    '         GENE_SYMBOL :', result[7], '\n'
-                    '             GENE_ID :', result[8], '\n'
-                    '        OTHER_SYMBOL :', ', '.join([str(elem)[2:-3] for elem in other_symbol]), '\n'
-                    '        DISEASE_NAME :', result[9], '\n'
-                    'DISEASE_ABBREVIATION :', result[10], '\n'
-                    '            MATCH_BY :', result[11], '\n'
-                )
+                # print(
+                #     '               INDEX :', Index, '\n'
+                #     '                RSID :', result[0], '\n'
+                #     '         PROBESET_ID :', result[1], '\n'
+                #     '          CHROMOSOME :', result[2], '\n'
+                #     '            POSITION :', result[3], '\n'
+                #     '     SOURCE_GENESHIP :', result[4], '\n'
+                #     '        RELATIONSHIP :', result[5], '\n'
+                #     '            DISTANCE :', result[6], '\n'
+                #     '         GENE_SYMBOL :', result[7], '\n'
+                #     '             GENE_ID :', result[8], '\n'
+                #     '        OTHER_SYMBOL :', ', '.join([str(elem)[2:-3] for elem in other_symbol]), '\n'
+                #     '        DISEASE_NAME :', result[9], '\n'
+                #     'DISEASE_ABBREVIATION :', result[10], '\n'
+                #     '            MATCH_BY :', result[11], '\n'
+                # )
 
                 listUniqueRelated_RSID, listUniqueRelated_ProbeSetID = self.ExtractRelatedGeneID(result[0], result[1], listUniqueRelated_RSID, listUniqueRelated_ProbeSetID)
 
@@ -705,144 +705,148 @@ class Search(Database):
 
 
 
-        # # ------------------------------ Step 2 ------------------------------
+        # ------------------------------ Step 2 ------------------------------
 
-        # SQLCommand_Relate_NotInDisease = self.SQLCommand_Relate_NotInDisease(FormatStrings_RSID_ProbeSetID, FormatStrings_GeneID, FormatStrings_GeneSymbol, FormatStrings_Chromosome, FormatStrings_Position, FormatStrings_Relationship_Distance, FormatStrings_GeneShip)
-        # # print('SQLCommand_Relate_NotInDisease :', SQLCommand_Relate_NotInDisease)
+        SQLCommand_Relate_NotInDisease = self.SQLCommand_Relate_NotInDisease(FormatStrings_RSID_ProbeSetID, FormatStrings_GeneID, FormatStrings_GeneSymbol, FormatStrings_Chromosome, FormatStrings_Position, FormatStrings_Relationship_Distance, FormatStrings_GeneShip)
+        # print('SQLCommand_Relate_NotInDisease :', SQLCommand_Relate_NotInDisease)
 
-        # results_Relate_NotInDisease = set( database.CreateTask(conn, SQLCommand_Relate_NotInDisease, ()) )
+        results_Relate_NotInDisease = set( database.CreateTask(conn, SQLCommand_Relate_NotInDisease, ()) )
 
-        # if ( results_Relate_NotInDisease != [] ):
-        #     print('\n List gene has not found on disease \n')
+        if ( results_Relate_NotInDisease != [] and FormatStrings_Disease == '' ):
+            # print('\n List gene has not found on disease \n')
 
-        #     Index = 0
-        #     for result in results_Relate_NotInDisease:
-        #         mysqlCommand = """ 
-        #             SELECT
-        #                 OTHER_SYMBOL
-        #             FROM other_symbol
-        #             WHERE GENE_ID = %s
-        #         """
+            Index = 0
+            for result in results_Relate_NotInDisease:
+                mysqlCommand = """ 
+                    SELECT
+                        OTHER_SYMBOL
+                    FROM other_symbol
+                    WHERE GENE_ID = %s
+                """
 
-        #         other_symbol = database.CreateTask(conn, mysqlCommand, (result[8], ))
+                other_symbol = database.CreateTask(conn, mysqlCommand, (result[8], ))
 
-        #         print(
-        #             '               INDEX :', Index, '\n'
-        #             '                RSID :', result[0], '\n'
-        #             '         PROBESET_ID :', result[1], '\n'
-        #             '          CHROMOSOME :', result[2], '\n'
-        #             '            POSITION :', result[3], '\n'
-        #             '     SOURCE_GENESHIP :', result[4], '\n'
-        #             '        RELATIONSHIP :', result[5], '\n'
-        #             '            DISTANCE :', result[6], '\n'
-        #             '         GENE_SYMBOL :', result[7], '\n'
-        #             '             GENE_ID :', result[8], '\n'
-        #             '        OTHER_SYMBOL :', ', '.join([str(elem)[2:-3] for elem in other_symbol]), '\n'
-        #         )
+                # print(
+                #     '               INDEX :', Index, '\n'
+                #     '                RSID :', result[0], '\n'
+                #     '         PROBESET_ID :', result[1], '\n'
+                #     '          CHROMOSOME :', result[2], '\n'
+                #     '            POSITION :', result[3], '\n'
+                #     '     SOURCE_GENESHIP :', result[4], '\n'
+                #     '        RELATIONSHIP :', result[5], '\n'
+                #     '            DISTANCE :', result[6], '\n'
+                #     '         GENE_SYMBOL :', result[7], '\n'
+                #     '             GENE_ID :', result[8], '\n'
+                #     '        OTHER_SYMBOL :', ', '.join([str(elem)[2:-3] for elem in other_symbol]), '\n'
+                # )
 
-        #         listUniqueRelated_RSID, listUniqueRelated_ProbeSetID = self.ExtractRelatedGeneID(result[0], result[1], listUniqueRelated_RSID, listUniqueRelated_ProbeSetID)
+                listUniqueRelated_RSID, listUniqueRelated_ProbeSetID = self.ExtractRelatedGeneID(result[0], result[1], listUniqueRelated_RSID, listUniqueRelated_ProbeSetID)
 
-        #         each_result = [result[0],result[1],result[2],result[3],result[4],result[5],result[6],result[7],result[8],', '.join([str(elem)[2:-3] for elem in other_symbol])]
-        #         Index = Index + 1
-        #         Result_Relate_NotInDisease.append(each_result)
+                each_result = [result[0],result[1],result[2],result[3],result[4],result[5],result[6],result[7],result[8],', '.join([str(elem)[2:-3] for elem in other_symbol])]
+                Index = Index + 1
+                Result_Relate_NotInDisease.append(each_result)
 
-        # # ------------------------------ Step 2 ------------------------------
-
-
-
-        # # ----------------------- Before start Step 3 ------------------------
-
-        # listUniqueUnrelated_RSID, listUniqueUnrelated_ProbeSetID = self.ExtractUnrelatedGeneID(listUniqueRelated_RSID, listUniqueRelated_ProbeSetID)
-        # FormatStrings_RSID_ProbeSetID = self.CreateFormatStrings_RSID_ProbeSetID(1, listUniqueUnrelated_RSID, listUniqueUnrelated_ProbeSetID)
-
-        # # ----------------------- Before start Step 3 ------------------------
+        # ------------------------------ Step 2 ------------------------------
 
 
-        # # ------------------------------ Step 3 ------------------------------
+
+        # ----------------------- Before start Step 3 ------------------------
+
+        listUniqueUnrelated_RSID, listUniqueUnrelated_ProbeSetID = self.ExtractUnrelatedGeneID(listUniqueRelated_RSID, listUniqueRelated_ProbeSetID)
+        print('listUniqueUnrelated_RSID', listUniqueUnrelated_RSID)
+        print('listUniqueUnrelated_ProbeSetID', listUniqueUnrelated_ProbeSetID)
+        FormatStrings_RSID_ProbeSetID = self.CreateFormatStrings_RSID_ProbeSetID(1, listUniqueUnrelated_RSID, listUniqueUnrelated_ProbeSetID)
+
+        # ----------------------- Before start Step 3 ------------------------
+
+
+        # ------------------------------ Step 3 ------------------------------
         
-        # SQLCommand_Unrelate_InDisease = self.SQLCommand_Unrelate_InDisease(FormatStrings_RSID_ProbeSetID)
-        # # print('SQLCommand_Unrelate_InDisease :', SQLCommand_Unrelate_InDisease)
+        if (FormatStrings_RSID_ProbeSetID != ''):
+            SQLCommand_Unrelate_InDisease = self.SQLCommand_Unrelate_InDisease(FormatStrings_RSID_ProbeSetID)
+            # print('SQLCommand_Unrelate_InDisease :', SQLCommand_Unrelate_InDisease)
 
-        # results_Unrelate_InDisease = set( database.CreateTask(conn, SQLCommand_Unrelate_InDisease, ()) )
+            results_Unrelate_InDisease = set( database.CreateTask(conn, SQLCommand_Unrelate_InDisease, ()) )
 
-        # if ( results_Unrelate_InDisease != [] ):
-        #     print('\n List gene has not found on disease \n')
+            if ( results_Unrelate_InDisease != [] ):
+                # print('\n List gene has not found on disease \n')
 
-        #     Index = 0
-        #     for result in results_Unrelate_InDisease:
-        #         mysqlCommand = """ 
-        #             SELECT
-        #                 OTHER_SYMBOL
-        #             FROM other_symbol
-        #             WHERE GENE_ID = %s
-        #         """
+                Index = 0
+                for result in results_Unrelate_InDisease:
+                    mysqlCommand = """ 
+                        SELECT
+                            OTHER_SYMBOL
+                        FROM other_symbol
+                        WHERE GENE_ID = %s
+                    """
 
-        #         other_symbol = database.CreateTask(conn, mysqlCommand, (result[8], ))
+                    other_symbol = database.CreateTask(conn, mysqlCommand, (result[8], ))
 
-        #         # print(
-        #         #     '               INDEX :', Index, '\n'
-        #         #     '                RSID :', result[0], '\n'
-        #         #     '         PROBESET_ID :', result[1], '\n'
-        #         #     '          CHROMOSOME :', result[2], '\n'
-        #         #     '            POSITION :', result[3], '\n'
-        #         #     '     SOURCE_GENESHIP :', result[4], '\n'
-        #         #     '        RELATIONSHIP :', result[5], '\n'
-        #         #     '            DISTANCE :', result[6], '\n'
-        #         #     '         GENE_SYMBOL :', result[7], '\n'
-        #         #     '             GENE_ID :', result[8], '\n'
-        #         #     '        OTHER_SYMBOL :', ', '.join([str(elem)[2:-3] for elem in other_symbol]), '\n'
-        #         #     '        DISEASE_NAME :', result[9], '\n'
-        #         #     'DISEASE_ABBREVIATION :', result[10], '\n'
-        #         #     '            MATCH_BY :', result[11], '\n'
-        #         # )
+                    # print(
+                    #     '               INDEX :', Index, '\n'
+                    #     '                RSID :', result[0], '\n'
+                    #     '         PROBESET_ID :', result[1], '\n'
+                    #     '          CHROMOSOME :', result[2], '\n'
+                    #     '            POSITION :', result[3], '\n'
+                    #     '     SOURCE_GENESHIP :', result[4], '\n'
+                    #     '        RELATIONSHIP :', result[5], '\n'
+                    #     '            DISTANCE :', result[6], '\n'
+                    #     '         GENE_SYMBOL :', result[7], '\n'
+                    #     '             GENE_ID :', result[8], '\n'
+                    #     '        OTHER_SYMBOL :', ', '.join([str(elem)[2:-3] for elem in other_symbol]), '\n'
+                    #     '        DISEASE_NAME :', result[9], '\n'
+                    #     'DISEASE_ABBREVIATION :', result[10], '\n'
+                    #     '            MATCH_BY :', result[11], '\n'
+                    # )
 
-        #         each_result = [result[0],result[1],result[2],result[3],result[4],result[5],result[6],result[7],result[8],', '.join([str(elem)[2:-3] for elem in other_symbol]),result[9],result[10], result[11]]
-        #         Index = Index + 1
-        #         Result_Unrelate_InDisease.append(each_result)
+                    each_result = [result[0],result[1],result[2],result[3],result[4],result[5],result[6],result[7],result[8],', '.join([str(elem)[2:-3] for elem in other_symbol]),result[9],result[10], result[11]]
+                    Index = Index + 1
+                    Result_Unrelate_InDisease.append(each_result)
 
-        # # ------------------------------ Step 3 ------------------------------
+        # ------------------------------ Step 3 ------------------------------
 
 
-        # # ------------------------------ Step 4 ------------------------------
+        # ------------------------------ Step 4 ------------------------------
 
-        # SQLCommand_Unrelate_NotInDisease = self.SQLCommand_Unrelate_NotInDisease(FormatStrings_RSID_ProbeSetID)
-        # # print('SQLCommand_Unrelate_NotInDisease :', SQLCommand_Unrelate_NotInDisease)
+        if (FormatStrings_RSID_ProbeSetID != ''):
+            SQLCommand_Unrelate_NotInDisease = self.SQLCommand_Unrelate_NotInDisease(FormatStrings_RSID_ProbeSetID)
+            # print('SQLCommand_Unrelate_NotInDisease :', SQLCommand_Unrelate_NotInDisease)
 
-        # results_Unrelate_NotInDisease = set( database.CreateTask(conn, SQLCommand_Unrelate_NotInDisease, ()) )
+            results_Unrelate_NotInDisease = set( database.CreateTask(conn, SQLCommand_Unrelate_NotInDisease, ()) )
 
-        # if ( results_Unrelate_NotInDisease != [] ):
-        #     print('\n List gene has not found on disease \n')
+            if ( results_Unrelate_NotInDisease != [] ):
+                # print('\n List gene has not found on disease \n')
 
-        #     Index = 0
-        #     for result in results_Unrelate_NotInDisease:
-        #         mysqlCommand = """ 
-        #             SELECT
-        #                 OTHER_SYMBOL
-        #             FROM other_symbol
-        #             WHERE GENE_ID = %s
-        #         """
+                Index = 0
+                for result in results_Unrelate_NotInDisease:
+                    mysqlCommand = """ 
+                        SELECT
+                            OTHER_SYMBOL
+                        FROM other_symbol
+                        WHERE GENE_ID = %s
+                    """
 
-        #         other_symbol = database.CreateTask(conn, mysqlCommand, (result[8], ))
+                    other_symbol = database.CreateTask(conn, mysqlCommand, (result[8], ))
 
-        #         # print(
-        #         #     '               INDEX :', Index, '\n'
-        #         #     '                RSID :', result[0], '\n'
-        #         #     '         PROBESET_ID :', result[1], '\n'
-        #         #     '          CHROMOSOME :', result[2], '\n'
-        #         #     '            POSITION :', result[3], '\n'
-        #         #     '     SOURCE_GENESHIP :', result[4], '\n'
-        #         #     '        RELATIONSHIP :', result[5], '\n'
-        #         #     '            DISTANCE :', result[6], '\n'
-        #         #     '         GENE_SYMBOL :', result[7], '\n'
-        #         #     '             GENE_ID :', result[8], '\n'
-        #         #     '        OTHER_SYMBOL :', ', '.join([str(elem)[2:-3] for elem in other_symbol]), '\n'
-        #         # )
+                    # print(
+                    #     '               INDEX :', Index, '\n'
+                    #     '                RSID :', result[0], '\n'
+                    #     '         PROBESET_ID :', result[1], '\n'
+                    #     '          CHROMOSOME :', result[2], '\n'
+                    #     '            POSITION :', result[3], '\n'
+                    #     '     SOURCE_GENESHIP :', result[4], '\n'
+                    #     '        RELATIONSHIP :', result[5], '\n'
+                    #     '            DISTANCE :', result[6], '\n'
+                    #     '         GENE_SYMBOL :', result[7], '\n'
+                    #     '             GENE_ID :', result[8], '\n'
+                    #     '        OTHER_SYMBOL :', ', '.join([str(elem)[2:-3] for elem in other_symbol]), '\n'
+                    # )
 
-        #         each_result = [result[0],result[1],result[2],result[3],result[4],result[5],result[6],result[7],result[8],', '.join([str(elem)[2:-3] for elem in other_symbol])]
-        #         Index = Index + 1
-        #         Result_Unrelate_NotInDisease.append(each_result)
+                    each_result = [result[0],result[1],result[2],result[3],result[4],result[5],result[6],result[7],result[8],', '.join([str(elem)[2:-3] for elem in other_symbol])]
+                    Index = Index + 1
+                    Result_Unrelate_NotInDisease.append(each_result)
 
-        # # ------------------------------ Step 4 ------------------------------
+        # ------------------------------ Step 4 ------------------------------
 
         database.CloseDatabase(conn)
 
@@ -851,3 +855,6 @@ class Search(Database):
 if __name__ == "__main__":
     searchFunction = Search()
     searchFunction.SearchData()
+
+
+

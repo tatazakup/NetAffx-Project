@@ -129,8 +129,8 @@ class CreateNcbi(Thread, Database, FilePath):
         if ( startAt == 0): self.indexStart = self.indexStart
         else: self.indexStart = self.indexStart + startAt - 1
 
-        # for _Index in range(self.indexStart, self.indexStop + 1):
-        for _Index in range(self.indexStart, 5):
+        for _Index in range(self.indexStart, self.indexStop + 1):
+        # for _Index in range(self.indexStart, 5):
 
             CurrentGeneID = self.FetchGeneID(_Index)
             OldGeneID = CurrentGeneID
