@@ -96,10 +96,10 @@
   <widget class="QLabel" name="status_space">
    <property name="geometry">
     <rect>
-     <x>130</x>
-     <y>100</y>
+     <x>120</x>
+     <y>99</y>
      <width>301</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="text">
@@ -112,7 +112,7 @@
      <x>70</x>
      <y>100</y>
      <width>47</width>
-     <height>13</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="text">

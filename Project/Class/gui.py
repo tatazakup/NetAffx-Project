@@ -42,7 +42,6 @@ class CreateInitailDatabase(QDialog, FilePath):
         self.SchemaName = self.SchemaInput.text()
         self.close()
 
-
 class ConfigDatabase(QDialog, FilePath):
     def __init__(self):
         super(ConfigDatabase, self).__init__()
@@ -307,6 +306,18 @@ class DiseaseFilter(QDialog, FilePath):
                 self.Condition_Distance.append(Disease_name)
         self.reject()
 
+class SQLdialog(QDialog):
+    def __init__(self):
+        super(SQLdialog, self).__init__()
+        loadUi(self.GetPathToUI() + "/SQLCommand.ui",self)
+        self.searchsql_Button.clicked.connect(self.getCommand)
+        self.command = ''
+    
+    def getCommand(self):
+        # self.command = self.textSQL.toPlainText()
+        pass
+
+
 class pgb_Thread(QThread):
 
     send_signal = pyqtSignal(int, int , int)
@@ -437,6 +448,7 @@ class UpdateNCBI(QWidget, FilePath):
             self.remaining_space.setText(str(intStop))
             self.progressBar.setValue(intStart*100/valueStop)
 
+
 class pgb_Dis_Thread(QThread):
     send_signal = pyqtSignal(int, int , int, str)
     
@@ -560,21 +572,33 @@ class UpdateDisease(QWidget, FilePath):
             self.remaining_space.setText("0")
             self.progressBar.setValue(0)
 
+
 class pgb_Pathway_Thread(QThread):
     send_signal = pyqtSignal(int, int , int, str)
     
     def __init__(self):
         super(pgb_Pathway_Thread, self).__init__()
 
+    def TryFetchDataOnMetaData(self, objectMetaData, metaname):
+        isCompleted = False
+        while ( isCompleted == False):
+            try:       
+                dataInMetaData = objectMetaData.ReadMetadata(metaname)
+                isCompleted = True
+            except:
+                time.sleep(0.1)
+                pass
+        return dataInMetaData
+
     def run(self):
-        for i in range(1,8):
-            time.sleep(1)
-            amountOfFinished = i
-            amountDisease = 7
-            statusvalue = 'Running'
+        objectDisease = MetaData()
+        while True:
+            pathwayinfo = self.TryFetchDataOnMetaData(objectDisease, 'Pathway')
+            statusvalue = pathwayinfo['Status']['textStatus']
+            amountDisease = pathwayinfo['Status']['amountState']
+            amountOfFinished = pathwayinfo['Status']['amountOfFinished']
             self.send_signal.emit(amountOfFinished, amountDisease - amountOfFinished, amountDisease, statusvalue) 
-            print('send signal')
-    
+
     def stop(self):
         self.terminate()
 
@@ -583,13 +607,12 @@ class Pathway_Thread(QThread):
         super(Pathway_Thread, self).__init__()
 
     def run(self):
-        # Data_Pathway = PathwayDataFromKEGG()
-        # Data_Pathway.GetGenePathway()
-        # Pathway_Dis = PathwayOfDis()
-        # Pathway_Dis.FetchPathwayEachDisease()
-        # Pathway_Dis.Find_GeneInPathwayOfDisease(Data_Pathway.listpathway)
-        # Pathway_Dis.SaveGenePathway2db()
-        time.sleep(20)
+        Data_Pathway = PathwayDataFromKEGG()
+        Data_Pathway.GetGenePathway()
+        Pathway_Dis = PathwayOfDis()
+        Pathway_Dis.FetchPathwayEachDisease()
+        Pathway_Dis.Find_GeneInPathwayOfDisease(Data_Pathway.listpathway)
+        Pathway_Dis.SaveGenePathway2db()
 
     def stop(self):
         self.terminate()
@@ -601,6 +624,17 @@ class UpdatePathway(QWidget, FilePath):
         self.start_btn.clicked.connect(self.doStart)
         self.cancel_btn.clicked.connect(self.doCancel)
     
+    def TryFetchDataOnMetaData(self, objectMetaData, metaname):
+        isCompleted = False
+        while ( isCompleted == False):
+            try:       
+                dataInMetaData = objectMetaData.ReadMetadata(metaname)
+                isCompleted = True
+            except:
+                time.sleep(0.1)
+                pass
+        return dataInMetaData
+
     def doStart(self):
         # Run thread
         self.worker = Pathway_Thread()
@@ -615,6 +649,11 @@ class UpdatePathway(QWidget, FilePath):
         self.worker_pgb.send_signal.connect(self.SendSignal)
 
     def doCancel(self):
+        objectDisease = MetaData()
+        pathwayinfo = self.TryFetchDataOnMetaData(objectDisease, 'Pathway')
+        pathwayinfo['Status']['textStatus'] = ""
+        pathwayinfo['Status']['amountOfFinished'] = 0
+        objectDisease.SaveManualUpdateMetadata(pathwayinfo)
         self.worker.stop()
         self.worker_pgb.stop()
         self.close()
@@ -626,17 +665,10 @@ class UpdatePathway(QWidget, FilePath):
             self.progressBar.setValue(intStart*100/valueStop)
         else:
             self.progressBar.setValue(0)
+        if intStart == valueStop:
+            self.cancel_btn.setText("Finish")
+            self.cancel_btn.setStyleSheet("background-color: rgb(85, 255, 255);")
 
-class SQLdialog(QDialog):
-    def __init__(self):
-        super(SQLdialog, self).__init__()
-        loadUi(self.GetPathToUI() + "/SQLCommand.ui",self)
-        self.searchsql_Button.clicked.connect(self.getCommand)
-        self.command = ''
-    
-    def getCommand(self):
-        # self.command = self.textSQL.toPlainText()
-        pass
 
 class SelectSearch(QDialog, FilePath):
     def __init__(self):
@@ -736,6 +768,8 @@ class MplCanvas(FigureCanvasQTAgg):
         fig = Figure(figsize=(width, height), dpi=dpi, tight_layout=True)
         self.axes = fig.add_subplot(111)
         super(MplCanvas, self).__init__(fig)
+
+
 
 class MainWindow(QMainWindow, FilePath):
     def __init__(self):

@@ -5,6 +5,7 @@ from Initialization import Database, MetaData, FilePath
 import requests
 from bs4 import BeautifulSoup
 import json
+import time
 
 
 class PathwayDataFromKEGG:
@@ -12,7 +13,22 @@ class PathwayDataFromKEGG:
         self.URL = 'http://rest.kegg.jp/link/hsa/pathway'
         self.listpathway = []
 
+    def TryFetchDataOnMetaData(self, objectMetaData, metaname):
+        isCompleted = False
+        while ( isCompleted == False):
+            try:       
+                dataInMetaData = objectMetaData.ReadMetadata(metaname)
+                isCompleted = True
+            except:
+                time.sleep(0.1)
+                pass
+        return dataInMetaData
+
     def GetGenePathway(self):
+        objectPathway = MetaData()
+        PathwayInfo = self.TryFetchDataOnMetaData(objectPathway, 'Pathway')
+        PathwayInfo['Status']['textStatus'] = 'Fetching list of pathway'
+        objectPathway.SaveManualUpdateMetadata(PathwayInfo)
         reqpage = requests.get(self.URL)
         soup = BeautifulSoup(reqpage.content, "html.parser")
         text = soup.text
@@ -25,6 +41,8 @@ class PathwayDataFromKEGG:
             print(pathway, gene)
             col.extend([pathway, gene])
             self.listpathway.append(col)
+        PathwayInfo['Status']['amountOfFinished'] = 1
+        objectPathway.SaveManualUpdateMetadata(PathwayInfo)
     
 class PathwayOfDis:
     def __init__(self):
@@ -45,15 +63,28 @@ class PathwayOfDis:
 
         self.ListGenePathwayOfDisease = []
     
+    def TryFetchDataOnMetaData(self, objectMetaData, metaname):
+        isCompleted = False
+        while ( isCompleted == False):
+            try:       
+                dataInMetaData = objectMetaData.ReadMetadata(metaname)
+                isCompleted = True
+            except:
+                time.sleep(0.1)
+                pass
+        return dataInMetaData
+
     def FetchPathwayEachDisease(self):
         index = 0
         
         # Call metadata
         objectPathway = MetaData()
         objectPathway.ReadMetadata('pathway')
+        PathwayInfo = self.TryFetchDataOnMetaData(objectPathway, 'Pathway')
 
         for URL in self.ListUrlDisease:
-            print(self.ListDisease[index])
+            PathwayInfo['Status']['textStatus'] = 'Fetching pathway id of ' + self.ListDisease[index]
+            objectPathway.SaveManualUpdateMetadata(PathwayInfo)
             reqpage_kegg = requests.get(URL)
             gethtml_kegg = BeautifulSoup(reqpage_kegg.content, "html.parser")
             finda = gethtml_kegg.find_all('a')
@@ -65,7 +96,8 @@ class PathwayOfDis:
                         print(' New Pathway')
                     else:
                         print(' exist Pathway')
-
+            PathwayInfo['Status']['amountOfFinished'] = PathwayInfo['Status']['amountOfFinished'] + 1
+            objectPathway.SaveManualUpdateMetadata(PathwayInfo)
             index += 1
         
         # Update Metadata
@@ -77,8 +109,11 @@ class PathwayOfDis:
         # Read Pathway From metadata
         objectPathway = MetaData()
         Dict_pathway = objectPathway.ReadMetadata('pathway')
+        PathwayInfo = self.TryFetchDataOnMetaData(objectPathway, 'Pathway')
         for DisName in Dict_pathway:
             if DisName != "Status":
+                PathwayInfo['Status']['textStatus'] = 'Get geneid in pathway of ' + DisName
+                objectPathway.SaveManualUpdateMetadata(PathwayInfo)
                 for pathwayid in Dict_pathway[DisName]:
                     FindGeneEachPathway = df_pathway.loc[df_pathway['pathway'] == pathwayid]['GeneID']
                     ListResult_FindGene = FindGeneEachPathway.values.tolist()
@@ -87,8 +122,14 @@ class PathwayOfDis:
                         col.extend([DisName, pathwayid, gene])
                         print(col)
                         self.ListGenePathwayOfDisease.append(col)
+                PathwayInfo['Status']['amountOfFinished'] = PathwayInfo['Status']['amountOfFinished'] + 1
+                objectPathway.SaveManualUpdateMetadata(PathwayInfo)
     
     def SaveGenePathway2db(self):
+        objectPathway = MetaData()
+        PathwayInfo = self.TryFetchDataOnMetaData(objectPathway, 'Pathway')
+        PathwayInfo['Status']['textStatus'] = 'Saving to database'
+        objectPathway.SaveManualUpdateMetadata(PathwayInfo)
         database = Database()
         conn = database.ConnectDatabase()
         for GenePathwayDis in self.ListGenePathwayOfDisease:
@@ -111,6 +152,8 @@ class PathwayOfDis:
             val = (DISEASE_ID, GenePathwayDis[1], GenePathwayDis[2])
             database.CreateTask(conn, sql, val)
             # print(val, end='')
+        PathwayInfo['Status']['amountOfFinished'] = PathwayInfo['Status']['amountOfFinished'] + 1
+        objectPathway.SaveManualUpdateMetadata(PathwayInfo)
         print("save success")
         database.CloseDatabase(conn)
 

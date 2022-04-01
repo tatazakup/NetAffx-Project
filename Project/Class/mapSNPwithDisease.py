@@ -7,7 +7,7 @@ class mapSNP_Disease:
         self.ListGenePathway = []
         self.ListGeneDisease = []
         self.ListGeneFromSource = []
-        self.sqlsave = "REPLACE INTO matching_snp_disease(RS_ID, DISEASE_ID, MatchBy, GEND_ID) VALUES(%s, %s, %s, %s)"
+        self.sqlsave = "REPLACE INTO matching_snp_disease(RS_ID, DISEASE_ID, MatchBy, GENE_ID) VALUES(%s, %s, %s, %s)"
 
     def QueryGeneSNP(self, database, conn):
         sqlGeneSNP = "SELECT GENE_ID, RS_ID, GENE_SYMBOL FROM gene_snp;"
