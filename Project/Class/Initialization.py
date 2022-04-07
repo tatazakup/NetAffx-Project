@@ -134,7 +134,8 @@ class Database():
             (
                 GENE_SYMBOL    VARCHAR(20) NOT NULL,
                 SOURCE_WEBSITE VARCHAR(20) NOT NULL,
-                PRIMARY KEY (GENE_SYMBOL, SOURCE_WEBSITE)
+                DISEASE_ID     INT         NOT NULL,
+                PRIMARY KEY (GENE_SYMBOL, SOURCE_WEBSITE, DISEASE_ID)
             );
         """
         self.CreateTask(conn, sqlCommand, ())

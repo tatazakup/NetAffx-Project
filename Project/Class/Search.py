@@ -145,7 +145,9 @@ class Search(Database):
     def CreateFormatStrings_Chromosome(self):
         FormatStrings_Chromosome = ''
 
-        if ( len(self.Chromosome) == 0 ) or (0 in self.Chromosome): return FormatStrings_Chromosome
+        print('asd')
+        if ( len(self.Chromosome) == 0 ) or (0 in self.Chromosome): 
+            return FormatStrings_Chromosome
         else:
             if len(self.Chromosome) > 1:
                 listChromosome = ", ".join([ ( "'" + str(Each_Chromosome) + "'" ) for Each_Chromosome in self.Chromosome])
@@ -255,7 +257,7 @@ class Search(Database):
 
         for eachDisease in self.Disease:
             diseaseID = DiseaseEnum[str(eachDisease)].value
-            listSqlCommandDisease.append(" ( matching_snp_disease.RS_ID in ( select RS_ID FROM matching_snp_disease WHERE ( " + str(searchWhere) + " and DISEASE_ID = " + str(diseaseID) + " ) GROUP BY RS_ID HAVING COUNT(MatchBy) = " + countMatch + " ) AND matching_snp_disease.RS_ID in ( select RS_ID FROM matching_snp_disease WHERE ( DISEASE_ID = " + str(diseaseID) + " ) GROUP BY RS_ID HAVING COUNT(MatchBy) = " + str(countMatch) + " ) AND matching_snp_disease.DISEASE_ID = " + str(diseaseID) + " ) ")
+            listSqlCommandDisease.append(" ( matching_snp_disease.RS_ID in ( select RS_ID FROM matching_snp_disease WHERE ( " + str(searchWhere) + " and DISEASE_ID = " + str(diseaseID) + " ) GROUP BY RS_ID HAVING COUNT(MatchBy) >= " + countMatch + " ) AND matching_snp_disease.GENE_ID in ( select GENE_ID FROM matching_snp_disease WHERE ( " + str(searchWhere) + " and DISEASE_ID = " + str(diseaseID) + " ) GROUP BY GENE_ID HAVING COUNT(MatchBy) = " + str(countMatch) + " ) AND matching_snp_disease.DISEASE_ID = " + str(diseaseID) + " ) ")
 
         FormatStrings_Source_Website = " and ( " + (" or ".join( [ eachCommand for eachCommand in listSqlCommandDisease] )) + " ) "
         return FormatStrings_Source_Website
@@ -503,7 +505,7 @@ class Search(Database):
 
         if ( FormatStrings_Disease == '' ):
             SQLCommand_Relate_NotInDisease = self.SQLCommand_Relate_NotInDisease(FormatStrings_RSID_ProbeSetID, FormatStrings_GeneID, FormatStrings_GeneSymbol, FormatStrings_Chromosome, FormatStrings_Position, FormatStrings_Relationship_Distance, FormatStrings_GeneShip)
-            print('SQLCommand_Relate_NotInDisease :', SQLCommand_Relate_NotInDisease)
+            # print('SQLCommand_Relate_NotInDisease :', SQLCommand_Relate_NotInDisease)
             results_Relate_NotInDisease = set( database.CreateTask(conn, SQLCommand_Relate_NotInDisease, ()) )
             print('\n List gene has not found on disease \n')
 
