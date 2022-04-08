@@ -2,3 +2,8 @@
 **/.vscode/
 **/.pytest_cache/
 **/Project/__pycache__/
+venv
+/Project/AnnotationFile/
+/Project/examplepy/
+/Project/Present/
+/Project/Class/__pycache__/
