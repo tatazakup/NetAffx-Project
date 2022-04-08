@@ -19,207 +19,554 @@ class TestCase():
     def CheckAccuracy(self, inputData, correctInformation, TestName):
         check = all(item in inputData for item in correctInformation)
 
-        if check is True:
-            print('Test', str(TestName), 'is correct')
+        if check is True: print('Test', str(TestName), 'is correct')
+        else: print('Test', str(TestName), 'is incorrect')
+
+    def CheckInputData(self, checkData, FilenameData):
+        if checkData != []: listDataFromFile = checkData
         else:
-            print('Test', str(TestName), 'is incorrect')
+            listDataFromFile = []
+            FileData = self.ReadCSVFile(FilenameData)
+            # listDataFromFile = [[row[col] for col in FileData.columns] for row in FileData.to_dict('records')]
 
-    def CheckInputData(self, newData_FD, newDATA_NFD, FilenameFD, FilenameNFD):
-        if newData_FD != []:
-            LIST_FD_FROM_FILE = newData_FD
-        else:
-            File_FD = self.ReadCSVFile(FilenameFD)
-            LIST_FD_FROM_FILE = [[row[col] for col in File_FD.columns] for row in File_FD.to_dict('records')]
-        
-        if newDATA_NFD != []:
-            LIST_NFD_FROM_FILE = newDATA_NFD
-        else:
-            File_NFD = self.ReadCSVFile(FilenameNFD)
-            LIST_NFD_FROM_FILE = [[row[col] for col in File_NFD.columns] for row in File_NFD.to_dict('records')]
+            for row in FileData.to_dict('records'):
+                arrayRow = []
+                index = 0
+                for col in FileData.columns:                    
+                    if (index == 2): arrayRow.append(str(row[col]))
+                    elif (index == 9): 
+                        if (str(row[col]) == "nan"): arrayRow.append('')
+                        else: arrayRow.append(str(row[col]))
+                    else: arrayRow.append(row[col])
+                    index = index + 1
+                listDataFromFile.append(arrayRow)
 
-        return LIST_FD_FROM_FILE, LIST_NFD_FROM_FILE
+        return listDataFromFile
 
+    def ProcessAccuracySearch(self, PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease):
+        Filename_R_D = PREFIX + 'RELATE_INDISEASE.csv'
+        Filename_R_ND = PREFIX + 'RELATE_NOTINDISEASE.csv'
+        Filename_NR_D = PREFIX + 'UNRELATE_INDISEASE.csv'
+        Filename_NR_ND = PREFIX + 'UNRELATE_NOTINDISEASE.csv'
 
-    def SEARCH_ALL_DATA_01(self, newData_FD = [], newDATA_NFD = []):
-        """Test search all data with out condition"""
+        PathToRelateInDisease = self.Allpath.GetPathToTestCase() + '/' + Filename_R_D
+        PathToRelateNotInDisease = self.Allpath.GetPathToTestCase() + '/' + Filename_R_ND
+        PathToUnRelateInDisease = self.Allpath.GetPathToTestCase() + '/' + Filename_NR_D
+        PathToUnRelateNotInDisease = self.Allpath.GetPathToTestCase() + '/' + Filename_NR_ND
 
-        PathToTestCase_FD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_ALL_DATA_01_FD.csv'
-        PathToTestCase_NFD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_ALL_DATA_01_NFD.csv'
+        ListData_R_D_FromFile = self.CheckInputData(Input_Relate_InDisease, PathToRelateInDisease)
+        ListData_R_ND_FromFile = self.CheckInputData(Input_Relate_NotInDisease, PathToRelateNotInDisease)
+        ListData_NR_D_FromFile = self.CheckInputData(Input_UnRelate_InDisease, PathToUnRelateInDisease)
+        ListData_NR_ND_FromFile = self.CheckInputData(Input_UnRelate_NotInDisease, PathToUnRelateNotInDisease)
 
-        LIST_FD_FROM_FILE, LIST_NFD_FROM_FILE = self.CheckInputData(newData_FD, newDATA_NFD, PathToTestCase_FD, PathToTestCase_NFD)
-        RESULT_FD, RESULT_NFD = self.TestSearch.SearchData()
+        print('Result_Relate_NotInDisease :', Result_Relate_NotInDisease)
+        print('ListData_R_ND_FromFile :', ListData_R_ND_FromFile)
 
-        self.CheckAccuracy(RESULT_FD, LIST_FD_FROM_FILE, 'SEARCH_ALL_DATA_01_FD')
-        self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_ALL_DATA_01_NFD')
-
+        self.CheckAccuracy(Result_Relate_InDisease, ListData_R_D_FromFile, Filename_R_D)
+        self.CheckAccuracy(Result_Relate_NotInDisease, ListData_R_ND_FromFile, Filename_R_ND)
+        self.CheckAccuracy(Result_Unrelate_InDisease, ListData_NR_D_FromFile, Filename_NR_D)
+        self.CheckAccuracy(Result_Unrelate_NotInDisease, ListData_NR_ND_FromFile, Filename_NR_ND)
         return
 
     # Gene ID
-    def SEARCH_GENE_ID_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
+    def SEARCH_GENE_ID_WITH_CONDITION_00(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
         """Test search all data with out condition"""
 
-        self.TestSearch.Add_GeneID([2272])
+        PREFIX = 'SEARCH_GENE_ID_WITH_CONDITION_00_'
 
-        PathToTestCase_FD = self.Allpath.GetPathToTestCase() + '/' +  'Search_GENE_ID_WITH_CONDITION_01_FD.csv'
-        PathToTestCase_NFD = self.Allpath.GetPathToTestCase() + '/' +  'Search_GENE_ID_WITH_CONDITION_01_NFD.csv'
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])      
 
-        LIST_FD_FROM_FILE, LIST_NFD_FROM_FILE = self.CheckInputData(newData_FD, newDATA_NFD, PathToTestCase_FD, PathToTestCase_NFD)
-        RESULT_FD, RESULT_NFD = self.TestSearch.SearchData()
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
 
-        self.CheckAccuracy(RESULT_FD, LIST_FD_FROM_FILE, 'SEARCH_GENE_ID_WITH_CONDITION_01_FD')
-        self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_GENE_ID_WITH_CONDITION_01_NFD')
+    def SEARCH_GENE_ID_WITH_CONDITION_01(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_GENE_ID_WITH_CONDITION_01_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
+        TestSearch.Add_GeneID([10402])        
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def SEARCH_GENE_ID_WITH_CONDITION_02(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_GENE_ID_WITH_CONDITION_02_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
+        TestSearch.Add_GeneID([10402, 23657, 55486])        
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def SEARCH_GENE_ID_WITH_CONDITION_03(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_GENE_ID_WITH_CONDITION_03_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
+        TestSearch.Add_GeneID([1])        
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
 
         return
 
-    def SEARCH_GENE_ID_WITH_CONDITION_02(self, newData_FD = [], newDATA_NFD = []):
+
+    # GENE SYMBOL
+    def SEARCH_GENE_SYMBOL_WITH_CONDITION_00(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
         """Test search all data with out condition"""
 
-        self.TestSearch.Add_GeneID([1000, 1996, 2272, 5996, 6870])
+        PREFIX = 'SEARCH_GENE_SYMBOL_WITH_CONDITION_00_'
 
-        PathToTestCase_FD = self.Allpath.GetPathToTestCase() + '/' +  'Search_GENE_ID_WITH_CONDITION_02_FD.csv'
-        PathToTestCase_NFD = self.Allpath.GetPathToTestCase() + '/' +  'Search_GENE_ID_WITH_CONDITION_02_NFD.csv'
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
 
-        LIST_FD_FROM_FILE, LIST_NFD_FROM_FILE = self.CheckInputData(newData_FD, newDATA_NFD, PathToTestCase_FD, PathToTestCase_NFD)
-        RESULT_FD, RESULT_NFD = self.TestSearch.SearchData()
-
-        self.CheckAccuracy(RESULT_FD, LIST_FD_FROM_FILE, 'SEARCH_GENE_ID_WITH_CONDITION_02_FD')
-        self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_GENE_ID_WITH_CONDITION_02_NFD')
-
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
         return
 
-    def SEARCH_GENE_ID_WITH_CONDITION_03(self, newData_FD = [], newDATA_NFD = []):
+    def SEARCH_GENE_SYMBOL_WITH_CONDITION_01(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
         """Test search all data with out condition"""
 
-        self.TestSearch.Add_GeneID([1])
+        PREFIX = 'SEARCH_GENE_SYMBOL_WITH_CONDITION_01_'
 
-        PathToTestCase_FD = self.Allpath.GetPathToTestCase() + '/' +  'Search_GENE_ID_WITH_CONDITION_03_FD.csv'
-        PathToTestCase_NFD = self.Allpath.GetPathToTestCase() + '/' +  'Search_GENE_ID_WITH_CONDITION_03_NFD.csv'
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
+        TestSearch.Add_GeneSymbol(['ABCC5'])
 
-        LIST_FD_FROM_FILE, LIST_NFD_FROM_FILE = self.CheckInputData(newData_FD, newDATA_NFD, PathToTestCase_FD, PathToTestCase_NFD)
-        RESULT_FD, RESULT_NFD = self.TestSearch.SearchData()
-
-        self.CheckAccuracy(RESULT_FD, LIST_FD_FROM_FILE, 'SEARCH_GENE_ID_WITH_CONDITION_03_FD')
-        self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_GENE_ID_WITH_CONDITION_03_NFD')
-
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
         return
 
-    # Gene Symbol
-    def SEARCH_GENE_SYMBOL_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
+    def SEARCH_GENE_SYMBOL_WITH_CONDITION_02(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
         """Test search all data with out condition"""
 
-        self.TestSearch.Add_GeneSymbol(['RFPL4B'])
+        PREFIX = 'SEARCH_GENE_SYMBOL_WITH_CONDITION_02_'
 
-        PathToTestCase_FD = self.Allpath.GetPathToTestCase() + '/' +  'Search_GENE_SYMBOL_WITH_CONDITION_01_FD.csv'
-        PathToTestCase_NFD = self.Allpath.GetPathToTestCase() + '/' +  'Search_GENE_SYMBOL_WITH_CONDITION_01_NFD.csv'
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
+        TestSearch.Add_GeneSymbol(['ABCC5', 'PARL'])
 
-        LIST_FD_FROM_FILE, LIST_NFD_FROM_FILE = self.CheckInputData(newData_FD, newDATA_NFD, PathToTestCase_FD, PathToTestCase_NFD)
-        RESULT_FD, RESULT_NFD = self.TestSearch.SearchData()
-
-        self.CheckAccuracy(RESULT_FD, LIST_FD_FROM_FILE, 'SEARCH_GENE_SYMBOL_WITH_CONDITION_01_FD')
-        self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_GENE_SYMBOL_WITH_CONDITION_01_NFD')
-
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
         return
 
-    # Chromosome
-    def SEARCH_CHROMOSOME_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
+    def SEARCH_GENE_SYMBOL_WITH_CONDITION_03(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
         """Test search all data with out condition"""
 
-        self.TestSearch.Add_Chromosome([1])
+        PREFIX = 'SEARCH_GENE_SYMBOL_WITH_CONDITION_03_'
 
-        PathToTestCase_FD = self.Allpath.GetPathToTestCase() + '/' +  'Search_CHROMOSOME_WITH_CONDITION_01_FD.csv'
-        PathToTestCase_NFD = self.Allpath.GetPathToTestCase() + '/' +  'Search_CHROMOSOME_WITH_CONDITION_01_NFD.csv'
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
+        TestSearch.Add_GeneSymbol(['ABC33'])
 
-        LIST_FD_FROM_FILE, LIST_NFD_FROM_FILE = self.CheckInputData(newData_FD, newDATA_NFD, PathToTestCase_FD, PathToTestCase_NFD)
-        RESULT_FD, RESULT_NFD = self.TestSearch.SearchData()
-
-        self.CheckAccuracy(RESULT_FD, LIST_FD_FROM_FILE, 'SEARCH_CHROMOSOME_WITH_CONDITION_01_FD')
-        self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_CHROMOSOME_WITH_CONDITION_01_NFD')
-
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
         return
 
-    # GeneShip
-    def SEARCH_GENESHIP_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
+    def SEARCH_GENE_SYMBOL_WITH_CONDITION_04(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
         """Test search all data with out condition"""
 
-        self.TestSearch.Add_Geneship(0)
+        PREFIX = 'SEARCH_GENE_SYMBOL_WITH_CONDITION_04_'
 
-        PathToTestCase_FD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_GENESHIP_WITH_CONDITION_01_FD.csv'
-        PathToTestCase_NFD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_GENESHIP_WITH_CONDITION_01_NFD.csv'
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
+        TestSearch.Add_GeneSymbol(['ABC33', 'PRO2207'])
 
-        LIST_FD_FROM_FILE, LIST_NFD_FROM_FILE = self.CheckInputData(newData_FD, newDATA_NFD, PathToTestCase_FD, PathToTestCase_NFD)
-        RESULT_FD, RESULT_NFD = self.TestSearch.SearchData()
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
 
-        self.CheckAccuracy(RESULT_FD, LIST_FD_FROM_FILE, 'SEARCH_GENESHIP_WITH_CONDITION_01_FD')
-        self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_GENESHIP_WITH_CONDITION_01_NFD')
+    def SEARCH_GENE_SYMBOL_WITH_CONDITION_05(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
 
+        PREFIX = 'SEARCH_GENE_SYMBOL_WITH_CONDITION_05_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
+        TestSearch.Add_GeneSymbol(['ABC'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+
+    # CHROMOSOME
+    def SEARCH_CHROMOSOME_WITH_CONDITION_ALL(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_CHROMOSOME_WITH_CONDITION_ALL_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1000050', 'rs1000017', 'rs1000039', 'rs1000061', 'rs1000042'])
+        TestSearch.Add_Chromosome([0])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def SEARCH_CHROMOSOME_WITH_CONDITION_01(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_CHROMOSOME_WITH_CONDITION_01_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1000050', 'rs1000017', 'rs1000039', 'rs1000061', 'rs1000042'])
+        TestSearch.Add_Chromosome([1])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def SEARCH_CHROMOSOME_WITH_CONDITION_02(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_CHROMOSOME_WITH_CONDITION_02_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1000050', 'rs1000017', 'rs1000039', 'rs1000061', 'rs1000042'])
+        TestSearch.Add_Chromosome([1, 2, 10, 11])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def SEARCH_CHROMOSOME_WITH_CONDITION_03(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_CHROMOSOME_WITH_CONDITION_03_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1000050', 'rs1000017', 'rs1000039', 'rs1000061', 'rs1000042'])
+        TestSearch.Add_Chromosome([1, 2, 10])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+
+    # POSITION
+    def SEARCH_POSITION_WITH_CONDITION_ALL(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_POSITION_WITH_CONDITION_ALL_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10452313', 'rs10001263', 'rs10969094', 'rs1048466', 'rs10757847'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def SEARCH_POSITION_WITH_CONDITION_01(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_POSITION_WITH_CONDITION_01_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10452313', 'rs10001263', 'rs10969094', 'rs1048466', 'rs10757847'])
+        TestSearch.Add_Position([ [1, 100000] ])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
         return
     
-    # Distance
-    def SEARCH_DISTANCE_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
+    def SEARCH_POSITION_WITH_CONDITION_02(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
         """Test search all data with out condition"""
 
-        self.TestSearch.Add_Distance([ [0, 1204066] ])
+        PREFIX = 'SEARCH_POSITION_WITH_CONDITION_02_'
 
-        PathToTestCase_FD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_DISTANCE_WITH_CONDITION_01_FD.csv'
-        PathToTestCase_NFD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_DISTANCE_WITH_CONDITION_01_NFD.csv'
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10452313', 'rs10001263', 'rs10969094', 'rs1048466', 'rs10757847'])
+        TestSearch.Add_Position([ [1, 100000], [2, 500000] ])
 
-        LIST_FD_FROM_FILE, LIST_NFD_FROM_FILE = self.CheckInputData(newData_FD, newDATA_NFD, PathToTestCase_FD, PathToTestCase_NFD)
-        RESULT_FD, RESULT_NFD = self.TestSearch.SearchData()
-
-        self.CheckAccuracy(RESULT_FD, LIST_FD_FROM_FILE, 'SEARCH_DISTANCE_WITH_CONDITION_01_FD')
-        self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_DISTANCE_WITH_CONDITION_01_NFD')
-
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
         return
 
-    # Relationship
-    def SEARCH_RELATIONSHIP_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
+
+    # GENESHIP
+    def SEARCH_GENESHIP_WITH_CONDITION_ALL(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
         """Test search all data with out condition"""
 
-        self.TestSearch.Add_Relationship(['upstream'])
+        PREFIX = 'SEARCH_GENESHIP_WITH_CONDITION_ALL_'
 
-        PathToTestCase_FD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_RELATIONSHIP_WITH_CONDITION_01_FD.csv'
-        PathToTestCase_NFD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_RELATIONSHIP_WITH_CONDITION_01_NFD.csv'
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1000042', 'rs1000269', 'rs1000411', 'rs1000552', 'rs1001796'])
+        TestSearch.Add_Geneship(0)
 
-        LIST_FD_FROM_FILE, LIST_NFD_FROM_FILE = self.CheckInputData(newData_FD, newDATA_NFD, PathToTestCase_FD, PathToTestCase_NFD)
-        RESULT_FD, RESULT_NFD = self.TestSearch.SearchData()
-
-        self.CheckAccuracy(RESULT_FD, LIST_FD_FROM_FILE, 'SEARCH_RELATIONSHIP_WITH_CONDITION_01_FD')
-        self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_RELATIONSHIP_WITH_CONDITION_01_NFD')
-
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
         return
 
-    # Disease
-    def SEARCH_DISEASE_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
+    def SEARCH_GENESHIP_WITH_CONDITION_01(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
         """Test search all data with out condition"""
 
-        self.TestSearch.Add_Disease(['T1D'])
+        PREFIX = 'SEARCH_GENESHIP_WITH_CONDITION_01_'
 
-        PathToTestCase_FD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_DISEASE_WITH_CONDITION_01_FD.csv'
-        PathToTestCase_NFD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_DISEASE_WITH_CONDITION_01_NFD.csv'
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1000042', 'rs1000269', 'rs1000411', 'rs1000552', 'rs1001796'])
+        TestSearch.Add_Geneship(1)
 
-        LIST_FD_FROM_FILE, LIST_NFD_FROM_FILE = self.CheckInputData(newData_FD, newDATA_NFD, PathToTestCase_FD, PathToTestCase_NFD)
-        RESULT_FD, RESULT_NFD = self.TestSearch.SearchData()
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+    
+    def SEARCH_GENESHIP_WITH_CONDITION_02(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
 
-        self.CheckAccuracy(RESULT_FD, LIST_FD_FROM_FILE, 'SEARCH_DISEASE_WITH_CONDITION_01_FD')
-        self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_DISEASE_WITH_CONDITION_01_NFD')
+        PREFIX = 'SEARCH_GENESHIP_WITH_CONDITION_02_'
 
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1000042', 'rs1000269', 'rs1000411', 'rs1000552', 'rs1001796'])
+        TestSearch.Add_Geneship(2)
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
         return
 
-    # Source Website
-    def SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01(self, newData_FD = [], newDATA_NFD = []):
+
+    # RELATIONSHIP_DISTANCE
+    def SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_ALL(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
         """Test search all data with out condition"""
 
-        self.TestSearch.Add_source_website(1)
+        PREFIX = 'SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_ALL_'
 
-        PathToTestCase_FD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01_FD.csv'
-        PathToTestCase_NFD = self.Allpath.GetPathToTestCase() + '/' +  'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01_NFD.csv'
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs4912122', 'rs41464449', 'rs1705415', 'rs7553394'])
 
-        LIST_FD_FROM_FILE, LIST_NFD_FROM_FILE = self.CheckInputData(newData_FD, newDATA_NFD, PathToTestCase_FD, PathToTestCase_NFD)
-        RESULT_FD, RESULT_NFD = self.TestSearch.SearchData()
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
 
-        self.CheckAccuracy(RESULT_FD, LIST_FD_FROM_FILE, 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01_FD')
-        self.CheckAccuracy(RESULT_NFD, LIST_NFD_FROM_FILE, 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01_NFD')
+    def SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_01(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
 
+        PREFIX = 'SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_01_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs4912122', 'rs41464449', 'rs1705415', 'rs7553394'])
+        TestSearch.Add_Relationship_Distance([['upstream', 64372]])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_02(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_02_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs4912122', 'rs41464449', 'rs1705415', 'rs7553394'])
+        TestSearch.Add_Relationship_Distance([['upstream', 64372], ['downstream', 196896]])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_03(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_03_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs4912122', 'rs41464449', 'rs1705415', 'rs7553394'])
+        TestSearch.Add_Relationship_Distance([['upstream', 64371]])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+
+    # DISEASE
+    def SEARCH_DISEASE_WITH_CONDITION_ALL(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_DISEASE_WITH_CONDITION_ALL_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000203', 'rs10000241', 'rs1000078', 'rs10012946'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def SEARCH_DISEASE_WITH_CONDITION_01(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_DISEASE_WITH_CONDITION_01_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000203', 'rs10000241', 'rs1000078', 'rs10012946'])
+        TestSearch.Add_Disease(['T1D'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+        
+    def SEARCH_DISEASE_WITH_CONDITION_02(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_DISEASE_WITH_CONDITION_02_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000203', 'rs10000241', 'rs1000078', 'rs10012946'])
+        TestSearch.Add_Disease(['T1D', 'T2D'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+
+    # SOURCE WEBSITE
+    def SEARCH_SOURCE_WEBSITE_WITH_CONDITION_ALL(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_ALL_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10189577', 'rs1000078', 'rs5745711', 'rs1610274', 'rs3217986'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10189577', 'rs1000078', 'rs5745711', 'rs1610274', 'rs3217986'])
+        TestSearch.Add_Disease(['T1D'])
+        TestSearch.Add_source_website(1)
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def SEARCH_SOURCE_WEBSITE_WITH_CONDITION_02(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_02_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1000078', 'rs5745711'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def SEARCH_SOURCE_WEBSITE_WITH_CONDITION_03(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_03_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10189577', 'rs1000078', 'rs5745711', 'rs1610274', 'rs3217986'])
+        TestSearch.Add_Disease(['T1D'])
+        TestSearch.Add_source_website(3)
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def SEARCH_SOURCE_WEBSITE_WITH_CONDITION_04(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_04_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10189577', 'rs1000078', 'rs5745711', 'rs1610274', 'rs3217986'])
+        TestSearch.Add_Disease(['T2D'])
+        TestSearch.Add_source_website(5)
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+    
+    def SEARCH_SOURCE_WEBSITE_WITH_CONDITION_05(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_05_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData([])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def SEARCH_SOURCE_WEBSITE_WITH_CONDITION_06(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_06_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData([])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def SEARCH_SOURCE_WEBSITE_WITH_CONDITION_07(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        """Test search all data with out condition"""
+
+        PREFIX = 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_07_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10189577', 'rs1000078', 'rs5745711', 'rs1610274', 'rs3217986'])
+        TestSearch.Add_Disease(['T2D'])
+        TestSearch.Add_source_website(7)
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
         return
 
     # UPDATE NCBI
@@ -361,47 +708,55 @@ class TestCase():
 
 class CreateTestCase():
     def __init__(self):
-        self.listcolumns_FD = ['RSID', 'PROBESET_ID', 'CHROMOSOME', 'POSITION',
-        'SOURCE_GENESHIP', 'RELATIONSHIP', 'DISTANCE', 'GENE_SYMBOL', 'GENE_ID', 
-        'OTHER_SYMBOL', 'DISEASE_NAME', 'DISEASE_ABBREVIATION', 'MATCH_BY']
-
-        self.listcolumns_NFD = ['RSID', 'PROBESET_ID', 'CHROMOSOME', 'POSITION',
-        'SOURCE_GENESHIP', 'RELATIONSHIP', 'DISTANCE', 'GENE_SYMBOL', 'GENE_ID', 
-        'OTHER_SYMBOL']
+        self.listcolumns_FD = ['RSID', 'PROBESET_ID', 'CHROMOSOME', 'POSITION', 'SOURCE_GENESHIP', 'RELATIONSHIP', 'DISTANCE', 'GENE_SYMBOL', 'GENE_ID', 'OTHER_SYMBOL', 'DISEASE_NAME', 'DISEASE_ABBREVIATION', 'MATCH_BY']
+        self.listcolumns_NFD = ['RSID', 'PROBESET_ID', 'CHROMOSOME', 'POSITION', 'SOURCE_GENESHIP', 'RELATIONSHIP', 'DISTANCE', 'GENE_SYMBOL', 'GENE_ID', 'OTHER_SYMBOL']
 
         self.allpath = FilePath()
 
         # self.CREATE_SEARCH_ALL_DATA_01()
 
+        # self.CREATE_SEARCH_GENE_ID_WITH_CONDITION_00()
         # self.CREATE_SEARCH_GENE_ID_WITH_CONDITION_01()
         # self.CREATE_SEARCH_GENE_ID_WITH_CONDITION_02()
         # self.CREATE_SEARCH_GENE_ID_WITH_CONDITION_03()
 
+        # self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_00()
         # self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_01()
         # self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_02()
         # self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_03()
+        # self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_04()
+        # self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_05()
 
+        # self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_ALL()
         # self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_01()
         # self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_02()
         # self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_03()
-        # self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_ALL()
+
+        # self.CREATE_SEARCH_POSITION_WITH_CONDITION_ALL()
+        # self.CREATE_SEARCH_POSITION_WITH_CONDITION_01()
+        # self.CREATE_SEARCH_POSITION_WITH_CONDITION_02()
 
         # self.CREATE_SEARCH_GENESHIP_WITH_CONDITION_ALL()   
         # self.CREATE_SEARCH_GENESHIP_WITH_CONDITION_01()   
         # self.CREATE_SEARCH_GENESHIP_WITH_CONDITION_02()
 
-        # self.CREATE_SEARCH_DISTANCE_WITH_CONDITION_01()
-        # self.CREATE_SEARCH_DISTANCE_WITH_CONDITION_02()
-        # self.CREATE_SEARCH_DISTANCE_WITH_CONDITION_03()
-        # self.CREATE_SEARCH_DISTANCE_WITH_CONDITION_04()
-        # self.CREATE_SEARCH_DISTANCE_WITH_CONDITION_05()
-        # self.CREATE_SEARCH_DISTANCE_WITH_CONDITION_06()
+        # self.CREATE_SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_ALL()
+        # self.CREATE_SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_01()
+        # self.CREATE_SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_02()
+        # self.CREATE_SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_03()
 
-        # self.CREATE_SEARCH_RELATIONSHIP_WITH_CONDITION_01()
+        # self.CREATE_SEARCH_DISEASE_WITH_CONDITION_ALL()
+        # self.CREATE_SEARCH_DISEASE_WITH_CONDITION_01()
+        # self.CREATE_SEARCH_DISEASE_WITH_CONDITION_02()
 
-        # self.CREATE_SEARCH_DISEASE_WITH_CONDITION_01()      
-
+        # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_ALL()
         # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01()
+        # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_02()
+        # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_03()
+        # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_04()
+        # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_05()
+        # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_06()
+        self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_07()
 
         return
 
@@ -415,239 +770,488 @@ class CreateTestCase():
         df = pd.DataFrame(data,columns = self.listcolumns_NFD)
         df.to_csv(path_output,index=False)
 
+    def ProcessCreateDataset(self, PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease):
+        Filename_R_D = PREFIX + 'RELATE_INDISEASE.csv'
+        Filename_R_ND = PREFIX + 'RELATE_NOTINDISEASE.csv'
+        Filename_NR_D = PREFIX + 'UNRELATE_INDISEASE.csv'
+        Filename_NR_ND = PREFIX + 'UNRELATE_NOTINDISEASE.csv'
+
+        self.ImportDataTo_FD(Filename_R_D, Result_Relate_InDisease)
+        self.ImportDataTo_NFD(Filename_R_ND, Result_Relate_NotInDisease)
+        self.ImportDataTo_FD(Filename_NR_D, Result_Unrelate_InDisease)
+        self.ImportDataTo_NFD(Filename_NR_ND, Result_Unrelate_NotInDisease)
+        return
+
     def CREATE_SEARCH_ALL_DATA_01(self):
+        PREFIX = 'SEARCH_ALL_DATA_01_'
         TestSearch = Search()
         Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_ALL_DATA_01_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_ALL_DATA_01_NFD.csv', Result_NFD)
+        self.ImportDataTo_FD(PREFIX + 'FD.csv', Results_FD)
+        self.ImportDataTo_NFD(PREFIX + '_NFD.csv', Result_NFD)
         return
 
     # Gene ID
-    def CREATE_SEARCH_GENE_ID_WITH_CONDITION_01(self):
-        TestSearch = Search()
-        TestSearch.Add_GeneID([2272])
+    def CREATE_SEARCH_GENE_ID_WITH_CONDITION_00(self):
+        PREFIX = 'SEARCH_GENE_ID_WITH_CONDITION_00_'
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_GENE_ID_WITH_CONDITION_01_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_GENE_ID_WITH_CONDITION_01_NFD.csv', Result_NFD)
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        return
+
+    def CREATE_SEARCH_GENE_ID_WITH_CONDITION_01(self):
+        PREFIX = 'SEARCH_GENE_ID_WITH_CONDITION_01_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
+        TestSearch.Add_GeneID([10402])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
     def CREATE_SEARCH_GENE_ID_WITH_CONDITION_02(self):
-        TestSearch = Search()
-        TestSearch.Add_GeneID([1000, 1996, 2272, 5996, 6870])
+        PREFIX = 'SEARCH_GENE_ID_WITH_CONDITION_02_'
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_GENE_ID_WITH_CONDITION_02_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_GENE_ID_WITH_CONDITION_02_NFD.csv', Result_NFD)
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
+        TestSearch.Add_GeneID([10402, 23657, 55486])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
     def CREATE_SEARCH_GENE_ID_WITH_CONDITION_03(self):
+        PREFIX = 'SEARCH_GENE_ID_WITH_CONDITION_03_'
+
         TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
         TestSearch.Add_GeneID([1])
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_GENE_ID_WITH_CONDITION_03_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_GENE_ID_WITH_CONDITION_03_NFD.csv', Result_NFD)
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
-    # Gene Symbol
-    def CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_01(self):
-        TestSearch = Search()
-        TestSearch.Add_GeneSymbol(['RFPL4B'])
+    # GENE SYMBOL
+    def CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_00(self):
+        PREFIX = 'SEARCH_GENE_SYMBOL_WITH_CONDITION_00_'
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_GENE_SYMBOL_WITH_CONDITION_01_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_GENE_SYMBOL_WITH_CONDITION_01_NFD.csv', Result_NFD)
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        return
+
+    def CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_01(self):
+        PREFIX = 'SEARCH_GENE_SYMBOL_WITH_CONDITION_01_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
+        TestSearch.Add_GeneSymbol(['ABCC5'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
     def CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_02(self):
-        TestSearch = Search()
-        TestSearch.Add_GeneSymbol(['RFPL4B', 'BICD1', 'LIPC', 'ATP1B', 'NHE9'])
+        PREFIX = 'SEARCH_GENE_SYMBOL_WITH_CONDITION_02_'
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_GENE_SYMBOL_WITH_CONDITION_02_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_GENE_SYMBOL_WITH_CONDITION_02_NFD.csv', Result_NFD)
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
+        TestSearch.Add_GeneSymbol(['ABCC5', 'PARL'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
     def CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_03(self):
-        TestSearch = Search()
-        TestSearch.Add_GeneSymbol(['ABC123'])
+        PREFIX = 'SEARCH_GENE_SYMBOL_WITH_CONDITION_03_'
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_GENE_SYMBOL_WITH_CONDITION_03_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_GENE_SYMBOL_WITH_CONDITION_03_NFD.csv', Result_NFD)
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
+        TestSearch.Add_GeneSymbol(['ABC33'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
-    # Chromosome
-    def CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_ALL(self):
+    def CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_04(self):
+        PREFIX = 'SEARCH_GENE_SYMBOL_WITH_CONDITION_04_'
+
         TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
+        TestSearch.Add_GeneSymbol(['ABC33', 'PRO2207'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        return
+
+    def CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_05(self):
+        PREFIX = 'SEARCH_GENE_SYMBOL_WITH_CONDITION_05_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000012', 'rs1000002', 'rs1000003', 'rs10000033', 'rs10000037'])
+        TestSearch.Add_GeneSymbol(['ABC'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        return
+
+    # CHROMOSOME
+    def CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_ALL(self):
+        PREFIX = 'SEARCH_CHROMOSOME_WITH_CONDITION_ALL_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1000050', 'rs1000017', 'rs1000039', 'rs1000061', 'rs1000042'])
         TestSearch.Add_Chromosome([0])
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_CHROMOSOME_WITH_CONDITION_04_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_CHROMOSOME_WITH_CONDITION_04_NFD.csv', Result_NFD)
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
     def CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_01(self):
+        PREFIX = 'SEARCH_CHROMOSOME_WITH_CONDITION_01_'
+
         TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1000050', 'rs1000017', 'rs1000039', 'rs1000061', 'rs1000042'])
         TestSearch.Add_Chromosome([1])
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_CHROMOSOME_WITH_CONDITION_01_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_CHROMOSOME_WITH_CONDITION_01_NFD.csv', Result_NFD)
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
     def CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_02(self):
-        TestSearch = Search()
-        TestSearch.Add_Chromosome([1, 2, 10, 11, 12])
+        PREFIX = 'SEARCH_CHROMOSOME_WITH_CONDITION_02_'
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_CHROMOSOME_WITH_CONDITION_02_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_CHROMOSOME_WITH_CONDITION_02_NFD.csv', Result_NFD)
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1000050', 'rs1000017', 'rs1000039', 'rs1000061', 'rs1000042'])
+        TestSearch.Add_Chromosome([1, 2, 10, 11])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
     def CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_03(self):
-        TestSearch = Search()
-        TestSearch.Add_Chromosome([100])
+        PREFIX = 'SEARCH_CHROMOSOME_WITH_CONDITION_03_'
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_CHROMOSOME_WITH_CONDITION_03_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_CHROMOSOME_WITH_CONDITION_03_NFD.csv', Result_NFD)
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1000050', 'rs1000017', 'rs1000039', 'rs1000061', 'rs1000042'])
+        TestSearch.Add_Chromosome([1, 2, 10])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
-    # Geneship
-    def CREATE_SEARCH_GENESHIP_WITH_CONDITION_ALL(self):
+
+    # POSITION
+    def CREATE_SEARCH_POSITION_WITH_CONDITION_ALL(self):
+        PREFIX = 'SEARCH_POSITION_WITH_CONDITION_ALL_'
+
         TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10452313', 'rs10001263', 'rs10969094', 'rs1048466', 'rs10757847'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        return
+
+    def CREATE_SEARCH_POSITION_WITH_CONDITION_01(self):
+        PREFIX = 'SEARCH_POSITION_WITH_CONDITION_01_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10452313', 'rs10001263', 'rs10969094', 'rs1048466', 'rs10757847'])
+        TestSearch.Add_Position([[1, 100000]])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        return
+
+    def CREATE_SEARCH_POSITION_WITH_CONDITION_02(self):
+        PREFIX = 'SEARCH_POSITION_WITH_CONDITION_02_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10452313', 'rs10001263', 'rs10969094', 'rs1048466', 'rs10757847'])
+        TestSearch.Add_Position([ [1, 100000], [2, 500000] ])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        return
+
+
+    # GENESHIP
+    def CREATE_SEARCH_GENESHIP_WITH_CONDITION_ALL(self):
+        PREFIX = 'SEARCH_GENESHIP_WITH_CONDITION_ALL_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1000042', 'rs1000269', 'rs1000411', 'rs1000552', 'rs1001796'])
         TestSearch.Add_Geneship(0)
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_GENESHIP_WITH_CONDITION_ALL_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_GENESHIP_WITH_CONDITION_ALL_NFD.csv', Result_NFD)
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
     def CREATE_SEARCH_GENESHIP_WITH_CONDITION_01(self):
+        PREFIX = 'SEARCH_GENESHIP_WITH_CONDITION_01_'
+
         TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1000042', 'rs1000269', 'rs1000411', 'rs1000552', 'rs1001796'])
         TestSearch.Add_Geneship(1)
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_GENESHIP_WITH_CONDITION_01_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_GENESHIP_WITH_CONDITION_01_NFD.csv', Result_NFD)
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
     def CREATE_SEARCH_GENESHIP_WITH_CONDITION_02(self):
+        PREFIX = 'SEARCH_GENESHIP_WITH_CONDITION_02_'
+
         TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1000042', 'rs1000269', 'rs1000411', 'rs1000552', 'rs1001796'])
         TestSearch.Add_Geneship(2)
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_GENESHIP_WITH_CONDITION_02_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_GENESHIP_WITH_CONDITION_02_NFD.csv', Result_NFD)
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
-    # Distance
-    def CREATE_SEARCH_DISTANCE_WITH_CONDITION_01(self):
+    # RELATIONSHIP_DISTANCE
+    def CREATE_SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_ALL(self):
+        PREFIX = 'SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_ALL_'
+
         TestSearch = Search()
-        TestSearch.Add_Distance([ [0, 1204066] ])
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs4912122', 'rs41464449', 'rs1705415', 'rs7553394'])
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_DISTANCE_WITH_CONDITION_01_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_DISTANCE_WITH_CONDITION_01_NFD.csv', Result_NFD)
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
-    def CREATE_SEARCH_DISTANCE_WITH_CONDITION_02(self):
+    def CREATE_SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_01(self):
+        PREFIX = 'SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_01_'
+
         TestSearch = Search()
-        TestSearch.Add_Distance([ [0, 1572755], [0, 465866], [0, 126121] ])
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs4912122', 'rs41464449', 'rs1705415', 'rs7553394'])
+        TestSearch.Add_Relationship_Distance([['upstream', 64372]])
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_DISTANCE_WITH_CONDITION_02_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_DISTANCE_WITH_CONDITION_02_NFD.csv', Result_NFD)
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
-    def CREATE_SEARCH_DISTANCE_WITH_CONDITION_03(self):
+    def CREATE_SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_02(self):
+        PREFIX = 'SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_02_'
+
         TestSearch = Search()
-        TestSearch.Add_Distance([ [1, 1000], [0, 1572755], [0, 465866], [0, 126121], [3, 100000, 200000], [3, 400000, 500000], [2, 1000000] ])
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs4912122', 'rs41464449', 'rs1705415', 'rs7553394'])
+        TestSearch.Add_Relationship_Distance([['upstream', 64372], ['downstream', 196896]])
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_DISTANCE_WITH_CONDITION_03_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_DISTANCE_WITH_CONDITION_03_NFD.csv', Result_NFD)
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
-    def CREATE_SEARCH_DISTANCE_WITH_CONDITION_04(self):
+    def CREATE_SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_03(self):
+        PREFIX = 'SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_03_'
+
         TestSearch = Search()
-        TestSearch.Add_Distance([ [1, 1000], [1, 10000] ])
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs4912122', 'rs41464449', 'rs1705415', 'rs7553394'])
+        TestSearch.Add_Relationship_Distance([['upstream', 64371]])
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_DISTANCE_WITH_CONDITION_04_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_DISTANCE_WITH_CONDITION_04_NFD.csv', Result_NFD)
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
-    def CREATE_SEARCH_DISTANCE_WITH_CONDITION_05(self):
+    # DISEASE
+    def CREATE_SEARCH_DISEASE_WITH_CONDITION_ALL(self):
+        PREFIX = 'SEARCH_DISEASE_WITH_CONDITION_ALL_'
+
         TestSearch = Search()
-        TestSearch.Add_Distance([ [2, 1000], [2, 10000] ])
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000203', 'rs10000241', 'rs1000078', 'rs10012946'])
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_DISTANCE_WITH_CONDITION_05_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_DISTANCE_WITH_CONDITION_05_NFD.csv', Result_NFD)
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
-    def CREATE_SEARCH_DISTANCE_WITH_CONDITION_06(self):
-        TestSearch = Search()
-        TestSearch.Add_Distance([ [0, 1] ])
-
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_DISTANCE_WITH_CONDITION_06_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_DISTANCE_WITH_CONDITION_06_NFD.csv', Result_NFD)
-        return
-
-    # Relationship
-    def CREATE_SEARCH_RELATIONSHIP_WITH_CONDITION_ALL(self):
-        TestSearch = Search()
-
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_RELATIONSHIP_WITH_CONDITION_ALL_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_RELATIONSHIP_WITH_CONDITION_ALL_NFD.csv', Result_NFD)
-        return
-
-    def CREATE_SEARCH_RELATIONSHIP_WITH_CONDITION_01(self):
-        TestSearch = Search()
-        TestSearch.Add_Relationship(['upstream'])
-
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_RELATIONSHIP_WITH_CONDITION_01_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_RELATIONSHIP_WITH_CONDITION_01_NFD.csv', Result_NFD)
-        return
-    
-    def CREATE_SEARCH_RELATIONSHIP_WITH_CONDITION_03(self):
-        TestSearch = Search()
-        TestSearch.Add_Relationship(['upstream', 'downstream'])
-
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_RELATIONSHIP_WITH_CONDITION_02_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_RELATIONSHIP_WITH_CONDITION_02_NFD.csv', Result_NFD)
-        return
-
-    # Disease
     def CREATE_SEARCH_DISEASE_WITH_CONDITION_01(self):
+        PREFIX = 'SEARCH_DISEASE_WITH_CONDITION_01_'
+
         TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000203', 'rs10000241', 'rs1000078', 'rs10012946'])
         TestSearch.Add_Disease(['T1D'])
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_DISEASE_WITH_CONDITION_01_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_DISEASE_WITH_CONDITION_01_NFD.csv', Result_NFD)
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
-    # Source Website
-    def CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01(self):
+    def CREATE_SEARCH_DISEASE_WITH_CONDITION_02(self):
+        PREFIX = 'SEARCH_DISEASE_WITH_CONDITION_02_'
+
         TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10000203', 'rs10000241', 'rs1000078', 'rs10012946'])
+        TestSearch.Add_Disease(['T1D', 'T2D'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        return
+
+    # SOURCE WEBSITE
+    def CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_ALL(self):
+        PREFIX = 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_ALL_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10189577', 'rs1000078', 'rs5745711', 'rs1610274', 'rs3217986'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        return
+
+    def CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01(self):
+        PREFIX = 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10189577', 'rs1000078', 'rs5745711', 'rs1610274', 'rs3217986'])
+        TestSearch.Add_Disease(['T1D'])
         TestSearch.Add_source_website(1)
 
-        Results_FD, Result_NFD = TestSearch.SearchData()
-        self.ImportDataTo_FD('SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01_FD.csv', Results_FD)
-        self.ImportDataTo_NFD('SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01_NFD.csv', Result_NFD)
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
- 
+
+    def CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_02(self):
+        PREFIX = 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_02_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1000078', 'rs5745711'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        return
+
+    def CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_03(self):
+        PREFIX = 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_03_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10189577', 'rs1000078', 'rs5745711', 'rs1610274', 'rs3217986'])
+        TestSearch.Add_Disease(['T1D'])
+        TestSearch.Add_source_website(3)
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        return
+
+    def CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_04(self):
+        PREFIX = 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_04_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10189577', 'rs1000078', 'rs5745711', 'rs1610274', 'rs3217986'])
+        TestSearch.Add_Disease(['T2D'])
+        TestSearch.Add_source_website(5)
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        return
+
+    def CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_05(self):
+        PREFIX = 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_05_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData([])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        return
+
+    def CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_06(self):
+        PREFIX = 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_06_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData([])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        return
+
+    def CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_07(self):
+        PREFIX = 'SEARCH_SOURCE_WEBSITE_WITH_CONDITION_07_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10189577', 'rs1000078', 'rs5745711', 'rs1610274', 'rs3217986'])
+        TestSearch.Add_Disease(['T2D'])
+        TestSearch.Add_source_website(7)
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        return
 
 if __name__ == "__main__":
-    # createTestCase = CreateTestCase()
+    createTestCase = CreateTestCase()
 
     testCase = TestCase()
     testCase.Get_AssociatedGeneOfDiseaseByPathway('Type 1 Diabetes Mellitus')

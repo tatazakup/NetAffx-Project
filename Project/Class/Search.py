@@ -247,17 +247,19 @@ class Search(Database):
 
         match self.source_website:
             case 0: return FormatStrings_Source_Website
-            case 1: countMatch = '1'; searchWhere = " MatchBy = 'huge' "
-            case 2: countMatch = '1'; searchWhere = " MatchBy = 'kegg' "
-            case 3: countMatch = '1'; searchWhere = " MatchBy LIKE '%Pathway%' "
-            case 4: countMatch = '2'; searchWhere = " MatchBy in ('kegg', 'huge') "
-            case 5: countMatch = '2'; searchWhere = " ( MatchBy LIKE '%Pathway%' or MatchBy = 'huge' ) "
-            case 6: countMatch = '2'; searchWhere = " ( MatchBy LIKE '%Pathway%' or MatchBy = 'kegg' ) "
-            case 7: countMatch = '3'; searchWhere = " ( MatchBy LIKE '%Pathway%' or MatchBy in ('kegg', 'huge') ) "
+            case 1: countMatch = '1'; searchWhere = " matching_snp_disease.MatchBy = 'huge' "
+            case 2: countMatch = '1'; searchWhere = " matching_snp_disease.MatchBy = 'kegg' "
+            case 3: countMatch = '1'; searchWhere = " matching_snp_disease.MatchBy LIKE '%Pathway%' "
+            case 4: countMatch = '2'; searchWhere = " matching_snp_disease.MatchBy in ('kegg', 'huge') "
+            case 5: countMatch = '2'; searchWhere = " ( matching_snp_disease.MatchBy LIKE '%Pathway%' or matching_snp_disease.MatchBy = 'huge' ) "
+            case 6: countMatch = '2'; searchWhere = " ( matching_snp_disease.MatchBy LIKE '%Pathway%' or matching_snp_disease.MatchBy = 'kegg' ) "
+            case 7: countMatch = '3'; searchWhere = " ( matching_snp_disease.MatchBy LIKE '%Pathway%' or matching_snp_disease.MatchBy in ('kegg', 'huge') ) "
+
+        FormatStrings_RSID_ProbeSetID = self.CreateFormatStrings_RSID_ProbeSetID(0)
 
         for eachDisease in self.Disease:
             diseaseID = DiseaseEnum[str(eachDisease)].value
-            listSqlCommandDisease.append(" ( matching_snp_disease.RS_ID in ( select RS_ID FROM matching_snp_disease WHERE ( " + str(searchWhere) + " and DISEASE_ID = " + str(diseaseID) + " ) GROUP BY RS_ID HAVING COUNT(MatchBy) >= " + countMatch + " ) AND matching_snp_disease.GENE_ID in ( select GENE_ID FROM matching_snp_disease WHERE ( " + str(searchWhere) + " and DISEASE_ID = " + str(diseaseID) + " ) GROUP BY GENE_ID HAVING COUNT(MatchBy) = " + str(countMatch) + " ) AND matching_snp_disease.DISEASE_ID = " + str(diseaseID) + " ) ")
+            listSqlCommandDisease.append(" ( matching_snp_disease.RS_ID in ( select RS_ID FROM matching_snp_disease WHERE ( " + str(searchWhere) + " and DISEASE_ID = " + str(diseaseID) + " ) GROUP BY RS_ID HAVING COUNT(MatchBy) >= " + countMatch + " ) AND matching_snp_disease.GENE_ID in ( select GENE_ID FROM matching_snp_disease INNER JOIN snp ON snp.RS_ID = matching_snp_disease.RS_ID WHERE ( " + FormatStrings_RSID_ProbeSetID + "  and DISEASE_ID = " + str(diseaseID) + " ) GROUP BY GENE_ID HAVING COUNT(MatchBy) = " + str(countMatch) + " ) AND matching_snp_disease.DISEASE_ID = " + str(diseaseID) + " AND " + str(searchWhere) + " ) ")
 
         FormatStrings_Source_Website = " and ( " + (" or ".join( [ eachCommand for eachCommand in listSqlCommandDisease] )) + " ) "
         return FormatStrings_Source_Website
@@ -472,7 +474,7 @@ class Search(Database):
         # ------------------------------ Step 1 ------------------------------
 
         SQLCommand_Relate_InDisease = self.SQLCommand_Relate_InDisease(FormatStrings_RSID_ProbeSetID, FormatStrings_GeneID, FormatStrings_GeneSymbol, FormatStrings_Chromosome, FormatStrings_Position, FormatStrings_Relationship_Distance, FormatStrings_Disease, FormatStrings_GeneShip, FormatStrings_Source_Website)
-        # print('SQLCommand_Relate_InDisease :', SQLCommand_Relate_InDisease)
+        print('SQLCommand_Relate_InDisease :', SQLCommand_Relate_InDisease)
         results_Relate_InDisease = set( database.CreateTask(conn, SQLCommand_Relate_InDisease, ()) )
         
         print('\n List gene has found on disease \n')

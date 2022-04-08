@@ -455,11 +455,11 @@ class Disease(MetaData):
                 try:
                     for source in sources:                
                         sqlCommand = """
-                            INSERT IGNORE INTO gene_disease_source ( GENE_SYMBOL, SOURCE_WEBSITE ) 
-                            VALUES ( %s, %s ) 
+                            INSERT IGNORE INTO gene_disease_source ( GENE_SYMBOL, SOURCE_WEBSITE, DISEASE_ID ) 
+                            VALUES ( %s, %s, %s ) 
                         """
                         
-                        database.CreateTask(conn, sqlCommand, (geneSymbol, source))
+                        database.CreateTask(conn, sqlCommand, (geneSymbol, source, diseaseID))
                 except Exception as e:
                     self.WriteToLogFile(pathToLogFile, geneSymbol, "Error", str(e))
                     continue
@@ -619,13 +619,13 @@ class Disease(MetaData):
 
                 # Update a new website source each gene
                 try:
-                    for source in sources:                
+                    for source in sources:
                         sqlCommand = """
-                            INSERT IGNORE INTO gene_disease_source ( GENE_SYMBOL, SOURCE_WEBSITE ) 
-                            VALUES ( %s, %s ) 
+                            INSERT IGNORE INTO gene_disease_source ( GENE_SYMBOL, SOURCE_WEBSITE, DISEASE_ID ) 
+                            VALUES ( %s, %s, %s ) 
                         """
                         
-                        database.CreateTask(conn, sqlCommand, (geneSymbol, source))
+                        database.CreateTask(conn, sqlCommand, (geneSymbol, source, diseaseID))
                 except Exception as e:
                     self.WriteToLogFile(pathToLogFile, geneSymbol, "Error", str(e))
                     continue
@@ -642,5 +642,5 @@ class Disease(MetaData):
 
 if __name__ == "__main__":
     disease = Disease()
-    disease.CreateDiseaseDataset()
-    # disease.UpdateDiseaseDataset()
+    # disease.CreateDiseaseDataset()
+    disease.UpdateDiseaseDataset()
