@@ -1,4 +1,3 @@
-from tkinter import E
 from matplotlib.font_manager import json_load
 import pandas as pd
 from Initialization import Database, MetaData, FilePath
@@ -44,6 +43,22 @@ class PathwayDataFromKEGG:
         PathwayInfo['Status']['amountOfFinished'] = 1
         objectPathway.SaveManualUpdateMetadata(PathwayInfo)
     
+    def testGetGenePathway(self, PathwayID):
+        reqpage = requests.get(self.URL)
+        soup = BeautifulSoup(reqpage.content, "html.parser")
+        text = soup.text
+        list_text = text.split('\n')
+        for i in list_text[:-1]:
+            col = []
+            sep_pg = i.split('\t')
+            pathway = sep_pg[0][5:]
+            gene = sep_pg[1][4:]
+     
+            # Add This for test specific id
+            if pathway == PathwayID:
+                col.extend([pathway, gene])
+                self.listpathway.append(col)
+
 class PathwayOfDis:
     def __init__(self):
         self.ListDisease =  ['Coronary Artery Disease', 
@@ -103,6 +118,19 @@ class PathwayOfDis:
         # Update Metadata
         objectPathway.SaveUpdateMetadata()
     
+    def testFetchPathwayEachDisease(self, Disease):
+        listPathwayid = []
+        DisIndex = self.ListDisease.index(Disease)
+        DisUrl = self.ListUrlDisease[DisIndex]
+        reqpage_kegg = requests.get(DisUrl)
+        gethtml_kegg = BeautifulSoup(reqpage_kegg.content, "html.parser")
+        finda = gethtml_kegg.find_all('a')
+        for i in finda:
+            if i.text[:3] == "hsa":
+                listPathwayid.append(i.text)
+
+        return listPathwayid
+                
     def Find_GeneInPathwayOfDisease(self, DataPathway):
         df_pathway = pd.DataFrame(DataPathway,columns = ['pathway', 'GeneID'])
         

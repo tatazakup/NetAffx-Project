@@ -51,10 +51,9 @@ class mapSNP_Disease:
                 print("not match")
             else:
                 listDis = matchGeneDis["DISEASE_ID"].values.tolist()
-                print('GSYMBOL :', i[2])
-                checksource = df_ListGeneSource.loc[df_ListGeneSource['GENE_SYMBOL'] == i[2]]
-                listSource = checksource['SOURCE_WEBSITE'].values.tolist()
                 for DisID in listDis:
+                    checksource = df_ListGeneSource.loc[(df_ListGeneSource['GENE_SYMBOL'] == i[2]) & (df_ListGeneSource['DISEASE_ID'] == DisID)]
+                    listSource = checksource['SOURCE_WEBSITE'].values.tolist()
                     for Sourceweb in listSource:
                         matchby =  Sourceweb
                         value = [i[1], DisID, matchby]
@@ -101,7 +100,7 @@ class mapSNP_Disease:
 
         # Convert List to dataframe Pandas (easy for find specific value)
         df_ListGeneDisease = pd.DataFrame(self.ListGeneDisease, columns= ['DISEASE_ID', 'GENE_ID'])
-        df_ListGeneSource = pd.DataFrame(self.ListGeneFromSource, columns= ['GENE_SYMBOL', 'SOURCE_WEBSITE'])
+        df_ListGeneSource = pd.DataFrame(self.ListGeneFromSource, columns= ['GENE_SYMBOL', 'SOURCE_WEBSITE', 'DISEASE_ID'])
         df_ListGenePathway = pd.DataFrame(self.ListGenePathway, columns= ['DISEASE_ID', 'GENE_ID', 'PATHWAY_ID'])
 
         for i in self.ListGeneSNP:
@@ -114,9 +113,9 @@ class mapSNP_Disease:
                 print("    not match")
             else:
                 listDis = matchGeneDis["DISEASE_ID"].values.tolist()
-                checksource = df_ListGeneSource.loc[df_ListGeneSource['GENE_SYMBOL'] == i[2]]
-                listSource = checksource['SOURCE_WEBSITE'].values.tolist()
                 for DisID in listDis:
+                    checksource = df_ListGeneSource.loc[(df_ListGeneSource['GENE_SYMBOL'] == i[2]) & (df_ListGeneSource['DISEASE_ID'] == DisID)]
+                    listSource = checksource['SOURCE_WEBSITE'].values.tolist()
                     for Sourceweb in listSource:
                         matchby =  Sourceweb
                         value = [i[1], DisID, matchby, i[0]]

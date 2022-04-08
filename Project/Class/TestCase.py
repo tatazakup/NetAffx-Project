@@ -1,5 +1,7 @@
 from Initialization import Database, FilePath
-from Ncbi import Ncbi
+from AnnotationFile import Manage_AnnotationFile
+from pathway import PathwayDataFromKEGG, PathwayOfDis
+from ncbi import Ncbi
 from Disease import Disease
 from Search import Search
 from datetime import datetime
@@ -322,6 +324,40 @@ class TestCase():
         disease.UpdateDiseaseDataset()
         
         return
+    
+    # Manage AnnotationFile
+    def Manage_AnnotationFile_(self, RSID, Genechip):
+        Separate_Gene = Manage_AnnotationFile()
+        snp = Separate_Gene.TestSeparateGene(RSID, Genechip)
+        for i in snp.Associated_Gene:
+            i.show()
+            print(' ')
+        
+        ListS = []
+        ListS.append(snp)
+        Separate_Gene.SaveSNP(ListS)
+    
+    # Create Data Pathway
+    def Get_GeneOfPathway(self, PathwayID):
+        Data_Pathway = PathwayDataFromKEGG()
+        Data_Pathway.testGetGenePathway(PathwayID)
+        print('number of gene in ', PathwayID, ' =', len(Data_Pathway.listpathway))
+        return Data_Pathway.listpathway
+        
+    def Get_PathwayOfDisease(self, Disease):
+        Pathway_Dis = PathwayOfDis()
+        ListPathwayID = Pathway_Dis.testFetchPathwayEachDisease(Disease)
+        print('number of Pathway in ', Disease, ' =', len(ListPathwayID))
+        return ListPathwayID
+    
+    def Get_AssociatedGeneOfDiseaseByPathway(self, Disease):
+        numberGene = 0
+        ListPathwayID = self.Get_PathwayOfDisease(Disease)
+        for pathwayID in ListPathwayID:
+            listGeneInPathway = self.Get_GeneOfPathway(pathwayID)
+            numberGene += len(listGeneInPathway)
+        print('number of associated gene in This Disease by Pathway :', numberGene)
+
 
 class CreateTestCase():
     def __init__(self):
@@ -614,4 +650,5 @@ if __name__ == "__main__":
     # createTestCase = CreateTestCase()
 
     testCase = TestCase()
-    testCase.UPDATE_DISEASE_WITH_CONDITION_02()
+    testCase.Get_AssociatedGeneOfDiseaseByPathway('Type 1 Diabetes Mellitus')
+

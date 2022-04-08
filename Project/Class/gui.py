@@ -1,18 +1,9 @@
-from ast import Return
-from calendar import c
-from cgi import test
-from msilib.schema import File
-from re import S
-import re
-import string
 import sys
 import os
-from threading import Thread
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.uic import loadUi
-from click import progressbar
 from Search import Search
 import pandas as pd
 from ncbi import Ncbi
@@ -80,10 +71,11 @@ class ConfigDatabase(QDialog, FilePath):
         self.SchemaName = self.SchemaInput.text()
         self.Username = self.UserInput.text()
         self.Password = self.PassInput.text()
-        if self.HostIP == '' or self.SchemaName == '' or self.Username == '' or self.Password == '' :
+        if self.HostIP == '' or self.Username == '' or self.Password == '' :
             QMessageBox.about(self, 'ERROR', "กรุณากรอกข้อมูลให้ครบทุกช่อง")
             return
         self.close()
+
 
 class ChromosomeFilter(QDialog, FilePath):
     def __init__(self, oldCondition):
@@ -138,23 +130,16 @@ class PositionFilter(QDialog, FilePath):
 
         self.Add_btn_layout = QHBoxLayout()
         self.Add_btn_layout.addWidget(self.AddNewButton)
-        self.Add_btn_layout.addWidget(self.buttonBox, alignment=Qt.AlignRight)
+        self.Add_btn_layout.addWidget(self.ok_button, alignment=Qt.AlignRight)
         self.AddNewButton.clicked.connect(self.AddNew)
         self.Layout = QVBoxLayout()
         self.Layout.addLayout(self.Add_btn_layout)
         self.setLayout(self.Layout)
         
         # set function button
-        self.buttonBox.accepted.connect(self.PosFillDisplay)
-        self.buttonBox.rejected.connect(self.close)
-
-        # disable close button
-        self.setWindowFlag(QtCore.Qt.WindowCloseButtonHint, False)
+        self.ok_button.clicked.connect(self.PosFillDisplay)
     
     def closeEvent(self, event):
-        self.display = []
-
-    def close(self):
         self.display = []
         self.reject()
 
@@ -227,8 +212,7 @@ class RelationshipFilter(QDialog, FilePath):
         self.Condition_RelDist = []
         
         # Set Function of each button
-        self.buttonBox.accepted.connect(self.Confirm)
-        self.buttonBox.rejected.connect(self.Cancle)
+        self.confirm_button.clicked.connect(self.Confirm)
         self.checkBox_upstream.stateChanged.connect(self.ClickUpstream)
         self.checkBox_downstream.stateChanged.connect(self.ClickDownstream)
     
@@ -269,8 +253,6 @@ class RelationshipFilter(QDialog, FilePath):
                 else:
                     self.Condition_RelDist.append(relationship_name)
         print(self.Condition_RelDist)
-
-    def Cancle(self):
         self.close()
 
 class DiseaseFilter(QDialog, FilePath):
@@ -305,6 +287,7 @@ class DiseaseFilter(QDialog, FilePath):
                 Disease_name = self.Listcheckbox[i].objectName()
                 self.Condition_Distance.append(Disease_name)
         self.reject()
+
 
 class SQLdialog(QDialog):
     def __init__(self):
@@ -770,7 +753,6 @@ class MplCanvas(FigureCanvasQTAgg):
         super(MplCanvas, self).__init__(fig)
 
 
-
 class MainWindow(QMainWindow, FilePath):
     def __init__(self):
         super(MainWindow,self).__init__()
@@ -799,7 +781,7 @@ class MainWindow(QMainWindow, FilePath):
     def browsefiles(self):
         # Call Dialog Gui
         fname = QFileDialog.getOpenFileName(self, 'Open file', 'D:\\')
-        if fname != "":
+        if fname != ('',''): # not equal cancle
             self.filename.setText(fname[0])
             self.filecsvname = fname[0]
             self.dfsnp_csv = pd.read_csv(self.filecsvname, header=None)
@@ -888,10 +870,10 @@ class MainWindow(QMainWindow, FilePath):
         dataInConfig['database']['authentication']['password'] = self.CallConfig.Password
         objectConfig.SaveManualUpdateMetadata(dataInConfig)
 
-        print(self.CallConfig.HostIP)
-        print(self.CallConfig.SchemaName)
-        print(self.CallConfig.Username)
-        print(self.CallConfig.Password)
+        print('HostIP :', self.CallConfig.HostIP)
+        print('Schema :', self.CallConfig.SchemaName)
+        print('Username :', self.CallConfig.Username)
+        print('Password :', self.CallConfig.Password)
 
     def filterchromosome(self):
         # Get old value

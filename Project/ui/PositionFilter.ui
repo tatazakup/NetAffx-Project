@@ -26,17 +26,17 @@
     <string>Add New</string>
    </property>
   </widget>
-  <widget class="QDialogButtonBox" name="buttonBox">
+  <widget class="QPushButton" name="ok_button">
    <property name="geometry">
     <rect>
-     <x>330</x>
+     <x>400</x>
      <y>10</y>
-     <width>156</width>
+     <width>75</width>
      <height>23</height>
     </rect>
    </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   <property name="text">
+    <string>OK</string>
    </property>
   </widget>
  </widget>
