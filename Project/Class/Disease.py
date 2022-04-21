@@ -126,11 +126,6 @@ class KeggInfo():
         
         return res
     
-    def GetName(self, inputDOM):
-        positionDiseaseNameHTML = inputDOM.find("th", string="Name")
-        diseaseName = ( (positionDiseaseNameHTML.previous_element).find("td") ).next_element.next_element
-        return diseaseName
-    
     def GetAllGene(self, inputDOM):
         positionGeneHTML = inputDOM.find("th", string="Gene")
         try:
@@ -140,6 +135,24 @@ class KeggInfo():
             return allGene
         except:
             return []
+
+    def GetGeneSymbol(self, inputDOM):
+        allTextNotScreening = inputDOM.split()
+        listGeneSymbol = []
+        state = 0
+        for eachText in allTextNotScreening:
+            if eachText.find("(") != -1: state = 1
+            if state == 0 and eachText != "-": listGeneSymbol.append(eachText)
+            if state == 1 and eachText.find(")") != -1: state = 0
+
+        return listGeneSymbol
+
+    def GetGeneID(self, inputDOM):
+        listGeneIDNotScreening = inputDOM.split(':')[1].split()
+        listGeneID = []
+        for eachGeneID in listGeneIDNotScreening: listGeneID.append( eachGeneID.replace(']', '') )
+
+        return listGeneID
     
     def KeggDataset(self, diseaseID):
         listGene = []
@@ -151,15 +164,16 @@ class KeggInfo():
             allGene = self.GetAllGene(res)
             for eachGene in allGene[:]:
                 separateWord = eachGene.split('[')
-                geneSymbol = ( separateWord[0].split() )[0]
-                ganeID = ( ( separateWord[1].split(':')[1] ).split() )[0].replace(']', '')
+                listGeneSymbol = self.GetGeneSymbol(separateWord[0])
+                listGaneID = self.GetGeneID(separateWord[1])
 
-                listGene.append({
-                    'DISEASE_ID' : diseaseID,
-                    'GENE_ID' : int(ganeID),
-                    'GENE_SYMBOL' : geneSymbol,
-                    'SOURCE_WEBSITE' : 'kegg'
-                })
+                for index in range(len(listGaneID)):
+                    listGene.append({
+                        'DISEASE_ID' : diseaseID,
+                        'GENE_ID' : int(listGaneID[index]),
+                        'GENE_SYMBOL' : listGeneSymbol[index],
+                        'SOURCE_WEBSITE' : 'kegg'
+                    })
         
             return listGene
 
@@ -606,7 +620,7 @@ class Disease(MetaData):
                         """
 
                         database.CreateTask(conn, sqlCommand, (geneSymbol, diseaseID))
-                    else:          
+                    else:
                         sqlCommand = """
                             INSERT IGNORE INTO gene_disease ( GENE_SYMBOL, DISEASE_ID, GENE_ID ) 
                             VALUES ( %s, %s, %s )
@@ -643,4 +657,4 @@ class Disease(MetaData):
 if __name__ == "__main__":
     disease = Disease()
     # disease.CreateDiseaseDataset()
-    disease.UpdateDiseaseDataset()
+    # disease.UpdateDiseaseDataset()

@@ -569,6 +569,176 @@ class TestCase():
         self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
         return
 
+    # STEP
+    def Test_SNPAssociatedWithT1D(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPAssociatedWithT1D_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs3129768', 'rs4530903', 'rs2647015', 'rs9275765', 'rs4530903'])
+        TestSearch.Add_Disease(['T1D'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        
+        return
+
+    def Test_SNPAssociatedWithT2D(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPAssociatedWithT2D_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs3217986', 'SNP_A-2224457', 'rs10743598', 'rs1029340'])
+        TestSearch.Add_Disease(['T2D'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        
+        return
+
+    def Test_SNPAssociatedWithBD(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPAssociatedWithBD_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs5752827', 'SNP_A-2195650', 'rs1000192', 'SNP_A-4250467'])
+        TestSearch.Add_Disease(['BD'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        
+        return
+
+    def Test_SNPAssociatedWithCAD(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPAssociatedWithCAD_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1020256', 'SNP_A-4213970', 'rs10807172', 'SNP_A-2243662'])
+        TestSearch.Add_Disease(['CAD'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        
+        return
+
+    def Test_SNPAssociatedWithCD(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPAssociatedWithCD_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['SNP_A-2266236', 'rs10264856', 'rs1810563', 'SNP_A-1815331'])
+        TestSearch.Add_Disease(['CD'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        
+        return
+
+    def Test_SNPAssociatedWithHT(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPAssociatedWithHT_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs4543', 'SNP_A-2245620', 'rs11253209', 'SNP_A-1911234'])
+        TestSearch.Add_Disease(['HT'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        
+        return
+
+    def Test_SNPAssociatedWithRA(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPAssociatedWithRA_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['SNP_A-2185852', 'rs11569334', 'rs10494777', 'rs1006509'])
+        TestSearch.Add_Disease(['RA'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        
+        return
+
+    def Test_SNPAssociatedWithT1DByKeGG_Upstream2000_(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPAssociatedWithT1DByKeGG_Upstream2000_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs9296073', 'rs7757722', 'rs2395451', 'rs7757391'])
+        TestSearch.Add_Disease(['T1D'])
+        TestSearch.Add_Relationship_Distance([['upstream', 2000]])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def Test_SNPAssociatedWithT2DByHuge_Downstream2000(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPAssociatedWithT2DByHuge_Downstream2000_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs11568046', 'rs13034231', 'rs1644402', 'rs1757067'])
+        TestSearch.Add_Disease(['T2D'])
+        TestSearch.Add_Relationship_Distance([['downstream', 500]])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def Test_SNPAssociatedWithBDByPathway_Intron(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPAssociatedWithBDByPathway_Intron_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10513896', 'rs9397797', 'rs12036786', 'rs1065457'])
+        TestSearch.Add_Disease(['BD'])
+        TestSearch.Add_Relationship_Distance(['intron'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def Test_SNPAssociatedWithCAD_Nsp(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPAssociatedWithCAD_Nsp_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['SNP_A-2243662', 'SNP_A-1957669', 'rs7026498', 'rs1027311', 'SNP_A-4208936', 'SNP_A-4229912'])
+        TestSearch.Add_Disease(['CAD'])
+        TestSearch.Add_Geneship(1)
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def Test_SNPAssociatedWithCD_Sty(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPAssociatedWithCD_Sty_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1077861', 'rs1000113', 'rs12720067', 'rs10128203', 'rs10754805', 'rs12474201'])
+        TestSearch.Add_Disease(['CD'])
+        TestSearch.Add_Geneship(2)
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def CREATE_Test_SNPAssociatedWithHT_CHR8(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPAssociatedWithHT_CHR8_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10093618', 'rs7844961', 'rs10100812', 'rs10503813', 'rs7819943'])
+        TestSearch.Add_Disease(['HT'])
+        TestSearch.Add_Chromosome(8)
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
     # UPDATE NCBI
     def UPDATE_NCBI_WITH_CONDITION_01(self):
         """Test Update ncbi data with delete GENE_ID(388) on other_symbol table"""
@@ -756,7 +926,21 @@ class CreateTestCase():
         # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_04()
         # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_05()
         # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_06()
-        self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_07()
+        # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_07()
+
+        # self.CREATE_Test_SNPAssociatedWithT1D()
+        # self.CREATE_Test_SNPAssociatedWithT2D()
+        # self.CREATE_Test_SNPAssociatedWithBD()
+        # self.CREATE_Test_SNPAssociatedWithCAD()
+        # self.CREATE_Test_SNPAssociatedWithCD()
+        # self.CREATE_Test_SNPAssociatedWithHT()
+        # self.CREATE_Test_SNPAssociatedWithRA()
+        # self.CREATE_Test_SNPAssociatedWithT1DByKeGG_Upstream2000()
+        # self.CREATE_Test_SNPAssociatedWithT2DByHuge_Downstream2000()
+        # self.CREATE_Test_SNPAssociatedWithBDByPathway_Intron()
+        # self.CREATE_Test_SNPAssociatedWithCAD_Nsp()
+        # self.CREATE_Test_SNPAssociatedWithCD_Sty()
+        # self.CREATE_Test_SNPAssociatedWithHT_CHR8()
 
         return
 
@@ -1250,9 +1434,187 @@ class CreateTestCase():
         self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
         return
 
+
+    # STEP
+    def CREATE_Test_SNPAssociatedWithT1D(self):
+        PREFIX = 'Test_SNPAssociatedWithT1D_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs3129768', 'rs4530903', 'rs2647015', 'rs9275765', 'rs4530903'])
+        TestSearch.Add_Disease(['T1D'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPAssociatedWithT2D(self):
+        PREFIX = 'Test_SNPAssociatedWithT2D_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs3217986', 'SNP_A-2224457', 'rs10743598', 'rs1029340'])
+        TestSearch.Add_Disease(['T2D'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPAssociatedWithBD(self):
+        PREFIX = 'Test_SNPAssociatedWithBD_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs5752827', 'SNP_A-2195650', 'rs1000192', 'SNP_A-4250467'])
+        TestSearch.Add_Disease(['BD'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPAssociatedWithCAD(self):
+        PREFIX = 'Test_SNPAssociatedWithCAD_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1020256', 'SNP_A-4213970', 'rs10807172', 'SNP_A-2243662'])
+        TestSearch.Add_Disease(['CAD'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPAssociatedWithCD(self):
+        PREFIX = 'Test_SNPAssociatedWithCD_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['SNP_A-2266236', 'rs10264856', 'rs1810563', 'SNP_A-1815331'])
+        TestSearch.Add_Disease(['CD'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPAssociatedWithHT(self):
+        PREFIX = 'Test_SNPAssociatedWithHT_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs4543', 'SNP_A-2245620', 'rs11253209', 'SNP_A-1911234'])
+        TestSearch.Add_Disease(['HT'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPAssociatedWithRA(self):
+        PREFIX = 'Test_SNPAssociatedWithRA_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['SNP_A-2185852', 'rs11569334', 'rs10494777', 'rs1006509'])
+        TestSearch.Add_Disease(['RA'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPAssociatedWithT1DByKeGG_Upstream2000(self):
+        PREFIX = 'Test_SNPAssociatedWithT1DByKeGG_Upstream2000_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs9296073', 'rs7757722', 'rs2395451', 'rs7757391'])
+        TestSearch.Add_Disease(['T1D'])
+        TestSearch.Add_Relationship_Distance([['upstream', 2000]])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPAssociatedWithT2DByHuge_Downstream2000(self):
+        PREFIX = 'Test_SNPAssociatedWithT2DByHuge_Downstream2000_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs11568046', 'rs13034231', 'rs1644402', 'rs1757067'])
+        TestSearch.Add_Disease(['T2D'])
+        TestSearch.Add_Relationship_Distance([['downstream', 500]])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPAssociatedWithBDByPathway_Intron(self):
+        PREFIX = 'Test_SNPAssociatedWithBDByPathway_Intron_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10513896', 'rs9397797', 'rs12036786', 'rs1065457'])
+        TestSearch.Add_Disease(['BD'])
+        TestSearch.Add_Relationship_Distance(['intron'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPAssociatedWithCAD_Nsp(self):
+        PREFIX = 'Test_SNPAssociatedWithCAD_Nsp_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['SNP_A-2243662', 'SNP_A-1957669', 'rs7026498', 'rs1027311', 'SNP_A-4208936', 'SNP_A-4229912'])
+        TestSearch.Add_Disease(['CAD'])
+        TestSearch.Add_Geneship(1)
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPAssociatedWithCD_Sty(self):
+        PREFIX = 'Test_SNPAssociatedWithCD_Sty_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs1077861', 'rs1000113', 'rs12720067', 'rs10128203', 'rs10754805', 'rs12474201'])
+        TestSearch.Add_Disease(['CD'])
+        TestSearch.Add_Geneship(2)
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPAssociatedWithHT_CHR8(self):
+        PREFIX = 'Test_SNPAssociatedWithHT_CHR8_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs10093618', 'rs7844961', 'rs10100812', 'rs10503813', 'rs7819943'])
+        TestSearch.Add_Disease(['HT'])
+        TestSearch.Add_Chromosome(8)
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+
 if __name__ == "__main__":
     createTestCase = CreateTestCase()
 
     testCase = TestCase()
-    testCase.Get_AssociatedGeneOfDiseaseByPathway('Type 1 Diabetes Mellitus')
+    testCase.Test_SNPAssociatedWithCD_Sty()
 
