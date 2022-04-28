@@ -569,7 +569,7 @@ class TestCase():
         self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
         return
 
-    # STEP
+    # Within or Near Gene (Associated Gene)
     def Test_SNPAssociatedWithT1D(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
         PREFIX = 'Test_SNPAssociatedWithT1D_'
 
@@ -726,7 +726,7 @@ class TestCase():
         self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
         return
 
-    def CREATE_Test_SNPAssociatedWithHT_CHR8(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+    def Test_SNPAssociatedWithHT_CHR8(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
         PREFIX = 'Test_SNPAssociatedWithHT_CHR8_'
 
         TestSearch = Search()
@@ -739,7 +739,86 @@ class TestCase():
         self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
         return
 
-    # UPDATE NCBI
+    
+    # Within or Near Gene (Non Associated Gene)
+    def Test_SNPUpstream_nonAssT1D(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPUpstream_nonAssT1D_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs17054099', 'rs11040883', 'rs11804609', 'rs6634846', 'rs11734396'])
+        TestSearch.Add_Disease(['T1D'])
+        TestSearch.Add_Relationship_Distance([['upstream', 2000]])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def Test_SNPDownstream_nonAssT2D(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPDownstream_nonAssT2D_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs11574647', 'rs767652', 'rs11040883', 'rs9353470', 'rs874158'])
+        TestSearch.Add_Disease(['T2D'])
+        TestSearch.Add_Relationship_Distance([['downstream', 500]])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def Test_SNPwithin_nonAssBD(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPwithin_nonAssBD_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs4594580', 'rs2546001', 'rs2228006', 'rs1805794', 'rs2288242'])
+        TestSearch.Add_Disease(['BD'])
+        TestSearch.Add_Relationship_Distance([['downstream', 500]])
+        TestSearch.Add_Relationship_Distance(['intron', 'synon', 'exon', 'CDS', 'missense', 'nonsense', 'UTR-3', 'UTR-5', 'splice-site'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    # OutSide Gene
+    def Test_SNPoutside1(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPoutside1_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs233978', 'rs9965312', 'rs41464449', 'rs251292', 'rs7660291'])
+        TestSearch.Add_Relationship_Distance([['downstream', 500], ['upstream', 2000], 'intron', 'synon', 'exon', 'CDS', 'missense', 'nonsense', 'UTR-3', 'UTR-5', 'splice-site'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def Test_SNPoutside2(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPoutside2_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs9887913', 'rs4775229', 'rs1125082', 'rs11768639', 'rs3753452'])
+        TestSearch.Add_Relationship_Distance([['downstream', 500], ['upstream', 2000], 'intron', 'synon', 'exon', 'CDS', 'missense', 'nonsense', 'UTR-3', 'UTR-5', 'splice-site'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def Test_SNPoutside3(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPoutside3_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs9887913', 'rs4775229', 'rs1125082', 'rs11768639', 'rs3753452'])
+        TestSearch.Add_Relationship_Distance([['downstream', 500], ['upstream', 2000], 'intron', 'synon', 'exon', 'CDS', 'missense', 'nonsense', 'UTR-3', 'UTR-5', 'splice-site'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+
     def UPDATE_NCBI_WITH_CONDITION_01(self):
         """Test Update ncbi data with delete GENE_ID(388) on other_symbol table"""
 
@@ -883,64 +962,72 @@ class CreateTestCase():
 
         self.allpath = FilePath()
 
-        # self.CREATE_SEARCH_ALL_DATA_01()
+        self.CREATE_SEARCH_ALL_DATA_01()
 
-        # self.CREATE_SEARCH_GENE_ID_WITH_CONDITION_00()
-        # self.CREATE_SEARCH_GENE_ID_WITH_CONDITION_01()
-        # self.CREATE_SEARCH_GENE_ID_WITH_CONDITION_02()
-        # self.CREATE_SEARCH_GENE_ID_WITH_CONDITION_03()
+        self.CREATE_SEARCH_GENE_ID_WITH_CONDITION_00()
+        self.CREATE_SEARCH_GENE_ID_WITH_CONDITION_01()
+        self.CREATE_SEARCH_GENE_ID_WITH_CONDITION_02()
+        self.CREATE_SEARCH_GENE_ID_WITH_CONDITION_03()
 
-        # self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_00()
-        # self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_01()
-        # self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_02()
-        # self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_03()
-        # self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_04()
-        # self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_05()
+        self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_00()
+        self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_01()
+        self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_02()
+        self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_03()
+        self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_04()
+        self.CREATE_SEARCH_GENE_SYMBOL_WITH_CONDITION_05()
 
-        # self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_ALL()
-        # self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_01()
-        # self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_02()
-        # self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_03()
+        self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_ALL()
+        self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_01()
+        self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_02()
+        self.CREATE_SEARCH_CHROMOSOME_WITH_CONDITION_03()
 
-        # self.CREATE_SEARCH_POSITION_WITH_CONDITION_ALL()
-        # self.CREATE_SEARCH_POSITION_WITH_CONDITION_01()
-        # self.CREATE_SEARCH_POSITION_WITH_CONDITION_02()
+        self.CREATE_SEARCH_POSITION_WITH_CONDITION_ALL()
+        self.CREATE_SEARCH_POSITION_WITH_CONDITION_01()
+        self.CREATE_SEARCH_POSITION_WITH_CONDITION_02()
 
-        # self.CREATE_SEARCH_GENESHIP_WITH_CONDITION_ALL()   
-        # self.CREATE_SEARCH_GENESHIP_WITH_CONDITION_01()   
-        # self.CREATE_SEARCH_GENESHIP_WITH_CONDITION_02()
+        self.CREATE_SEARCH_GENESHIP_WITH_CONDITION_ALL()   
+        self.CREATE_SEARCH_GENESHIP_WITH_CONDITION_01()   
+        self.CREATE_SEARCH_GENESHIP_WITH_CONDITION_02()
 
-        # self.CREATE_SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_ALL()
-        # self.CREATE_SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_01()
-        # self.CREATE_SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_02()
-        # self.CREATE_SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_03()
+        self.CREATE_SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_ALL()
+        self.CREATE_SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_01()
+        self.CREATE_SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_02()
+        self.CREATE_SEARCH_RELATIONSHIP_DISTANCE_WITH_CONDITION_03()
 
-        # self.CREATE_SEARCH_DISEASE_WITH_CONDITION_ALL()
-        # self.CREATE_SEARCH_DISEASE_WITH_CONDITION_01()
-        # self.CREATE_SEARCH_DISEASE_WITH_CONDITION_02()
+        self.CREATE_SEARCH_DISEASE_WITH_CONDITION_ALL()
+        self.CREATE_SEARCH_DISEASE_WITH_CONDITION_01()
+        self.CREATE_SEARCH_DISEASE_WITH_CONDITION_02()
 
-        # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_ALL()
-        # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01()
-        # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_02()
-        # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_03()
-        # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_04()
-        # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_05()
-        # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_06()
-        # self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_07()
+        self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_ALL()
+        self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_01()
+        self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_02()
+        self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_03()
+        self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_04()
+        self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_05()
+        self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_06()
+        self.CREATE_SEARCH_SOURCE_WEBSITE_WITH_CONDITION_07()
 
-        # self.CREATE_Test_SNPAssociatedWithT1D()
-        # self.CREATE_Test_SNPAssociatedWithT2D()
-        # self.CREATE_Test_SNPAssociatedWithBD()
-        # self.CREATE_Test_SNPAssociatedWithCAD()
-        # self.CREATE_Test_SNPAssociatedWithCD()
-        # self.CREATE_Test_SNPAssociatedWithHT()
-        # self.CREATE_Test_SNPAssociatedWithRA()
-        # self.CREATE_Test_SNPAssociatedWithT1DByKeGG_Upstream2000()
-        # self.CREATE_Test_SNPAssociatedWithT2DByHuge_Downstream2000()
-        # self.CREATE_Test_SNPAssociatedWithBDByPathway_Intron()
-        # self.CREATE_Test_SNPAssociatedWithCAD_Nsp()
-        # self.CREATE_Test_SNPAssociatedWithCD_Sty()
-        # self.CREATE_Test_SNPAssociatedWithHT_CHR8()
+        self.CREATE_Test_SNPAssociatedWithT1D()
+        self.CREATE_Test_SNPAssociatedWithT2D()
+        self.CREATE_Test_SNPAssociatedWithBD()
+        self.CREATE_Test_SNPAssociatedWithCAD()
+        self.CREATE_Test_SNPAssociatedWithCD()
+        self.CREATE_Test_SNPAssociatedWithHT()
+        self.CREATE_Test_SNPAssociatedWithRA()
+        self.CREATE_Test_SNPAssociatedWithT1DByKeGG_Upstream2000()
+        self.CREATE_Test_SNPAssociatedWithT2DByHuge_Downstream2000()
+        self.CREATE_Test_SNPAssociatedWithBDByPathway_Intron()
+        self.CREATE_Test_SNPAssociatedWithCAD_Nsp()
+        self.CREATE_Test_SNPAssociatedWithCD_Sty()
+        self.CREATE_Test_SNPAssociatedWithHT_CHR8()
+
+        self.CREATE_Test_SNPUpstream_nonAssT1D()
+        self.CREATE_Test_SNPDownstream_nonAssT2D()
+        self.CREATE_Test_SNPwithin_nonAssBD()
+
+        self.CREATE_Test_SNPoutside1()
+        self.CREATE_Test_SNPoutside2()
+        self.CREATE_Test_SNPoutside3()
 
         return
 
@@ -1435,7 +1522,7 @@ class CreateTestCase():
         return
 
 
-    # STEP
+    # Within or Near Gene (Associated Gene)
     def CREATE_Test_SNPAssociatedWithT1D(self):
         PREFIX = 'Test_SNPAssociatedWithT1D_'
 
@@ -1611,10 +1698,93 @@ class CreateTestCase():
         
         return
 
+    # Within or Near Gene (Non Associated Gene)
+    def CREATE_Test_SNPUpstream_nonAssT1D(self):
+        PREFIX = 'Test_SNPUpstream_nonAssT1D_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs17054099', 'rs11040883', 'rs11804609', 'rs6634846', 'rs11734396'])
+        TestSearch.Add_Disease(['T1D'])
+        TestSearch.Add_Relationship_Distance([['upstream', 2000]])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPDownstream_nonAssT2D(self):
+        PREFIX = 'Test_SNPDownstream_nonAssT2D_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs11574647', 'rs767652', 'rs11040883', 'rs9353470', 'rs874158'])
+        TestSearch.Add_Disease(['T2D'])
+        TestSearch.Add_Relationship_Distance([['downstream', 500]])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPwithin_nonAssBD(self):
+        PREFIX = 'Test_SNPwithin_nonAssBD_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs4594580', 'rs2546001', 'rs2228006', 'rs1805794', 'rs2288242'])
+        TestSearch.Add_Disease(['BD'])
+        TestSearch.Add_Relationship_Distance([['downstream', 500], 'intron', 'synon', 'exon', 'CDS', 'missense', 'nonsense', 'UTR-3', 'UTR-5', 'splice-site'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    # OutSide Gene
+    def CREATE_Test_SNPoutside1(self):
+        PREFIX = 'Test_SNPoutside1_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs233978', 'rs9965312', 'rs41464449', 'rs251292', 'rs7660291'])
+        TestSearch.Add_Relationship_Distance([['downstream', 500], ['upstream', 2000], 'intron', 'synon', 'exon', 'CDS', 'missense', 'nonsense', 'UTR-3', 'UTR-5', 'splice-site'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPoutside2(self):
+        PREFIX = 'Test_SNPoutside2_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs9887913', 'rs4775229', 'rs1125082', 'rs11768639', 'rs3753452'])
+        TestSearch.Add_Relationship_Distance([['downstream', 500], ['upstream', 2000], 'intron', 'synon', 'exon', 'CDS', 'missense', 'nonsense', 'UTR-3', 'UTR-5', 'splice-site'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPoutside3(self):
+        PREFIX = 'Test_SNPoutside3_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs9887913', 'rs4775229', 'rs1125082', 'rs11768639', 'rs3753452'])
+        TestSearch.Add_Relationship_Distance([['downstream', 500], ['upstream', 2000], 'intron', 'synon', 'exon', 'CDS', 'missense', 'nonsense', 'UTR-3', 'UTR-5', 'splice-site'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
 
 if __name__ == "__main__":
     createTestCase = CreateTestCase()
 
     testCase = TestCase()
-    testCase.Test_SNPAssociatedWithCD_Sty()
+    # testCase.Test_SNPoutside1()
 
