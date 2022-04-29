@@ -1,63 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>CreateInitial</class>
- <widget class="QWidget" name="CreateInitial">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>509</width>
-    <height>242</height>
+    <width>507</width>
+    <height>196</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>CreateInitialDATA</string>
+   <string>MatchingSNPsWithDiseases</string>
   </property>
-  <widget class="QLabel" name="label">
+  <widget class="QLabel" name="status_space">
    <property name="geometry">
     <rect>
      <x>120</x>
-     <y>0</y>
-     <width>231</width>
-     <height>51</height>
+     <y>109</y>
+     <width>301</width>
+     <height>21</height>
     </rect>
    </property>
-   <property name="font">
-    <font>
-     <pointsize>10</pointsize>
-     <weight>75</weight>
-     <bold>true</bold>
-    </font>
-   </property>
    <property name="text">
-    <string>CREATE INITIAL DATA FOR SEARCH </string>
-   </property>
-  </widget>
-  <widget class="QLabel" name="label_2">
-   <property name="geometry">
-    <rect>
-     <x>120</x>
-     <y>30</y>
-     <width>241</width>
-     <height>31</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <pointsize>10</pointsize>
-     <weight>75</weight>
-     <bold>true</bold>
-    </font>
-   </property>
-   <property name="text">
-    <string>SNP THAT ASSOCIATE WITH DISEASE</string>
+    <string/>
    </property>
   </widget>
   <widget class="QPushButton" name="start_btn">
    <property name="geometry">
     <rect>
      <x>260</x>
-     <y>190</y>
+     <y>150</y>
      <width>91</width>
      <height>23</height>
     </rect>
@@ -78,8 +51,8 @@
   <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
-     <x>60</x>
-     <y>130</y>
+     <x>70</x>
+     <y>110</y>
      <width>47</width>
      <height>21</height>
     </rect>
@@ -88,24 +61,11 @@
     <string>Status :</string>
    </property>
   </widget>
-  <widget class="QLabel" name="status_space">
-   <property name="geometry">
-    <rect>
-     <x>110</x>
-     <y>129</y>
-     <width>301</width>
-     <height>21</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string/>
-   </property>
-  </widget>
   <widget class="QProgressBar" name="progressBar">
    <property name="geometry">
     <rect>
-     <x>50</x>
-     <y>80</y>
+     <x>60</x>
+     <y>60</y>
      <width>411</width>
      <height>41</height>
     </rect>
@@ -121,7 +81,7 @@
    <property name="geometry">
     <rect>
      <x>140</x>
-     <y>190</y>
+     <y>150</y>
      <width>91</width>
      <height>23</height>
     </rect>
@@ -137,6 +97,26 @@
    </property>
    <property name="text">
     <string>CANCEL</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>30</y>
+     <width>291</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <pointsize>10</pointsize>
+     <weight>75</weight>
+     <bold>true</bold>
+    </font>
+   </property>
+   <property name="text">
+    <string>RE MATCHING SNPS WITH COMPLEX DISEASES</string>
    </property>
   </widget>
  </widget>

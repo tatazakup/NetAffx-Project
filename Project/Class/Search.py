@@ -73,6 +73,8 @@ class Search(Database):
 
     # Initialization
     def ImportData(self, newData):
+        self.RS_ID = []
+        self.ProbeSet_ID = []
         for Each_data in newData: self.Add_RSID_PROBE_SET(Each_data)
 
     def Add_RSID_PROBE_SET(self, newData):
@@ -611,13 +613,30 @@ class Search(Database):
         return Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease
 
     def AdvanceSearchData(self):
-        database = Database()
-        conn = database.ConnectDatabase()
+        try:
+            database = Database()
+            conn = database.ConnectDatabase()
+            outputHeader = []
+            outputResult = []
 
-        results = set( database.CreateTask(conn, self.advanceSearch, ()) )
+            cur = conn.cursor()
+            cur.execute(self.advanceSearch, ())
+            results = cur.fetchall()
+            header = cur.description
+            conn.commit()
 
-        database.CloseDatabase(conn)
-        return results
+            if ( results != [] ):
+                for eachHeadr in header:
+                    outputHeader.append(eachHeadr[0])
+
+                outputResult.append(outputHeader)
+                for result in results:
+                    outputResult.append(result)
+
+            database.CloseDatabase(conn)
+            return True, outputResult
+        except Exception as e:
+            return False, str(e)
 
 if __name__ == "__main__":
     searchFunction = Search()

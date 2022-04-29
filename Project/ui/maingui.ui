@@ -497,27 +497,6 @@ Distance</string>
       <string>SQL command</string>
      </property>
     </widget>
-    <widget class="QPushButton" name="clear_btn">
-     <property name="enabled">
-      <bool>false</bool>
-     </property>
-     <property name="geometry">
-      <rect>
-       <x>460</x>
-       <y>440</y>
-       <width>75</width>
-       <height>23</height>
-      </rect>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>8</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>Clear</string>
-     </property>
-    </widget>
    </widget>
    <widget class="QTabWidget" name="tabWidget">
     <property name="enabled">
@@ -852,6 +831,7 @@ Distance</string>
     <addaction name="actionUpdate_NCBI"/>
     <addaction name="actionUpdate_Disease"/>
     <addaction name="actionUpdate_Pathway"/>
+    <addaction name="actionRe_Matching"/>
    </widget>
    <widget class="QMenu" name="menuconfig">
     <property name="title">
@@ -886,6 +866,11 @@ Distance</string>
   <action name="actionDatabase">
    <property name="text">
     <string>Database</string>
+   </property>
+  </action>
+  <action name="actionRe_Matching">
+   <property name="text">
+    <string>Re Matching</string>
    </property>
   </action>
  </widget>

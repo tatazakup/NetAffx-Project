@@ -33,6 +33,219 @@ class CreateInitailDatabase(QDialog, FilePath):
         self.SchemaName = self.SchemaInput.text()
         self.close()
 
+class pgb_Create_Thread(QThread):
+    send_signal = pyqtSignal(int, int , int, str)
+    
+    def __init__(self):
+        super(pgb_Create_Thread, self).__init__()
+
+    def TryFetchDataOnMetaData(self, objectMetaData, metaname):
+        isCompleted = False
+        while ( isCompleted == False):
+            try:       
+                dataInMetaData = objectMetaData.ReadMetadata(metaname)
+                isCompleted = True
+            except:
+                time.sleep(0.1)
+                pass
+        return dataInMetaData
+
+    def run(self):
+        print('run pgb')
+        objectMeta = MetaData()
+        while True:
+            createinfo = self.TryFetchDataOnMetaData(objectMeta, 'createinitial')
+            print(createinfo)
+            stateStep = createinfo['step']
+            
+            match stateStep:
+                case 0:
+                    amountAllstate = 100
+                    amountOfFinished = 100
+                    self.send_signal.emit(amountOfFinished, amountAllstate - amountOfFinished, amountAllstate, 'Creating New Database')
+                case 1:
+                    Matchinginfo = self.TryFetchDataOnMetaData(objectMeta, 'SeparateGene')
+                    statusvalue = Matchinginfo['Status']['textStatus']
+                    amountAllstate = Matchinginfo['Status']['amountState']
+                    amountOfFinished = Matchinginfo['Status']['amountOfFinished']
+                    self.send_signal.emit(amountOfFinished, amountAllstate - amountOfFinished, amountAllstate, statusvalue) 
+                case 2:
+                    dataInMapSnpWithNcbi = self.TryFetchDataOnMetaData(objectMeta, 'MapSnpWithNcbi')
+                    amountUniqueGene = dataInMapSnpWithNcbi['technical']['updateMeta']['amountUniqueGene']
+                    amountOfFinished = dataInMapSnpWithNcbi['technical']['updateMeta']['amountOfFinished']
+                    self.send_signal.emit(amountOfFinished, amountUniqueGene - amountOfFinished, amountUniqueGene, 'Fetching data from NCBI Website') 
+                case 3:
+                    diseaseInfo = self.TryFetchDataOnMetaData(objectMeta, 'Disease')
+                    diseaseName = diseaseInfo['technical']['diseaseStatus']['updateMeta']['diseaseName']
+                    indexDisease = int(diseaseInfo['technical']['diseaseStatus']['updateMeta']['diseaseID'])
+                    amountDisease = diseaseInfo['technical']['diseases'][indexDisease - 1]['updateMeta']['amountDisease']
+                    amountOfFinished = diseaseInfo['technical']['diseases'][indexDisease - 1]['updateMeta']['amountOfFinished']
+                    self.send_signal.emit(amountOfFinished, amountDisease - amountOfFinished, amountDisease, diseaseName) 
+                case 4:
+                    pathwayinfo = self.TryFetchDataOnMetaData(objectMeta, 'Pathway')
+                    statusvalue = pathwayinfo['Status']['textStatus']
+                    amountAllstate = pathwayinfo['Status']['amountState']
+                    amountOfFinished = pathwayinfo['Status']['amountOfFinished']
+                    self.send_signal.emit(amountOfFinished, amountAllstate - amountOfFinished, amountAllstate, statusvalue) 
+                case 5:
+                    Matchinginfo = self.TryFetchDataOnMetaData(objectMeta, 'Matching')
+                    statusvalue = Matchinginfo['Status']['textStatus']
+                    amountAllstate = Matchinginfo['Status']['amountState']
+                    amountOfFinished = Matchinginfo['Status']['amountOfFinished']
+                    self.send_signal.emit(amountOfFinished, amountAllstate - amountOfFinished, amountAllstate, statusvalue) 
+
+    def stop(self):
+        self.terminate()
+
+class Create_Thread(QThread):
+    def __init__(self, schemaname):
+        super(Create_Thread, self).__init__()
+        self.schemaname = schemaname
+
+    def TryFetchDataOnMetaData(self, objectMetaData, metaname):
+        isCompleted = False
+        while ( isCompleted == False):
+            try:       
+                dataInMetaData = objectMetaData.ReadMetadata(metaname)
+                isCompleted = True
+            except:
+                time.sleep(0.1)
+                pass
+        return dataInMetaData
+
+    def run(self):
+        print('run create')
+
+        # ------------------ Step 0 ------------------
+
+        objectCreateInitial = MetaData()
+        dataInCreateInitial = self.TryFetchDataOnMetaData(objectCreateInitial, 'createinitial')
+        dataInCreateInitial['step'] = 0
+        objectCreateInitial.SaveManualUpdateMetadata(dataInCreateInitial)
+
+        database = Database()
+        database.InitialDatabase(self.schemaname)
+
+        # ------------------ Step 0 ------------------
+
+        # ------------------ Step 1 ------------------
+
+        dataInCreateInitial['step'] = 1
+        objectCreateInitial.SaveManualUpdateMetadata(dataInCreateInitial)
+
+        manage_AnnotationFile = Manage_AnnotationFile()
+        listAnnotation = manage_AnnotationFile.SeparateGene()
+        manage_AnnotationFile.SaveSNP(listAnnotation)
+
+        # ------------------ Step 1 ------------------
+
+        # ------------------ Step 2 ------------------
+
+        dataInCreateInitial['step'] = 2
+        objectCreateInitial.SaveManualUpdateMetadata(dataInCreateInitial)
+
+        objectMapSnpWithNcbi = MetaData()
+        dataInMapSnpWithNcbi = self.TryFetchDataOnMetaData(objectMapSnpWithNcbi, 'MapSnpWithNcbi')
+        dataInMapSnpWithNcbi['technical']['createMeta']['status'] = 1
+        objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
+
+        ncbi = Ncbi(1)
+        ncbi.CreateNcbiInformation()
+
+        # ------------------ Step 2 ------------------
+
+        # ------------------ Step 3 ------------------
+
+        dataInCreateInitial['step'] = 3
+        objectCreateInitial.SaveManualUpdateMetadata(dataInCreateInitial)
+
+        objectDisease = MetaData()
+        dataInDisease = self.TryFetchDataOnMetaData(objectDisease, 'Disease')
+        dataInDisease['technical']['diseaseStatus']['createMeta']['status'] = 1
+        objectDisease.SaveManualUpdateMetadata(dataInDisease)
+
+        disease = Disease()
+        disease.CreateDiseaseDataset()
+
+        # ------------------ Step 3 ------------------
+
+        # ------------------ Step 4 ------------------
+
+        dataInCreateInitial['step'] = 4
+        objectCreateInitial.SaveManualUpdateMetadata(dataInCreateInitial)
+
+        Data_Pathway = PathwayDataFromKEGG()
+        Data_Pathway.GetGenePathway()
+        Pathway_Dis = PathwayOfDis()
+        Pathway_Dis.FetchPathwayEachDisease()
+        Pathway_Dis.Find_GeneInPathwayOfDisease(Data_Pathway.listpathway)
+        Pathway_Dis.SaveGenePathway2db()
+
+        # ------------------ Step 4 ------------------
+
+        # ------------------ Step 5 ------------------
+
+        dataInCreateInitial['step'] = 5
+        objectCreateInitial.SaveManualUpdateMetadata(dataInCreateInitial)
+
+        matching = mapSNP_Disease()
+        matching.MapBoth()
+
+        # ------------------ Step 5 ------------------
+
+    def stop(self):
+        self.terminate()
+
+class CreateData(QWidget, FilePath):
+    def __init__(self, schremaname):
+        super().__init__()
+        loadUi(self.GetPathToUI() + "/WindowCreate.ui",self)
+        self.start_btn.clicked.connect(self.doStart)
+        self.cancel_btn.clicked.connect(self.doCancel)
+        self.schremaname = schremaname
+
+    def TryFetchDataOnMetaData(self, objectMetaData, metaname):
+        isCompleted = False
+        while ( isCompleted == False):
+            try:       
+                dataInMetaData = objectMetaData.ReadMetadata(metaname)
+                isCompleted = True
+            except:
+                time.sleep(0.1)
+                pass
+        return dataInMetaData
+
+    def doStart(self):
+        # Run thread
+        self.worker = Create_Thread(self.schremaname)
+        self.worker.start()
+
+        self.start_btn.setEnabled(False)
+        self.cancel_btn.setEnabled(True)
+
+        # Run progressbar thread
+        self.worker_pgb = pgb_Create_Thread()
+        self.worker_pgb.start()
+        self.worker_pgb.send_signal.connect(self.SendSignal)
+
+    def doCancel(self):
+        objectCreateInitial = MetaData()
+        dataInCreateInitial = self.TryFetchDataOnMetaData(objectCreateInitial, 'createinitail')
+        dataInCreateInitial['step'] = 0
+        objectCreateInitial.SaveManualUpdateMetadata(dataInCreateInitial)
+        self.worker.stop()
+        self.worker_pgb.stop()
+        self.close()
+    
+    def SendSignal(self ,finished, change, total, status):
+        print('     reciev signal',finished, change, total, status)
+        self.status_space.setText(status)
+        if total != 0:
+            self.progressBar.setValue(int(finished*100/total))
+        else:
+            self.progressBar.setValue(0)
+
+
 class ConfigDatabase(QDialog, FilePath):
     def __init__(self):
         super(ConfigDatabase, self).__init__()
@@ -75,7 +288,6 @@ class ConfigDatabase(QDialog, FilePath):
             QMessageBox.about(self, 'ERROR', "กรุณากรอกข้อมูลให้ครบทุกช่อง")
             return
         self.close()
-
 
 class ChromosomeFilter(QDialog, FilePath):
     def __init__(self, oldCondition):
@@ -288,17 +500,38 @@ class DiseaseFilter(QDialog, FilePath):
                 self.Condition_Distance.append(Disease_name)
         self.reject()
 
-
-class SQLdialog(QDialog):
+class SQLdialog(QDialog, FilePath):
     def __init__(self):
         super(SQLdialog, self).__init__()
         loadUi(self.GetPathToUI() + "/SQLCommand.ui",self)
         self.searchsql_Button.clicked.connect(self.getCommand)
         self.command = ''
     
+    def exportlistdata(self, resultlist):
+        print(resultlist)
+        
+        self.df = pd.DataFrame(resultlist[1:], columns=resultlist[0])
+        print(self.df)
+        default_dir ="/home/qt_user/name"
+        default_filename = os.path.join(default_dir)
+        filename, _ = QFileDialog.getSaveFileName(
+            self, "Save CSV", default_filename, "Comma-Separated Value (*.csv)"
+        )
+        if filename:
+            print(filename)
+            self.df.to_csv(filename,index=False)
+    
     def getCommand(self):
-        # self.command = self.textSQL.toPlainText()
-        pass
+        self.command = self.textEdit.toPlainText()
+        self.searchObject = Search()
+        self.searchObject.Add_advanceSearch(self.command)
+        status, result = self.searchObject.AdvanceSearchData()
+        if status == True :
+            self.exportlistdata(result)
+            self.close()
+        else:
+            QMessageBox.about(self, 'ERROR', result)
+            return
 
 
 class pgb_Thread(QThread):
@@ -429,7 +662,7 @@ class UpdateNCBI(QWidget, FilePath):
         if valueStop != 0:
             self.updated_space.setText(str(intStart))
             self.remaining_space.setText(str(intStop))
-            self.progressBar.setValue(intStart*100/valueStop)
+            self.progressBar.setValue(int(intStart*100/valueStop))
 
 
 class pgb_Dis_Thread(QThread):
@@ -549,7 +782,7 @@ class UpdateDisease(QWidget, FilePath):
         if valueStop != 0:
             self.updated_space.setText(str(intStart))
             self.remaining_space.setText(str(intStop))
-            self.progressBar.setValue(intStart*100/valueStop)
+            self.progressBar.setValue(int(intStart*100/valueStop))
         else:
             self.updated_space.setText("0")
             self.remaining_space.setText("0")
@@ -645,7 +878,101 @@ class UpdatePathway(QWidget, FilePath):
         print('     reciev signal',intStart, intStop, valueStop, status)
         self.status_space.setText(status)
         if valueStop != 0:
-            self.progressBar.setValue(intStart*100/valueStop)
+            self.progressBar.setValue(int(intStart*100/valueStop))
+        else:
+            self.progressBar.setValue(0)
+        if intStart == valueStop:
+            self.cancel_btn.setText("Finish")
+            self.cancel_btn.setStyleSheet("background-color: rgb(85, 255, 255);")
+
+
+class pgb_Matching_Thread(QThread):
+    send_signal = pyqtSignal(int, int , int, str)
+    
+    def __init__(self):
+        super(pgb_Matching_Thread, self).__init__()
+
+    def TryFetchDataOnMetaData(self, objectMetaData, metaname):
+        isCompleted = False
+        while ( isCompleted == False):
+            try:       
+                dataInMetaData = objectMetaData.ReadMetadata(metaname)
+                isCompleted = True
+            except:
+                time.sleep(0.1)
+                pass
+        return dataInMetaData
+
+    def run(self):
+        objectMeta = MetaData()
+        while True:
+            Matchinginfo = self.TryFetchDataOnMetaData(objectMeta, 'Matching')
+            statusvalue = Matchinginfo['Status']['textStatus']
+            amountAllstate = Matchinginfo['Status']['amountState']
+            amountOfFinished = Matchinginfo['Status']['amountOfFinished']
+            self.send_signal.emit(amountOfFinished, amountAllstate - amountOfFinished, amountAllstate, statusvalue) 
+
+    def stop(self):
+        self.terminate()
+
+class Matching_Thread(QThread):
+    def __init__(self):
+        super(Matching_Thread, self).__init__()
+
+    def run(self):
+        matching = mapSNP_Disease()
+        matching.ReMatch()
+
+    def stop(self):
+        self.terminate()
+
+class ReMatching(QWidget, FilePath):
+    def __init__(self):
+        super().__init__()
+        loadUi(self.GetPathToUI() + "/WindowMatching.ui",self)
+        self.start_btn.clicked.connect(self.doStart)
+        self.cancel_btn.clicked.connect(self.doCancel)
+    
+    def TryFetchDataOnMetaData(self, objectMetaData, metaname):
+        isCompleted = False
+        while ( isCompleted == False):
+            try:       
+                dataInMetaData = objectMetaData.ReadMetadata(metaname)
+                isCompleted = True
+            except:
+                time.sleep(0.1)
+                pass
+        return dataInMetaData
+
+    def doStart(self):
+        # Run thread
+        self.worker = Matching_Thread()
+        self.worker.start()
+
+        self.start_btn.setEnabled(False)
+        self.cancel_btn.setEnabled(True)
+
+        # Run progressbar thread
+        self.worker_pgb = pgb_Matching_Thread()
+        self.worker_pgb.start()
+        self.worker_pgb.send_signal.connect(self.SendSignal)
+
+    def doCancel(self):
+        objectMeta = MetaData()
+        Matchinginfo = self.TryFetchDataOnMetaData(objectMeta, 'Matching')
+        Matchinginfo['Status']['textStatus'] = ""
+        Matchinginfo['Status']['amountState'] = 9999
+        Matchinginfo['Status']['amountOfFinished'] = 0
+        objectMeta.SaveManualUpdateMetadata(Matchinginfo)
+        self.worker.stop()
+        self.worker_pgb.stop()
+        self.close()
+    
+    def SendSignal(self ,intStart, intChange, valueStop, status):
+        print('     reciev signal:',intStart, intChange, valueStop, status)
+        self.status_space.setText(status)
+        if valueStop != 0 and intStart != 0:
+            self.progressBar.setValue(int(intStart*100/valueStop))
         else:
             self.progressBar.setValue(0)
         if intStart == valueStop:
@@ -657,14 +984,19 @@ class SelectSearch(QDialog, FilePath):
     def __init__(self):
         super(SelectSearch, self).__init__()
         loadUi(self.GetPathToUI() + "/SelectSearch.ui",self)
-        self.buttonBox.accepted.connect(self.OpenResult)
+        self.Confirm_button.clicked.connect(self.OpenResult)
         self.All.stateChanged.connect(self.clickboxall)
         self.Listcheckbox = [self.All, self.CHROMOSOME, self.DISEASE_ABBREVIATION, self.DISEASE_NAME, 
                             self.DISTANCE, self.GENE_ID, self.GENE_SYMBOL, self.MATCH_BY, 
                             self.OTHER_SYMBOL, self.POSITION, self.PROBESET_ID, self.RELATIONSHIP, 
                             self.RSID, self.SOURCE_GENESHIP]
         self.selected = []
+        self.state_close = False
     
+    def closeEvent(self, event):
+        self.state_close = True
+        self.reject()
+
     def clickboxall(self, state):
         if state == QtCore.Qt.Checked:
             print('All Checked')
@@ -680,6 +1012,7 @@ class SelectSearch(QDialog, FilePath):
             if self.Listcheckbox[i].isChecked():
                 SelectedAttr = self.Listcheckbox[i].objectName()
                 self.selected.append(SelectedAttr)
+        self.reject()
 
 class ShowSNP(QDialog, FilePath):
     def __init__(self, dataframe):
@@ -763,6 +1096,7 @@ class MainWindow(QMainWindow, FilePath):
         self.actionUpdate_NCBI.triggered.connect(self.clickUpdateNcbi)
         self.actionUpdate_Disease.triggered.connect(self.clickUpdateDis)
         self.actionUpdate_Pathway.triggered.connect(self.clickUpdatePathway)
+        self.actionRe_Matching.triggered.connect(self.clickReMatching)
         self.actionDatabase.triggered.connect(self.ConfigDatabase)
 
         self.browse.clicked.connect(self.browsefiles)
@@ -794,7 +1128,6 @@ class MainWindow(QMainWindow, FilePath):
     def SearchSQL(self):
         self.SQLcom = SQLdialog()
         self.SQLcom.exec_()
-        print(self.SQLcom.command)
 
     def clickUpdateNcbi(self):
         self.Update_NCBI = UpdateNCBI()
@@ -807,6 +1140,10 @@ class MainWindow(QMainWindow, FilePath):
     def clickUpdatePathway(self):
         self.Update_Pathway = UpdatePathway()
         self.Update_Pathway.show()
+
+    def clickReMatching(self):
+        self.Re_Matching = ReMatching()
+        self.Re_Matching.show()
 
     def TryFetchDataOnMetaData(self, objectMetaData, metaname):
         isCompleted = False
@@ -824,38 +1161,8 @@ class MainWindow(QMainWindow, FilePath):
         self.CallCreate = CreateInitailDatabase()
         self.CallCreate.exec_()
 
-        database = Database()
-        database.InitialDatabase(self.CallCreate.SchemaName)
-
-        manage_AnnotationFile = Manage_AnnotationFile()
-        listAnnotation = manage_AnnotationFile.SeparateGene()
-        manage_AnnotationFile.SaveSNP(listAnnotation)
-
-        objectMapSnpWithNcbi = MetaData()
-        dataInMapSnpWithNcbi = self.TryFetchDataOnMetaData(objectMapSnpWithNcbi, 'MapSnpWithNcbi')
-        dataInMapSnpWithNcbi['technical']['createMeta']['status'] = 1
-        objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
-
-        ncbi = Ncbi(1)
-        ncbi.CreateNcbiInformation()
-
-        objectDisease = MetaData()
-        dataInDisease = self.TryFetchDataOnMetaData(objectDisease, 'Disease')
-        dataInDisease['technical']['diseaseStatus']['createMeta']['status'] = 1
-        objectDisease.SaveManualUpdateMetadata(dataInDisease)
-
-        disease = Disease()
-        disease.CreateDiseaseDataset()
-
-        Data_Pathway = PathwayDataFromKEGG()
-        Data_Pathway.GetGenePathway()
-        Pathway_Dis = PathwayOfDis()
-        Pathway_Dis.FetchPathwayEachDisease()
-        Pathway_Dis.Find_GeneInPathwayOfDisease(Data_Pathway.listpathway)
-        Pathway_Dis.SaveGenePathway2db()
-
-        matching = mapSNP_Disease()
-        matching.MapBoth()
+        self.widgetCreate = CreateData(self.CallCreate.SchemaName)
+        self.widgetCreate.show()
 
     def ConfigDatabase(self):
         # Call Dialog GUI
@@ -1264,296 +1571,301 @@ class MainWindow(QMainWindow, FilePath):
         # ---- open GUI select some column ----
         self.Select_Search = SelectSearch()
         self.Select_Search.exec_()
+        self.InCon_FoundDisease = [] 
+        self.InCon_NotFoundDisease = []
+        self.OutCon_FoundDisease = [] 
+        self.OutCon_NotFoundDisease = []
 
-        self.InCon_FoundDisease, self.InCon_NotFoundDisease, self.OutCon_FoundDisease, self.OutCon_NotFoundDisease = self.SearchFunction.SearchData()
-        print('InCon Disease len', len(self.InCon_FoundDisease), '  :  ', self.InCon_FoundDisease)
-        print('InCon NotDisease len', len(self.InCon_NotFoundDisease), '  :  ', self.InCon_NotFoundDisease)
-        print('OutCon Disease len', len(self.OutCon_FoundDisease), '  :  ', self.OutCon_FoundDisease)
-        print('OutCon NotDisease len', len(self.OutCon_NotFoundDisease), '  :  ', self.OutCon_NotFoundDisease)
+        if self.Select_Search.state_close == False :
+            self.InCon_FoundDisease, self.InCon_NotFoundDisease, self.OutCon_FoundDisease, self.OutCon_NotFoundDisease = self.SearchFunction.SearchData()
+            print('InCon Disease len', len(self.InCon_FoundDisease), '  :  ', self.InCon_FoundDisease)
+            print('InCon NotDisease len', len(self.InCon_NotFoundDisease), '  :  ', self.InCon_NotFoundDisease)
+            print('OutCon Disease len', len(self.OutCon_FoundDisease), '  :  ', self.OutCon_FoundDisease)
+            print('OutCon NotDisease len', len(self.OutCon_NotFoundDisease), '  :  ', self.OutCon_NotFoundDisease)
 
-        # ---- check select Disease ----
-        if len(self.dise_display.toPlainText()) == 0 : # Not Choose Disease Table1 Show InConDisease+InConNotDisease
-            if len(self.InCon_FoundDisease)!= 0:
-                slice_InCon_FoundDisease = self.SliceListDimension2(self.InCon_FoundDisease,0,-3)
-                self.InCon_NotFoundDisease.extend(slice_InCon_FoundDisease)
-            self.showresult_FD, self.header_FD = self.SelectColumn_NoDISEASE(self.Select_Search.selected, self.InCon_NotFoundDisease)
-            if len(self.OutCon_FoundDisease) != 0 :
-                slice_OutCon_FoundDisease = self.SliceListDimension2(self.OutCon_FoundDisease,0,-3)
-                self.OutCon_NotFoundDisease.extend(slice_OutCon_FoundDisease)
-            self.showresult_NF, self.header_NF = self.SelectColumn_NoDISEASE(self.Select_Search.selected, self.OutCon_NotFoundDisease)
-        else:   # Choose Disease Table1 Show InConDisease
-            self.showresult_FD, self.header_FD = self.SelectColumn(self.Select_Search.selected, self.InCon_FoundDisease)
-            self.OutCon_NotFoundDisease.extend(self.InCon_NotFoundDisease)
-            if len(self.OutCon_FoundDisease) != 0 :
-                slice_OutCon_FoundDisease = self.SliceListDimension2(self.OutCon_FoundDisease,0,-3)
-                self.OutCon_NotFoundDisease.extend(slice_OutCon_FoundDisease)
-            self.showresult_NF, self.header_NF = self.SelectColumn_NoDISEASE(self.Select_Search.selected, self.OutCon_NotFoundDisease)
+            # ---- check select Disease ----
+            if len(self.dise_display.toPlainText()) == 0 : # Not Choose Disease Table1 Show InConDisease+InConNotDisease
+                if len(self.InCon_FoundDisease)!= 0:
+                    slice_InCon_FoundDisease = self.SliceListDimension2(self.InCon_FoundDisease,0,-3)
+                    self.InCon_NotFoundDisease.extend(slice_InCon_FoundDisease)
+                self.showresult_FD, self.header_FD = self.SelectColumn_NoDISEASE(self.Select_Search.selected, self.InCon_NotFoundDisease)
+                if len(self.OutCon_FoundDisease) != 0 :
+                    slice_OutCon_FoundDisease = self.SliceListDimension2(self.OutCon_FoundDisease,0,-3)
+                    self.OutCon_NotFoundDisease.extend(slice_OutCon_FoundDisease)
+                self.showresult_NF, self.header_NF = self.SelectColumn_NoDISEASE(self.Select_Search.selected, self.OutCon_NotFoundDisease)
+            else:   # Choose Disease Table1 Show InConDisease
+                self.showresult_FD, self.header_FD = self.SelectColumn(self.Select_Search.selected, self.InCon_FoundDisease)
+                self.OutCon_NotFoundDisease.extend(self.InCon_NotFoundDisease)
+                if len(self.OutCon_FoundDisease) != 0 :
+                    slice_OutCon_FoundDisease = self.SliceListDimension2(self.OutCon_FoundDisease,0,-3)
+                    self.OutCon_NotFoundDisease.extend(slice_OutCon_FoundDisease)
+                self.showresult_NF, self.header_NF = self.SelectColumn_NoDISEASE(self.Select_Search.selected, self.OutCon_NotFoundDisease)
 
-        self.showresult_FD = self.sortbySNP(self.showresult_FD)
-        self.showresult_NF = self.sortbySNP(self.showresult_NF)
+            self.showresult_FD = self.sortbySNP(self.showresult_FD)
+            self.showresult_NF = self.sortbySNP(self.showresult_NF)
 
-        # ---------------- Table -----------------
-        self.showresult_FD.insert(0,self.header_FD) # Add Header
-        self.showresult_NF.insert(0,self.header_NF) 
-        self.model = TableModel(self.showresult_FD)
-        self.tableView_1.setModel(self.model)
-        self.model_NF = TableModel(self.showresult_NF)
-        self.tableView_2.setModel(self.model_NF)
-        self.ex_table_f.setEnabled(True)
-        self.ex_table_f.clicked.connect(lambda: self.exportlistdata(self.showresult_FD))
-        self.ex_table_nf.setEnabled(True)
-        self.ex_table_nf.clicked.connect(lambda: self.exportlistdata(self.showresult_NF))
-        # ---------------- Table -----------------
+            # ---------------- Table -----------------
+            self.showresult_FD.insert(0,self.header_FD) # Add Header
+            self.showresult_NF.insert(0,self.header_NF) # Add Header
+            self.model = TableModel(self.showresult_FD)
+            self.tableView_1.setModel(self.model)
+            self.model_NF = TableModel(self.showresult_NF)
+            self.tableView_2.setModel(self.model_NF)
+            self.ex_table_f.setEnabled(True)
+            self.ex_table_f.clicked.connect(lambda: self.exportlistdata(self.showresult_FD))
+            self.ex_table_nf.setEnabled(True)
+            self.ex_table_nf.clicked.connect(lambda: self.exportlistdata(self.showresult_NF))
+            # ---------------- Table -----------------
 
-        # ---------------- Chart -----------------
-        df_Result_FD = pd.DataFrame(self.showresult_FD[1:], columns= self.header_FD)
+            # ---------------- Chart -----------------
+            df_Result_FD = pd.DataFrame(self.showresult_FD[1:], columns= self.header_FD)
 
-        if 'CHROMOSOME' in self.header_FD:
-            x, y = self.DfToAxisFocusSNP(df_Result_FD, 'CHROMOSOME')
-            newX, newY = self.sortChromosome(x, y)
-            sc = MplCanvas(self, width=5, height=4, dpi=100)
-            sc.axes.bar(newY, newX)
-            toolbar = NavigationToolbar(sc, self)
-            # remove Old Chart
-            for i in reversed(range(self.Chr_BarBox.count())): 
-                self.Chr_BarBox.itemAt(i).widget().setParent(None)
-            for i in reversed(range(self.Chr_layout.count())): 
-                self.Chr_layout.itemAt(i).widget().setParent(None)
-            # add New Chart
-            self.Chr_BarBox.addWidget(toolbar)
-            self.Chr_BarBox.addWidget(sc)
-            self.Chr_groupbox = QGroupBox()
-            self.Chr_form = QFormLayout()
-            for index in range(len(x)):
-                chr_text = 'Chromosome ' + y[index] + ' : ' + str(x[index]) + '\n'
-                self.Chr_label = QLabel(chr_text)
-                self.btn_detail_chr = QPushButton('Chromosome {}'.format(y[index]), self)
-                text = self.btn_detail_chr.text()
-                self.btn_detail_chr.clicked.connect(
-                    lambda ch, text=text : (
-                    print("\nclicked--> {}".format(text)),
-                    self.ShowSNP_Rank(df_Result_FD, 'CHROMOSOME', text),
-                    ))
-                self.grid_chr = QGridLayout()
-                self.grid_chr.addWidget(self.Chr_label, 0, 0)
-                self.grid_chr.addWidget(self.btn_detail_chr, 0, 1)
-                self.Chr_form.addRow(self.grid_chr)
-            self.Chr_groupbox.setLayout(self.Chr_form)
-            scroll = QScrollArea()
-            scroll.setWidget(self.Chr_groupbox)
-            scroll.setWidgetResizable(True)
-            scroll.setFixedHeight(200)
-            self.Chr_layout.addWidget(scroll)
+            if 'CHROMOSOME' in self.header_FD:
+                x, y = self.DfToAxisFocusSNP(df_Result_FD, 'CHROMOSOME')
+                newX, newY = self.sortChromosome(x, y)
+                sc = MplCanvas(self, width=5, height=4, dpi=100)
+                sc.axes.bar(newY, newX)
+                toolbar = NavigationToolbar(sc, self)
+                # remove Old Chart
+                for i in reversed(range(self.Chr_BarBox.count())): 
+                    self.Chr_BarBox.itemAt(i).widget().setParent(None)
+                for i in reversed(range(self.Chr_layout.count())): 
+                    self.Chr_layout.itemAt(i).widget().setParent(None)
+                # add New Chart
+                self.Chr_BarBox.addWidget(toolbar)
+                self.Chr_BarBox.addWidget(sc)
+                self.Chr_groupbox = QGroupBox()
+                self.Chr_form = QFormLayout()
+                for index in range(len(x)):
+                    chr_text = 'Chromosome ' + y[index] + ' : ' + str(x[index]) + '\n'
+                    self.Chr_label = QLabel(chr_text)
+                    self.btn_detail_chr = QPushButton('Chromosome {}'.format(y[index]), self)
+                    text = self.btn_detail_chr.text()
+                    self.btn_detail_chr.clicked.connect(
+                        lambda ch, text=text : (
+                        print("\nclicked--> {}".format(text)),
+                        self.ShowSNP_Rank(df_Result_FD, 'CHROMOSOME', text),
+                        ))
+                    self.grid_chr = QGridLayout()
+                    self.grid_chr.addWidget(self.Chr_label, 0, 0)
+                    self.grid_chr.addWidget(self.btn_detail_chr, 0, 1)
+                    self.Chr_form.addRow(self.grid_chr)
+                self.Chr_groupbox.setLayout(self.Chr_form)
+                scroll = QScrollArea()
+                scroll.setWidget(self.Chr_groupbox)
+                scroll.setWidgetResizable(True)
+                scroll.setFixedHeight(200)
+                self.Chr_layout.addWidget(scroll)
 
-        if 'RELATIONSHIP' in self.header_FD:
-            x, y = self.DfToAxis(df_Result_FD, 'RELATIONSHIP')
-            sc = MplCanvas(self, width=5, height=4, dpi=100)
-            sc.axes.barh(y, x)
-            toolbar = NavigationToolbar(sc, self)
-            # remove Old Chart
-            for i in reversed(range(self.Rel_BarBox.count())): 
-                self.Rel_BarBox.itemAt(i).widget().setParent(None)
-            for i in reversed(range(self.Rel_layout.count())): 
-                self.Rel_layout.itemAt(i).widget().setParent(None)
-            # add New Chart
-            self.Rel_BarBox.addWidget(toolbar)
-            self.Rel_BarBox.addWidget(sc)
-            self.groupbox = QGroupBox()
-            self.form = QFormLayout()
-            for index in range(len(x)):
-                text =  y[index] + ' : ' + str(x[index]) + '\n'
-                self.label = QLabel(text)
-                self.btn_detail = QPushButton('Show SNP {}'.format(y[index]), self)
-                text = self.btn_detail.text()
-                self.btn_detail.clicked.connect(
-                    lambda ch, text=text : (
-                    print("\nclicked--> {}".format(text)),
-                    self.ShowSNP_Rank(df_Result_FD, 'RELATIONSHIP', text),
-                    ))
-                self.grid = QGridLayout()
-                self.grid.addWidget(self.label, 0, 0)
-                self.grid.addWidget(self.btn_detail, 0, 1)
-                self.form.addRow(self.grid)
-            self.groupbox.setLayout(self.form)
-            scroll = QScrollArea()
-            scroll.setWidget(self.groupbox)
-            scroll.setWidgetResizable(True)
-            scroll.setFixedHeight(200)
-            self.Rel_layout.addWidget(scroll)
-    
-        if 'SOURCE_GENESHIP' in self.header_FD:
-            x, y = self.DfToAxisFocusSNP(df_Result_FD, 'SOURCE_GENESHIP')
-            sc = MplCanvas(self, width=5, height=4, dpi=100)
-            sc.axes.bar(y, x)
-            toolbar = NavigationToolbar(sc, self)
-            for i in reversed(range(self.GC_BarBox.count())): 
-                self.GC_BarBox.itemAt(i).widget().setParent(None)
-            for i in reversed(range(self.GC_layout.count())): 
-                self.GC_layout.itemAt(i).widget().setParent(None)
-            self.GC_BarBox.addWidget(toolbar)
-            self.GC_BarBox.addWidget(sc)
-            self.groupbox = QGroupBox()
-            self.form = QFormLayout()
-            for index in range(len(x)):
-                text =  y[index] + ' : ' + str(x[index]) + '\n'
-                self.label = QLabel(text)
-                self.btn_detail = QPushButton('Show SNP {}'.format(y[index]), self)
-                text = self.btn_detail.text()
-                self.btn_detail.clicked.connect(
-                    lambda ch, text=text : (
-                    print("\nclicked--> {}".format(text)),
-                    self.ShowSNP_Rank(df_Result_FD, 'SOURCE_GENESHIP', text),
-                    ))
-                self.grid = QGridLayout()
-                self.grid.addWidget(self.label, 0, 0)
-                self.grid.addWidget(self.btn_detail, 0, 1)
-                self.form.addRow(self.grid)
-            self.groupbox.setLayout(self.form)
-            scroll = QScrollArea()
-            scroll.setWidget(self.groupbox)
-            scroll.setWidgetResizable(True)
-            scroll.setFixedHeight(200)
-            self.GC_layout.addWidget(scroll)
+            if 'RELATIONSHIP' in self.header_FD:
+                x, y = self.DfToAxis(df_Result_FD, 'RELATIONSHIP')
+                sc = MplCanvas(self, width=5, height=4, dpi=100)
+                sc.axes.barh(y, x)
+                toolbar = NavigationToolbar(sc, self)
+                # remove Old Chart
+                for i in reversed(range(self.Rel_BarBox.count())): 
+                    self.Rel_BarBox.itemAt(i).widget().setParent(None)
+                for i in reversed(range(self.Rel_layout.count())): 
+                    self.Rel_layout.itemAt(i).widget().setParent(None)
+                # add New Chart
+                self.Rel_BarBox.addWidget(toolbar)
+                self.Rel_BarBox.addWidget(sc)
+                self.groupbox = QGroupBox()
+                self.form = QFormLayout()
+                for index in range(len(x)):
+                    text =  y[index] + ' : ' + str(x[index]) + '\n'
+                    self.label = QLabel(text)
+                    self.btn_detail = QPushButton('Show SNP {}'.format(y[index]), self)
+                    text = self.btn_detail.text()
+                    self.btn_detail.clicked.connect(
+                        lambda ch, text=text : (
+                        print("\nclicked--> {}".format(text)),
+                        self.ShowSNP_Rank(df_Result_FD, 'RELATIONSHIP', text),
+                        ))
+                    self.grid = QGridLayout()
+                    self.grid.addWidget(self.label, 0, 0)
+                    self.grid.addWidget(self.btn_detail, 0, 1)
+                    self.form.addRow(self.grid)
+                self.groupbox.setLayout(self.form)
+                scroll = QScrollArea()
+                scroll.setWidget(self.groupbox)
+                scroll.setWidgetResizable(True)
+                scroll.setFixedHeight(200)
+                self.Rel_layout.addWidget(scroll)
         
-        if 'MATCH_BY' in self.header_FD:
-            x, y = self.DfToAxis(df_Result_FD, 'MATCH_BY')
-            sc = MplCanvas(self, width=5, height=4, dpi=100)
-            sc.axes.bar(y, x)
-            toolbar = NavigationToolbar(sc, self)
-            for i in reversed(range(self.MB_BarBox.count())): 
-                self.MB_BarBox.itemAt(i).widget().setParent(None)
-            for i in reversed(range(self.MB_layout.count())): 
-                self.MB_layout.itemAt(i).widget().setParent(None)
-            self.MB_BarBox.addWidget(toolbar)
-            self.MB_BarBox.addWidget(sc)
-            self.groupbox = QGroupBox()
-            self.form = QFormLayout()
-            for index in range(len(x)):
-                text = y[index] + ' : ' + str(x[index]) + '\n'
-                self.label = QLabel(text)
-                self.btn_detail = QPushButton('Show SNP {}'.format(y[index]), self)
-                text = self.btn_detail.text()
-                self.btn_detail.clicked.connect(
-                    lambda ch, text=text : (
-                    print("\nclicked--> {}".format(text)),
-                    self.ShowSNP_Rank(df_Result_FD, 'MATCH_BY', text),
-                    ))
-                self.grid = QGridLayout()
-                self.grid.addWidget(self.label, 0, 0)
-                self.grid.addWidget(self.btn_detail, 0, 1)
-                self.form.addRow(self.grid)
-            self.groupbox.setLayout(self.form)
-            scroll = QScrollArea()
-            scroll.setWidget(self.groupbox)
-            scroll.setWidgetResizable(True)
-            scroll.setFixedHeight(200)
-            self.MB_layout.addWidget(scroll)
+            if 'SOURCE_GENESHIP' in self.header_FD:
+                x, y = self.DfToAxisFocusSNP(df_Result_FD, 'SOURCE_GENESHIP')
+                sc = MplCanvas(self, width=5, height=4, dpi=100)
+                sc.axes.bar(y, x)
+                toolbar = NavigationToolbar(sc, self)
+                for i in reversed(range(self.GC_BarBox.count())): 
+                    self.GC_BarBox.itemAt(i).widget().setParent(None)
+                for i in reversed(range(self.GC_layout.count())): 
+                    self.GC_layout.itemAt(i).widget().setParent(None)
+                self.GC_BarBox.addWidget(toolbar)
+                self.GC_BarBox.addWidget(sc)
+                self.groupbox = QGroupBox()
+                self.form = QFormLayout()
+                for index in range(len(x)):
+                    text =  y[index] + ' : ' + str(x[index]) + '\n'
+                    self.label = QLabel(text)
+                    self.btn_detail = QPushButton('Show SNP {}'.format(y[index]), self)
+                    text = self.btn_detail.text()
+                    self.btn_detail.clicked.connect(
+                        lambda ch, text=text : (
+                        print("\nclicked--> {}".format(text)),
+                        self.ShowSNP_Rank(df_Result_FD, 'SOURCE_GENESHIP', text),
+                        ))
+                    self.grid = QGridLayout()
+                    self.grid.addWidget(self.label, 0, 0)
+                    self.grid.addWidget(self.btn_detail, 0, 1)
+                    self.form.addRow(self.grid)
+                self.groupbox.setLayout(self.form)
+                scroll = QScrollArea()
+                scroll.setWidget(self.groupbox)
+                scroll.setWidgetResizable(True)
+                scroll.setFixedHeight(200)
+                self.GC_layout.addWidget(scroll)
+            
+            if 'MATCH_BY' in self.header_FD:
+                x, y = self.DfToAxis(df_Result_FD, 'MATCH_BY')
+                sc = MplCanvas(self, width=5, height=4, dpi=100)
+                sc.axes.bar(y, x)
+                toolbar = NavigationToolbar(sc, self)
+                for i in reversed(range(self.MB_BarBox.count())): 
+                    self.MB_BarBox.itemAt(i).widget().setParent(None)
+                for i in reversed(range(self.MB_layout.count())): 
+                    self.MB_layout.itemAt(i).widget().setParent(None)
+                self.MB_BarBox.addWidget(toolbar)
+                self.MB_BarBox.addWidget(sc)
+                self.groupbox = QGroupBox()
+                self.form = QFormLayout()
+                for index in range(len(x)):
+                    text = y[index] + ' : ' + str(x[index]) + '\n'
+                    self.label = QLabel(text)
+                    self.btn_detail = QPushButton('Show SNP {}'.format(y[index]), self)
+                    text = self.btn_detail.text()
+                    self.btn_detail.clicked.connect(
+                        lambda ch, text=text : (
+                        print("\nclicked--> {}".format(text)),
+                        self.ShowSNP_Rank(df_Result_FD, 'MATCH_BY', text),
+                        ))
+                    self.grid = QGridLayout()
+                    self.grid.addWidget(self.label, 0, 0)
+                    self.grid.addWidget(self.btn_detail, 0, 1)
+                    self.form.addRow(self.grid)
+                self.groupbox.setLayout(self.form)
+                scroll = QScrollArea()
+                scroll.setWidget(self.groupbox)
+                scroll.setWidgetResizable(True)
+                scroll.setFixedHeight(200)
+                self.MB_layout.addWidget(scroll)
+            
+            df_Result_NF = pd.DataFrame(self.showresult_NF[1:], columns= self.header_NF)
+
+            if 'CHROMOSOME' in self.header_NF:
+                x, y = self.DfToAxisFocusSNP(df_Result_NF, 'CHROMOSOME')
+                newX, newY = self.sortChromosome(x, y)
+                sc = MplCanvas(self, width=5, height=4, dpi=100)
+                sc.axes.bar(newY, newX)
+                toolbar = NavigationToolbar(sc, self)
+                for i in reversed(range(self.Chr_BarBox_2.count())): 
+                    self.Chr_BarBox_2.itemAt(i).widget().setParent(None)
+                for i in reversed(range(self.Chr_layout2.count())): 
+                    self.Chr_layout2.itemAt(i).widget().setParent(None)
+                self.Chr_BarBox_2.addWidget(toolbar)
+                self.Chr_BarBox_2.addWidget(sc)
+                self.groupbox = QGroupBox()
+                self.form = QFormLayout()
+                for index in range(len(x)):
+                    text = 'Chromosome ' + y[index] + ' : ' + str(x[index]) + '\n'
+                    self.label = QLabel(text)
+                    self.btn_detail = QPushButton('Show SNP Chromosome {}'.format(y[index]), self)
+                    text = self.btn_detail.text()
+                    self.btn_detail.clicked.connect(
+                        lambda ch, text=text : (
+                        print("\nclicked--> {}".format(text)),
+                        self.ShowSNP_Rank(df_Result_NF, 'CHROMOSOME', text),
+                        ))
+                    self.grid = QGridLayout()
+                    self.grid.addWidget(self.label, 0, 0)
+                    self.grid.addWidget(self.btn_detail, 0, 1)
+                    self.form.addRow(self.grid)
+                self.groupbox.setLayout(self.form)
+                scroll = QScrollArea()
+                scroll.setWidget(self.groupbox)
+                scroll.setWidgetResizable(True)
+                scroll.setFixedHeight(200)
+                self.Chr_layout2.addWidget(scroll)
+
+            if 'RELATIONSHIP' in self.header_NF:
+                x, y = self.DfToAxis(df_Result_NF, 'RELATIONSHIP')
+                sc = MplCanvas(self, width=5, height=4, dpi=100)
+                sc.axes.barh(y, x)
+                toolbar = NavigationToolbar(sc, self)
+                for i in reversed(range(self.Rel_BarBox_2.count())): 
+                    self.Rel_BarBox_2.itemAt(i).widget().setParent(None)
+                for i in reversed(range(self.Rel_layout2.count())): 
+                    self.Rel_layout2.itemAt(i).widget().setParent(None)
+                self.Rel_BarBox_2.addWidget(toolbar)
+                self.Rel_BarBox_2.addWidget(sc)
+                self.groupbox = QGroupBox()
+                self.form = QFormLayout()
+                for index in range(len(x)):
+                    text =  y[index] + ' : ' + str(x[index]) + '\n'
+                    self.label = QLabel(text)
+                    self.btn_detail = QPushButton('Show SNP {}'.format(y[index]), self)
+                    text = self.btn_detail.text()
+                    self.btn_detail.clicked.connect(
+                        lambda ch, text=text : (
+                        print("\nclicked--> {}".format(text)),
+                        self.ShowSNP_Rank(df_Result_NF, 'RELATIONSHIP', text),
+                        ))
+                    self.grid = QGridLayout()
+                    self.grid.addWidget(self.label, 0, 0)
+                    self.grid.addWidget(self.btn_detail, 0, 1)
+                    self.form.addRow(self.grid)
+                self.groupbox.setLayout(self.form)
+                scroll = QScrollArea()
+                scroll.setWidget(self.groupbox)
+                scroll.setWidgetResizable(True)
+                scroll.setFixedHeight(200)
+                self.Rel_layout2.addWidget(scroll)
         
-        df_Result_NF = pd.DataFrame(self.showresult_NF[1:], columns= self.header_NF)
-
-        if 'CHROMOSOME' in self.header_NF:
-            x, y = self.DfToAxisFocusSNP(df_Result_NF, 'CHROMOSOME')
-            newX, newY = self.sortChromosome(x, y)
-            sc = MplCanvas(self, width=5, height=4, dpi=100)
-            sc.axes.bar(newY, newX)
-            toolbar = NavigationToolbar(sc, self)
-            for i in reversed(range(self.Chr_BarBox_2.count())): 
-                self.Chr_BarBox_2.itemAt(i).widget().setParent(None)
-            for i in reversed(range(self.Chr_layout2.count())): 
-                self.Chr_layout2.itemAt(i).widget().setParent(None)
-            self.Chr_BarBox_2.addWidget(toolbar)
-            self.Chr_BarBox_2.addWidget(sc)
-            self.groupbox = QGroupBox()
-            self.form = QFormLayout()
-            for index in range(len(x)):
-                text = 'Chromosome ' + y[index] + ' : ' + str(x[index]) + '\n'
-                self.label = QLabel(text)
-                self.btn_detail = QPushButton('Show SNP Chromosome {}'.format(y[index]), self)
-                text = self.btn_detail.text()
-                self.btn_detail.clicked.connect(
-                    lambda ch, text=text : (
-                    print("\nclicked--> {}".format(text)),
-                    self.ShowSNP_Rank(df_Result_NF, 'CHROMOSOME', text),
-                    ))
-                self.grid = QGridLayout()
-                self.grid.addWidget(self.label, 0, 0)
-                self.grid.addWidget(self.btn_detail, 0, 1)
-                self.form.addRow(self.grid)
-            self.groupbox.setLayout(self.form)
-            scroll = QScrollArea()
-            scroll.setWidget(self.groupbox)
-            scroll.setWidgetResizable(True)
-            scroll.setFixedHeight(200)
-            self.Chr_layout2.addWidget(scroll)
-
-        if 'RELATIONSHIP' in self.header_NF:
-            x, y = self.DfToAxis(df_Result_NF, 'RELATIONSHIP')
-            sc = MplCanvas(self, width=5, height=4, dpi=100)
-            sc.axes.barh(y, x)
-            toolbar = NavigationToolbar(sc, self)
-            for i in reversed(range(self.Rel_BarBox_2.count())): 
-                self.Rel_BarBox_2.itemAt(i).widget().setParent(None)
-            for i in reversed(range(self.Rel_layout2.count())): 
-                self.Rel_layout2.itemAt(i).widget().setParent(None)
-            self.Rel_BarBox_2.addWidget(toolbar)
-            self.Rel_BarBox_2.addWidget(sc)
-            self.groupbox = QGroupBox()
-            self.form = QFormLayout()
-            for index in range(len(x)):
-                text =  y[index] + ' : ' + str(x[index]) + '\n'
-                self.label = QLabel(text)
-                self.btn_detail = QPushButton('Show SNP {}'.format(y[index]), self)
-                text = self.btn_detail.text()
-                self.btn_detail.clicked.connect(
-                    lambda ch, text=text : (
-                    print("\nclicked--> {}".format(text)),
-                    self.ShowSNP_Rank(df_Result_NF, 'RELATIONSHIP', text),
-                    ))
-                self.grid = QGridLayout()
-                self.grid.addWidget(self.label, 0, 0)
-                self.grid.addWidget(self.btn_detail, 0, 1)
-                self.form.addRow(self.grid)
-            self.groupbox.setLayout(self.form)
-            scroll = QScrollArea()
-            scroll.setWidget(self.groupbox)
-            scroll.setWidgetResizable(True)
-            scroll.setFixedHeight(200)
-            self.Rel_layout2.addWidget(scroll)
-    
-        if 'SOURCE_GENESHIP' in self.header_NF:
-            x, y = self.DfToAxisFocusSNP(df_Result_NF, 'SOURCE_GENESHIP')
-            sc = MplCanvas(self, width=5, height=4, dpi=100)
-            sc.axes.bar(y, x)
-            toolbar = NavigationToolbar(sc, self)
-            for i in reversed(range(self.GC_BarBox_2.count())): 
-                self.GC_BarBox_2.itemAt(i).widget().setParent(None)
-            for i in reversed(range(self.GC_layout2.count())): 
-                self.GC_layout2.itemAt(i).widget().setParent(None)
-            self.GC_BarBox_2.addWidget(toolbar)
-            self.GC_BarBox_2.addWidget(sc)
-            self.groupbox = QGroupBox()
-            self.form = QFormLayout()
-            for index in range(len(x)):
-                text = y[index] + ' : ' + str(x[index]) + '\n'
-                self.label = QLabel(text)
-                self.btn_detail = QPushButton('Show SNP {}'.format(y[index]), self)
-                text = self.btn_detail.text()
-                self.btn_detail.clicked.connect(
-                    lambda ch, text=text : (
-                    print("\nclicked--> {}".format(text)),
-                    self.ShowSNP_Rank(df_Result_NF, 'SOURCE_GENESHIP', text),
-                    ))
-                self.grid = QGridLayout()
-                self.grid.addWidget(self.label, 0, 0)
-                self.grid.addWidget(self.btn_detail, 0, 1)
-                self.form.addRow(self.grid)
-            self.groupbox.setLayout(self.form)
-            scroll = QScrollArea()
-            scroll.setWidget(self.groupbox)
-            scroll.setWidgetResizable(True)
-            scroll.setFixedHeight(200)
-            self.GC_layout2.addWidget(scroll)
-        # ---------------- Chart -----------------
+            if 'SOURCE_GENESHIP' in self.header_NF:
+                x, y = self.DfToAxisFocusSNP(df_Result_NF, 'SOURCE_GENESHIP')
+                sc = MplCanvas(self, width=5, height=4, dpi=100)
+                sc.axes.bar(y, x)
+                toolbar = NavigationToolbar(sc, self)
+                for i in reversed(range(self.GC_BarBox_2.count())): 
+                    self.GC_BarBox_2.itemAt(i).widget().setParent(None)
+                for i in reversed(range(self.GC_layout2.count())): 
+                    self.GC_layout2.itemAt(i).widget().setParent(None)
+                self.GC_BarBox_2.addWidget(toolbar)
+                self.GC_BarBox_2.addWidget(sc)
+                self.groupbox = QGroupBox()
+                self.form = QFormLayout()
+                for index in range(len(x)):
+                    text = y[index] + ' : ' + str(x[index]) + '\n'
+                    self.label = QLabel(text)
+                    self.btn_detail = QPushButton('Show SNP {}'.format(y[index]), self)
+                    text = self.btn_detail.text()
+                    self.btn_detail.clicked.connect(
+                        lambda ch, text=text : (
+                        print("\nclicked--> {}".format(text)),
+                        self.ShowSNP_Rank(df_Result_NF, 'SOURCE_GENESHIP', text),
+                        ))
+                    self.grid = QGridLayout()
+                    self.grid.addWidget(self.label, 0, 0)
+                    self.grid.addWidget(self.btn_detail, 0, 1)
+                    self.form.addRow(self.grid)
+                self.groupbox.setLayout(self.form)
+                scroll = QScrollArea()
+                scroll.setWidget(self.groupbox)
+                scroll.setWidgetResizable(True)
+                scroll.setFixedHeight(200)
+                self.GC_layout2.addWidget(scroll)
+            # ---------------- Chart -----------------
 
 app=QApplication(sys.argv)
 mainwindow=MainWindow()

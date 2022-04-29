@@ -1,7 +1,7 @@
 from numpy import add
 import pandas as pd
 import os
-from Initialization import Database, FilePath
+from Initialization import Database, FilePath, MetaData
 import time
 
 class SNP:
@@ -43,16 +43,33 @@ class AssociatedGene:
 class Manage_AnnotationFile(FilePath):
     def __init__(self):
         FilePath.__init__(self)
-        # # self.Data_Nsp = pd.read_csv("D:\\SNP_Project\\NetAffx-Project\\Project\\AnnotationFile\\Mapping250K_Nsp.na32.annot.csv")
-        # self.Data_Sty = pd.read_csv("D:\\SNP_Project\\NetAffx-Project\\Project\\AnnotationFile\\Mapping250K_Sty.na32.annot.csv")
         path_dir = self.GetPathToAnnotationFile()
         self.list_DataSet = []
+        objectMeta = MetaData()
+        SepGeneInfo = self.TryFetchDataOnMetaData(objectMeta, 'SeparateGene')
+        SepGeneInfo['Status']['textStatus'] = 'Reading Annotation File'
+        objectMeta.SaveManualUpdateMetadata(SepGeneInfo)
         for (root, dirs, file) in os.walk(path_dir):
             for fileName in file:
                 csvFile = pd.read_csv(path_dir + "/" + fileName)
                 print(csvFile)
                 self.list_DataSet.append(csvFile)
         self.list_Geneship = ["Nsp", "Sty"]
+        SepGeneInfo['Status']['amountState'] = (self.list_DataSet[0].shape[0] + self.list_DataSet[1].shape[0] )*2
+        SepGeneInfo['Status']['amountOfFinished'] = 1
+        objectMeta.SaveManualUpdateMetadata(SepGeneInfo)
+
+
+    def TryFetchDataOnMetaData(self, objectMetaData, metaname):
+        isCompleted = False
+        while ( isCompleted == False):
+            try:       
+                dataInMetaData = objectMetaData.ReadMetadata(metaname)
+                isCompleted = True
+            except:
+                time.sleep(0.1)
+                pass
+        return dataInMetaData
 
     def Manage_SNP(self, dataset, index, Geneship):
         RS_ID = dataset["dbSNP RS ID"][index]
@@ -74,12 +91,17 @@ class Manage_AnnotationFile(FilePath):
         return AssociatedGene(Gene_ID, GeneSymbol, Distance, Relationship)
 
     def SeparateGene(self):
+        objectMeta = MetaData()
+        SepGeneInfo = self.TryFetchDataOnMetaData(objectMeta, 'SeparateGene')
         List_SNP = []
         number = 0
         for dataset in self.list_DataSet:
             for row_index in range(dataset.shape[0]): #dataset.shape[0] #range(50)
                 Geneship = self.list_Geneship[number]
                 SNP = self.Manage_SNP(dataset, row_index, Geneship)
+                # write state metadata
+                SepGeneInfo['Status']['textStatus'] = 'Separating Associated Gene Of SNP: ' + SNP.RS_ID + ' Genechip: ' + Geneship
+                objectMeta.SaveManualUpdateMetadata(SepGeneInfo)
                 List_AssoGene = self.Split_AssociatedGene(dataset, row_index)
                 memory_Gene = []
                 if SNP.RS_ID and SNP.ProbeSet_ID and dataset["Associated Gene"][row_index] != '---':
@@ -94,7 +116,7 @@ class Manage_AnnotationFile(FilePath):
                             if GeneSymbol in memory_Gene:
                                 for mem_gene in SNP.Associated_Gene:
                                     if mem_gene.GeneSymbol == GeneSymbol:
-                                        if mem_gene.Relationship and int(mem_gene.Distance) > int(Distance):
+                                        if mem_gene.Relationship == Relationship and int(mem_gene.Distance) > int(Distance):
                                             mem_gene.Distance = Distance
                                         elif mem_gene.Relationship != Relationship:
                                             SNP.Add_AssociatedGene(Asso_Gene)
@@ -109,6 +131,8 @@ class Manage_AnnotationFile(FilePath):
                     print("pass SNP", SNP.RS_ID, SNP.ProbeSet_ID)
                 else:
                     List_SNP.append(SNP)
+                SepGeneInfo['Status']['amountOfFinished'] = SepGeneInfo['Status']['amountOfFinished'] + 1
+                objectMeta.SaveManualUpdateMetadata(SepGeneInfo)
             number += 1
         return List_SNP
     
@@ -163,9 +187,13 @@ class Manage_AnnotationFile(FilePath):
             return SNP
 
     def SaveSNP(self, list):
+        objectMeta = MetaData()
+        SepGeneInfo = self.TryFetchDataOnMetaData(objectMeta, 'SeparateGene')
         database = Database()
         conn = database.ConnectDatabase()
         for SNP in list:
+            SepGeneInfo['Status']['textStatus'] = 'Saving SNP ' + SNP.RS_ID  + ' to Database'
+            objectMeta.SaveManualUpdateMetadata(SepGeneInfo)
             sql = """
             INSERT INTO snp VALUES (%s, %s, %s, %s, %s)
             """
@@ -194,7 +222,10 @@ class Manage_AnnotationFile(FilePath):
                 val3 = (gene.Gene_ID, SNP.RS_ID, gene.Distance, gene.Relationship)
                 print("sql3 insert to gene_detail table:", val3)
                 database.CreateTask(conn, sql3, val3)
-
+            SepGeneInfo['Status']['amountOfFinished'] = SepGeneInfo['Status']['amountOfFinished'] + 1
+            objectMeta.SaveManualUpdateMetadata(SepGeneInfo)
+        SepGeneInfo['Status']['amountOfFinished'] = SepGeneInfo['Status']['amountState']
+        objectMeta.SaveManualUpdateMetadata(SepGeneInfo)
         database.CloseDatabase(conn)
     
     def DropSNP(self):
@@ -218,7 +249,7 @@ if __name__ == "__main__":
     AF = Manage_AnnotationFile()
     ListS = AF.SeparateGene()
     print(ListS)
-    # AF.SaveSNP(ListS)
+    AF.SaveSNP(ListS)
     # # AF.DropSNP()
     # print("---run success---")
 
