@@ -129,46 +129,55 @@ class CreateNcbi(Thread, Database, FilePath):
         if ( startAt == 0): self.indexStart = self.indexStart
         else: self.indexStart = self.indexStart + startAt - 1
 
+        count = 0
+
         for _Index in range(self.indexStart, self.indexStop + 1):
-        # for _Index in range(self.indexStart, 5):
+        # for _Index in range(self.indexStart, 100):
 
-            CurrentGeneID = self.FetchGeneID(_Index)
-            OldGeneID = CurrentGeneID
-            dataMetaThread['currentNumberOfGene'] = CurrentGeneID
+            try:
+                CurrentGeneID = self.FetchGeneID(_Index)
+                OldGeneID = CurrentGeneID
+                dataMetaThread['currentNumberOfGene'] = CurrentGeneID
 
-            response, newGeneID = self.CheckDiscontinue(CurrentGeneID)
-            if (response == False): continue
+                response, newGeneID = self.CheckDiscontinue(CurrentGeneID)
+                if (response == False): continue
 
-            if (int(newGeneID) != int(CurrentGeneID)): CurrentGeneID = newGeneID
-            else:
-                try:
-                    resSummaryDl = response.find('dl', {"id": "summaryDl"}) # fetch all detail of website
+                if (int(newGeneID) != int(CurrentGeneID)): CurrentGeneID = newGeneID
+                else:
+                    try:
+                        resSummaryDl = response.find('dl', {"id": "summaryDl"}) # fetch all detail of website
 
-                    officialSymbol = self.FetchOfficialSymbol(resSummaryDl)
+                        officialSymbol = self.FetchOfficialSymbol(resSummaryDl)
 
-                    UpdateOn = self.ConvertDatetimeToTimeStamp(self.FetchUpdateOn(response))
+                        UpdateOn = self.ConvertDatetimeToTimeStamp(self.FetchUpdateOn(response))
 
-                    if ( len( resSummaryDl.find_all(text = 'Also known as') ) >= 1 ): # Does the website contain "Also known as" ?
-                        alsoKnownAs = self.FetchAlsoKnowAs(resSummaryDl)
-                    else:
-                        alsoKnownAs = ['']
-                except Exception as e:
-                    self.WriteToLogFile(CurrentGeneID, "Error", str(e))
-                    continue
+                        if ( len( resSummaryDl.find_all(text = 'Also known as') ) >= 1 ): # Does the website contain "Also known as" ?
+                            alsoKnownAs = self.FetchAlsoKnowAs(resSummaryDl)
+                        else:
+                            alsoKnownAs = ['']
+                    except Exception as e:
+                        self.WriteToLogFile(CurrentGeneID, "Error", str(e))
+                        continue
 
-                data = GeneWithMap(CurrentGeneID = CurrentGeneID, OldGeneID = OldGeneID, GeneSymbol = officialSymbol, AlsoKnowAs = alsoKnownAs, UpdatedAt = UpdateOn)
-                dataFromWeb = pd.DataFrame(data.__dict__)
-                dataFromWeb.to_csv( self.csvPath , mode='a', index = False, header=False)
+                    data = GeneWithMap(CurrentGeneID = CurrentGeneID, OldGeneID = OldGeneID, GeneSymbol = officialSymbol, AlsoKnowAs = alsoKnownAs, UpdatedAt = UpdateOn)
+                    dataFromWeb = pd.DataFrame(data.__dict__)
+                    dataFromWeb.to_csv( self.csvPath , mode='a', index = False, header=False)
 
-            dataMetaThread['count'] = dataMetaThread['count'] + 1
+                dataMetaThread['count'] = dataMetaThread['count'] + 1
 
-            dataInMapSnpWithNcbi = self.FetchDataOnMetaData(objectMapSnpWithNcbi, 'MapSnpWithNcbi')
-            dataInMapSnpWithNcbi['technical'][typeMetadata]['amountOfFinished'] = dataInMapSnpWithNcbi['technical'][typeMetadata]['amountOfFinished'] + 1
+                dataInMapSnpWithNcbi = self.FetchDataOnMetaData(objectMapSnpWithNcbi, 'MapSnpWithNcbi')
+                dataInMapSnpWithNcbi['technical'][typeMetadata]['amountOfFinished'] = dataInMapSnpWithNcbi['technical'][typeMetadata]['amountOfFinished'] + 1
 
-            if dataInMapSnpWithNcbi['technical'][typeMetadata]['status'] == 1:
-                objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
-                objectThread.SaveManualUpdateMetadata(dataMetaThread)
-                self.WriteToLogFile(CurrentGeneID, "Successful", "Data retrieved successfully")
+                if dataInMapSnpWithNcbi['technical'][typeMetadata]['status'] == 1:
+                    objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
+                    objectThread.SaveManualUpdateMetadata(dataMetaThread)
+                    self.WriteToLogFile(CurrentGeneID, "Successful", "Data retrieved successfully")
+            except Exception as e:
+                self.WriteToLogFile(CurrentGeneID, "None Error", str(e))
+                continue
+
+            print(count, ';', CurrentGeneID)
+            count = count + 1
 
         return
 
@@ -291,50 +300,54 @@ class UpdateNcbi(Thread, Database, FilePath):
 
         for CurrentGeneID, UpdateAt in self.listDataUnCheck[ startAt : ]:
 
-            OldGeneID = CurrentGeneID
-            dataMetaThread['currentNumberOfGene'] = CurrentGeneID
+            try:
+                OldGeneID = CurrentGeneID
+                dataMetaThread['currentNumberOfGene'] = CurrentGeneID
 
-            response, newGeneID = self.CheckDiscontinue(CurrentGeneID)
-            if (response == False): continue
+                response, newGeneID = self.CheckDiscontinue(CurrentGeneID)
+                if (response == False): continue
 
-            if (int(newGeneID) != int(CurrentGeneID)): CurrentGeneID = newGeneID
-            else:
-                try:
-                    updatedOn_Website = self.FetchUpdateOn(response)
-                    updatedOn_OldData = self.ConvertUpdateAtToTimeStamp(UpdateAt)
-
-                except Exception as e:
-                    self.WriteToLogFile(CurrentGeneID, "Error", str(e))
-                    continue
-
-                if ( updatedOn_OldData != updatedOn_Website):
+                if (int(newGeneID) != int(CurrentGeneID)): CurrentGeneID = newGeneID
+                else:
                     try:
-                        resSummaryDl = response.find('dl', {"id": "summaryDl"}) # fetch all detail of website
-                        officialSymbol = self.FetchOfficialSymbol(resSummaryDl)
-                        
-                        # Check Also Know As
-                        if ( len( resSummaryDl.find_all(text = 'Also known as') ) >= 1 ): alsoKnownAs = self.FetchAlsoKnowAs(resSummaryDl)
-                        else: alsoKnownAs = ['']
+                        updatedOn_Website = self.FetchUpdateOn(response)
+                        updatedOn_OldData = self.ConvertUpdateAtToTimeStamp(UpdateAt)
 
                     except Exception as e:
                         self.WriteToLogFile(CurrentGeneID, "Error", str(e))
                         continue
-                    
-                    data = GeneWithMap(CurrentGeneID = CurrentGeneID, OldGeneID = OldGeneID, GeneSymbol = officialSymbol, AlsoKnowAs = alsoKnownAs, UpdatedAt = updatedOn_Website)
-                    dataFromWeb = pd.DataFrame(data.__dict__)
-                    dataFromWeb.to_csv( self.csvPath , mode='a', index = False, header=False)
 
-            dataMetaThread = self.FetchDataOnMetaData(objectThread, self.nameMetadata)
-            dataInMapSnpWithNcbi = self.FetchDataOnMetaData(objectMapSnpWithNcbi, 'MapSnpWithNcbi')
+                    if ( updatedOn_OldData != updatedOn_Website):
+                        try:
+                            resSummaryDl = response.find('dl', {"id": "summaryDl"}) # fetch all detail of website
+                            officialSymbol = self.FetchOfficialSymbol(resSummaryDl)
+                            
+                            # Check Also Know As
+                            if ( len( resSummaryDl.find_all(text = 'Also known as') ) >= 1 ): alsoKnownAs = self.FetchAlsoKnowAs(resSummaryDl)
+                            else: alsoKnownAs = ['']
 
-            dataMetaThread['count'] = dataMetaThread['count'] + 1
+                        except Exception as e:
+                            self.WriteToLogFile(CurrentGeneID, "Error", str(e))
+                            continue
+                        
+                        data = GeneWithMap(CurrentGeneID = CurrentGeneID, OldGeneID = OldGeneID, GeneSymbol = officialSymbol, AlsoKnowAs = alsoKnownAs, UpdatedAt = updatedOn_Website)
+                        dataFromWeb = pd.DataFrame(data.__dict__)
+                        dataFromWeb.to_csv( self.csvPath , mode='a', index = False, header=False)
 
-            dataInMapSnpWithNcbi['technical'][typeMetadata]['amountOfFinished'] =  dataInMapSnpWithNcbi['technical'][typeMetadata]['amountOfFinished'] + 1
+                dataMetaThread = self.FetchDataOnMetaData(objectThread, self.nameMetadata)
+                dataInMapSnpWithNcbi = self.FetchDataOnMetaData(objectMapSnpWithNcbi, 'MapSnpWithNcbi')
 
-            if dataInMapSnpWithNcbi['technical'][typeMetadata]['status'] == 1:
-                objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
-                objectThread.SaveManualUpdateMetadata(dataMetaThread)
-                self.WriteToLogFile(CurrentGeneID, "Successful", "Data retrieved successfully")
+                dataMetaThread['count'] = dataMetaThread['count'] + 1
+
+                dataInMapSnpWithNcbi['technical'][typeMetadata]['amountOfFinished'] =  dataInMapSnpWithNcbi['technical'][typeMetadata]['amountOfFinished'] + 1
+
+                if dataInMapSnpWithNcbi['technical'][typeMetadata]['status'] == 1:
+                    objectMapSnpWithNcbi.SaveManualUpdateMetadata(dataInMapSnpWithNcbi)
+                    objectThread.SaveManualUpdateMetadata(dataMetaThread)
+                    self.WriteToLogFile(CurrentGeneID, "Successful", "Data retrieved successfully")
+            except Exception as e:
+                self.WriteToLogFile(CurrentGeneID, "None Error", str(e))
+                continue
         
         return
 
@@ -603,18 +616,18 @@ class Ncbi(Database, MetaData, FilePath, GeneWithMap):
 
         dataInMetaData = objectMapSnpWithNcbi.ReadMetadata("MapSnpWithNcbi")
 
-        if (dataInMetaData['technical']['createMeta']['status'] != 2):
+        # if (dataInMetaData['technical']['createMeta']['status'] != 2):
 
-            # Wait all mutithread has successfully process before start combine all data
-            self.CombineCreateDataNcbi()
+        #     # Wait all mutithread has successfully process before start combine all data
+        #     self.CombineCreateDataNcbi()
 
-            # Clear Metadata
-            self.SetZeroOnMetadata("createMeta")
+        #     # Clear Metadata
+        #     self.SetZeroOnMetadata("createMeta")
 
-            # Clear all related files
-            self.DeleteAllRelateFile("createMeta")
+        #     # Clear all related files
+        #     self.DeleteAllRelateFile("createMeta")
 
-        return
+        # return
 
     def UpdateNcbiInformation(self):
         database = Database()
@@ -694,4 +707,4 @@ class Ncbi(Database, MetaData, FilePath, GeneWithMap):
 
 if __name__ == "__main__":
     ncbi = Ncbi(1)
-    ncbi.UpdateNcbiInformation()
+    ncbi.CreateNcbiInformation()
