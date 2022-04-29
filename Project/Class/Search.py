@@ -68,6 +68,7 @@ class Search(Database):
 
         self.database = Database()
         self.test = False
+        self.advanceSearch = ''
         return
 
     # Initialization
@@ -91,6 +92,7 @@ class Search(Database):
     def Add_Relationship_Distance(self, newData): self.Relationship_Distance = newData
     def Add_Disease(self, newData): self.Disease = newData
     def Add_source_website(self, newData): self.source_website = newData
+    def Add_advanceSearch(self, newData): self.advanceSearch = newData
 
     def ChangeStatus_Disease(self, newData): self.StatusDisease = newData
     def ChangeStatusTest(self, newStatus): self.StatusTest = newStatus
@@ -607,6 +609,15 @@ class Search(Database):
         database.CloseDatabase(conn)
 
         return Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease
+
+    def AdvanceSearchData(self):
+        database = Database()
+        conn = database.ConnectDatabase()
+
+        results = set( database.CreateTask(conn, self.advanceSearch, ()) )
+
+        database.CloseDatabase(conn)
+        return results
 
 if __name__ == "__main__":
     searchFunction = Search()
