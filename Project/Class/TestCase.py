@@ -818,6 +818,30 @@ class TestCase():
         self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
         return
 
+    def Test_SNPoutside_asso(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPoutside_asso_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs233978', 'rs9965312', 'rs251292', 'rs9887913', 'rs1125082'])
+        TestSearch.Add_Relationship_Distance([['downstream', 500], ['upstream', 2000], 'intron', 'synon', 'exon', 'CDS', 'missense', 'nonsense', 'UTR-3', 'UTR-5', 'splice-site'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
+    def Test_SNPoutside_nonasso(self, Input_Relate_InDisease = [], Input_Relate_NotInDisease = [], Input_UnRelate_InDisease = [], Input_UnRelate_NotInDisease = []):
+        PREFIX = 'Test_SNPoutside_nonasso_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs41464449', 'rs7660291', 'rs4775229', 'rs3753452', 'rs10120738'])
+        TestSearch.Add_Relationship_Distance([['downstream', 500], ['upstream', 2000], 'intron', 'synon', 'exon', 'CDS', 'missense', 'nonsense', 'UTR-3', 'UTR-5', 'splice-site'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessAccuracySearch(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease, Input_Relate_InDisease, Input_Relate_NotInDisease, Input_UnRelate_InDisease, Input_UnRelate_NotInDisease)
+        return
+
 
     def UPDATE_NCBI_WITH_CONDITION_01(self):
         """Test Update ncbi data with delete GENE_ID(388) on other_symbol table"""
@@ -1028,6 +1052,9 @@ class CreateTestCase():
         self.CREATE_Test_SNPoutside1()
         self.CREATE_Test_SNPoutside2()
         self.CREATE_Test_SNPoutside3()
+
+        self.CREATE_Test_SNPoutside_asso()
+        self.CREATE_Test_SNPoutside_nonasso()
 
         return
 
@@ -1774,6 +1801,32 @@ class CreateTestCase():
         TestSearch = Search()
         TestSearch.ChangeStatusTest(True)
         TestSearch.ImportData(['rs9887913', 'rs4775229', 'rs1125082', 'rs11768639', 'rs3753452'])
+        TestSearch.Add_Relationship_Distance([['downstream', 500], ['upstream', 2000], 'intron', 'synon', 'exon', 'CDS', 'missense', 'nonsense', 'UTR-3', 'UTR-5', 'splice-site'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPoutside_asso(self):
+        PREFIX = 'Test_SNPoutside_asso_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs233978', 'rs9965312', 'rs251292', 'rs9887913', 'rs1125082'])
+        TestSearch.Add_Relationship_Distance([['downstream', 500], ['upstream', 2000], 'intron', 'synon', 'exon', 'CDS', 'missense', 'nonsense', 'UTR-3', 'UTR-5', 'splice-site'])
+
+        Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
+        self.ProcessCreateDataset(PREFIX, Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease)
+        
+        return
+
+    def CREATE_Test_SNPoutside_nonasso(self):
+        PREFIX = 'Test_SNPoutside_nonasso_'
+
+        TestSearch = Search()
+        TestSearch.ChangeStatusTest(True)
+        TestSearch.ImportData(['rs41464449', 'rs7660291', 'rs4775229', 'rs3753452', 'rs10120738'])
         TestSearch.Add_Relationship_Distance([['downstream', 500], ['upstream', 2000], 'intron', 'synon', 'exon', 'CDS', 'missense', 'nonsense', 'UTR-3', 'UTR-5', 'splice-site'])
 
         Result_Relate_InDisease, Result_Relate_NotInDisease, Result_Unrelate_InDisease, Result_Unrelate_NotInDisease = TestSearch.SearchData()
