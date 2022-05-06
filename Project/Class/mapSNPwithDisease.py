@@ -103,8 +103,12 @@ class mapSNP_Disease:
         # Connect database
         database = Database()
         conn = database.ConnectDatabase()
+        objectMatching = MetaData()
+        MatchingInfo = self.TryFetchDataOnMetaData(objectMatching, 'Matching')
 
         # Query data for find match
+        MatchingInfo['Status']['textStatus'] = 'Preparing data before matching'
+        objectMatching.SaveManualUpdateMetadata(MatchingInfo)
         self.QueryGeneSNP(database, conn)
         self.QueryGeneDisease(database, conn)
         self.QueryGeneSource(database, conn)
@@ -114,8 +118,13 @@ class mapSNP_Disease:
         df_ListGeneDisease = pd.DataFrame(self.ListGeneDisease, columns= ['DISEASE_ID', 'GENE_ID', 'GENE_SYMBOL'])
         df_ListGeneSource = pd.DataFrame(self.ListGeneFromSource, columns= ['GENE_SYMBOL', 'SOURCE_WEBSITE', 'DISEASE_ID'])
         df_ListGenePathway = pd.DataFrame(self.ListGenePathway, columns= ['DISEASE_ID', 'GENE_ID', 'PATHWAY_ID'])
+        MatchingInfo['Status']['amountState'] = len(self.ListGeneSNP) + 2
+        MatchingInfo['Status']['amountOfFinished'] = 1
+        objectMatching.SaveManualUpdateMetadata(MatchingInfo)
 
         for i in self.ListGeneSNP:
+            MatchingInfo['Status']['textStatus'] = 'Matching SNP: ' + i[1] + ' Associated Gene: ' + str(i[0])
+            objectMatching.SaveManualUpdateMetadata(MatchingInfo)
             print("geneid :", i[0])
 
             # Check By Gene in Disease
@@ -166,6 +175,9 @@ class mapSNP_Disease:
                     print('    ', value,end=' ')
                     database.CreateTask(conn, self.sqlsave, (value))
                     print("save success")
+            
+            MatchingInfo['Status']['amountOfFinished'] = MatchingInfo['Status']['amountOfFinished'] + 1
+            objectMatching.SaveManualUpdateMetadata(MatchingInfo)
         
         # Disconnect database
         database.CloseDatabase(conn)
